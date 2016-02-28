@@ -8,7 +8,7 @@
 --
 --------------------------------------------------------------------------------
 
-set define off  -- pro SQLdeveloper
+--set define off  -- pro SQLdeveloper, at se nezasekne
 set pages 999 verify off 
 
 
@@ -26,7 +26,7 @@ define AUTOEXTEND=" autoextend on next 512m maxsize "
 
 col if_asm	noprint new_value _IF_ASM
 col if_fs	noprint new_value _IF_FS
-col dfSize	noprint new_value dfSize
+col dfSize	noprint new_value  dfSize
 
 --// detekce ASM dle db_create_file_dest //--
 select decode(substr(value,1,1),'+','',NULL,'--') if_asm from v$parameter where name = 'db_create_file_dest';
@@ -55,8 +55,8 @@ SELECT    tablespace_name
       )
      WHERE upper(tablespace_name) like upper('&1')
    ORDER BY tablespace_name
---&_IF_ASM , file_id  -- pro ASM setrid dle file_id
---&_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
+&_IF_ASM , file_id  -- pro ASM setrid dle file_id
+&_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
 ;
 
 prompt ASM diskgroup info:
