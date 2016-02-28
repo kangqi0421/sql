@@ -1,12 +1,47 @@
+--------------------------------------------------------------------------------
+--
+-- File name:   ls.sql
+-- Purpose:     List datafiles of given &1 TABLESPACE
+--
+-- Changes:     - added support for ASM and Filesystems
+--              - ASM files are sorted by file id, filesystem is sorted by suffix number at file name
+--
+--------------------------------------------------------------------------------
+
+set define off  -- pro SQLdeveloper
 set pages 999 verify off 
 
+
+--// formatovani sloupcu //--
 col tablespace_name for a30
 col file_name for a65
 
--- definuje vhodnou velikost datafile v GB
-define dfSize = 32767
---define dfSize = 16384
+--// dynamicky generovane SQL //--
+set termout off
 
+define _IF_ASM="--"
+define _IF_FS="--"
+
+define AUTOEXTEND=" autoextend on next 512m maxsize "
+
+col if_asm	noprint new_value _IF_ASM
+col if_fs	noprint new_value _IF_FS
+col dfSize	noprint new_value dfSize
+
+--// detekce ASM dle db_create_file_dest //--
+select decode(substr(value,1,1),'+','',NULL,'--') if_asm from v$parameter where name = 'db_create_file_dest';
+select decode(substr(value,1,1),'+','--',NULL,'') if_fs  from v$parameter where name = 'db_create_file_dest';
+
+--// detekce velikosti souboru dfSize, pro 8k block pouze 32767, jinak 32G //--
+--
+-- 8k block -> 32 767M
+-- 16k+     -> 32 768M
+--
+select decode(value, 8192, 32767, 32768) dfSize from v$parameter where name = 'db_block_size';
+
+set termout on
+
+--// aktualni velikosti datafiles //--
 SELECT    tablespace_name
 	, file_id
 	, file_name
@@ -19,16 +54,21 @@ SELECT    tablespace_name
        select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by from dba_temp_files
       )
      WHERE upper(tablespace_name) like upper('&1')
- --ORDER BY tablespace_name, file_name  -- ASM
-   ORDER BY tablespace_name, SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- Filesystem
-/
+   ORDER BY tablespace_name
+--&_IF_ASM , file_id  -- pro ASM setrid dle file_id
+--&_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
+;
 
+prompt ASM diskgroup info:
+set feedback off
+SELECT name, round(total_mb/1024) "Total GB", round(free_mb/1024) "Free GB" FROM v$asm_diskgroup
+  WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest');
       
+prompt  
 prompt Volne misto v ASM po odecteni autoextendu:
-
 SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
-          FROM V$ASM_DISKGROUP
-         WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest'))
+         FROM V$ASM_DISKGROUP
+        WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest'))
 -
 (SELECT (        a.data_size
                + b.temp_size
@@ -44,19 +84,52 @@ SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
        )) "free [GB]"
 FROM DUAL;
 
-prompt Vhodny kandidat pro resize - prvni datafile se size < &dfSize.m
+prompt Resize - prvni datafile se size < &dfSize.m
+prompt ======
 
 set head off
-SELECT    'alter database datafile '
-       || file_id || ' '
-       || CASE autoextensible WHEN 'YES' THEN 'autoextend on next 256m maxsize ' ELSE 'resize ' END
-       || '&dfSize.m;'
-  FROM (  SELECT file_id, bytes, autoextensible, 
-	         ROW_NUMBER () OVER (PARTITION BY autoextensible ORDER BY file_id) R
+
+WITH file_id_row as (
+SELECT file_id
+  FROM (  SELECT file_id,
+                 CASE
+                    WHEN autoextensible = 'NO' THEN bytes
+                    WHEN autoextensible = 'YES' THEN maxbytes
+                 END
+                    bytes
             FROM dba_data_files
-           WHERE     UPPER (tablespace_name) LIKE UPPER ('&&1')
-                 --AND autoextensible = 'NO'
+           WHERE UPPER (tablespace_name) LIKE UPPER ('&&1')
                  AND bytes < &dfSize * 1048576
-        ORDER BY file_id)
- WHERE R = 1;
-set head on
+&_IF_FS        ORDER BY SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1)
+&_IF_ASM       ORDER BY file_id
+        )
+ WHERE ROWNUM = 1
+)
+SELECT 'alter database datafile ' || file_id || ' resize &dfSize.m;' from file_id_row
+UNION ALL
+SELECT 'alter database datafile ' || file_id || ' &AUTOEXTEND &dfSize.m;' from file_id_row;
+
+
+prompt 
+prompt Add datafile:
+prompt =============
+
+WITH tablespace_row AS (
+SELECT TABLESPACE_NAME
+  FROM dba_tablespaces
+           WHERE  UPPER (tablespace_name) LIKE UPPER ('&&1')
+)
+SELECT 'alter tablespace '||TABLESPACE_NAME||' add datafile '||
+&_IF_FS    '''  ''' ||
+        ' size &dfSize.m;'
+  FROM tablespace_row
+UNION ALL
+SELECT 'alter tablespace '||TABLESPACE_NAME||' add datafile '||
+&_IF_FS    '''  ''' ||
+        ' size 512m &AUTOEXTEND &dfSize.m;' 
+  FROM tablespace_row;
+
+prompt
+
+set head on feedback on verify on
+
