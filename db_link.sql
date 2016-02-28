@@ -1,0 +1,1 @@
+select name, PASSWORDX from sys.link$ where name = '&1';
