@@ -8,8 +8,14 @@
 --
 --------------------------------------------------------------------------------
 
-set define off  -- pro SQLdeveloper
-set pages 999 verify off 
+--set define off  -- pro SQLdeveloper, at se nezasekne
+set pages 999 verify off feedback off
+
+/* SQLDeveloper does not handle noprint very nice */
+define noprint=""
+col sqlplus_sqld noprint new_value noprint
+select decode(substr(program,1,7),'sqlplus','noprint','') sqlplus_sqld
+from v$session where sid = (select sid from v$mystat where rownum = 1);
 
 
 --// formatovani sloupcu //--
@@ -24,9 +30,9 @@ define _IF_FS="--"
 
 define AUTOEXTEND=" autoextend on next 512m maxsize "
 
-col if_asm	noprint new_value _IF_ASM
-col if_fs	noprint new_value _IF_FS
-col dfSize	noprint new_value dfSize
+col if_asm	&noprint new_value _IF_ASM
+col if_fs	&noprint new_value _IF_FS
+col dfSize	&noprint new_value  dfSize
 
 --// detekce ASM dle db_create_file_dest //--
 select decode(substr(value,1,1),'+','',NULL,'--') if_asm from v$parameter where name = 'db_create_file_dest';
@@ -55,17 +61,52 @@ SELECT    tablespace_name
       )
      WHERE upper(tablespace_name) like upper('&1')
    ORDER BY tablespace_name
---&_IF_ASM , file_id  -- pro ASM setrid dle file_id
---&_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
+&_IF_ASM , file_id  -- pro ASM setrid dle file_id
+&_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
 ;
 
+prompt
+prompt dba_data_files - dba_free_space:
+SELECT   f.tablespace_name,
+    f.total_max_size "max size [MB]",
+    f.total_size - NVL (s.free_space, 0) "alloc space [MB]",
+	(f.total_max_size - f.total_size) + NVL (s.free_space, 0) "free space [MB]",
+    round((f.total_size - NVL (s.free_space, 0))/f.total_max_size*100) "Space Used (%)"
+  FROM
+    (
+      SELECT   tablespace_name, 
+               round(SUM (bytes/1048576)) total_size,
+               round(SUM (bytes_total/1048576)) total_max_size
+        FROM
+          (
+            SELECT   tablespace_name, BYTES,
+                CASE
+                  WHEN autoextensible = 'NO'    THEN BYTES
+                  WHEN autoextensible = 'YES'   THEN maxbytes
+                END bytes_total
+              FROM dba_data_files
+          )
+        GROUP BY tablespace_name
+    ) f
+  INNER JOIN
+    (
+      SELECT   tablespace_name,
+          round(SUM (BYTES/1048576)) free_space
+        FROM dba_free_space
+        GROUP BY tablespace_name
+    ) s
+  ON (s.tablespace_name   = f.tablespace_name)
+  WHERE upper(s.tablespace_name) like upper('&1')
+ ORDER BY tablespace_name
+  ;
+
+prompt
 prompt ASM diskgroup info:
-set feedback off
 SELECT name, round(total_mb/1024) "Total GB", round(free_mb/1024) "Free GB" FROM v$asm_diskgroup
   WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest');
       
 prompt  
-prompt Volne misto v ASM po odecteni autoextendu:
+prompt ASM - autoextend:
 SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
          FROM V$ASM_DISKGROUP
         WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest'))
@@ -84,22 +125,30 @@ SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
        )) "free [GB]"
 FROM DUAL;
 
+prompt
 prompt Resize - prvni datafile se size < &dfSize.m
 prompt ======
 
 set head off
 
+-- debug
+-- set termout on echo on
+
 WITH file_id_row as (
 SELECT file_id
   FROM (  SELECT file_id,
-                 CASE
-                    WHEN autoextensible = 'NO' THEN bytes
-                    WHEN autoextensible = 'YES' THEN maxbytes
-                 END
-                    bytes
-            FROM dba_data_files
-           WHERE UPPER (tablespace_name) LIKE UPPER ('&&1')
-                 AND bytes < &dfSize * 1048576
+                 bytes
+            FROM (
+			    SELECT   file_id, file_name,
+			        CASE
+					  WHEN autoextensible = 'NO'  THEN bytes
+					  WHEN autoextensible = 'YES' THEN maxbytes
+					END bytes
+				FROM dba_data_files
+                 WHERE UPPER (tablespace_name) LIKE UPPER ('&&1')
+									)
+			WHERE						
+                 bytes < &dfSize * 1048576
 &_IF_FS        ORDER BY SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1)
 &_IF_ASM       ORDER BY file_id
         )
@@ -107,7 +156,8 @@ SELECT file_id
 )
 SELECT 'alter database datafile ' || file_id || ' resize &dfSize.m;' from file_id_row
 UNION ALL
-SELECT 'alter database datafile ' || file_id || ' &AUTOEXTEND &dfSize.m;' from file_id_row;
+SELECT 'alter database datafile ' || file_id || ' &AUTOEXTEND &dfSize.m;' from file_id_row
+/
 
 
 prompt 
@@ -132,4 +182,3 @@ SELECT 'alter tablespace '||TABLESPACE_NAME||' add datafile '||
 prompt
 
 set head on feedback on verify on
-
