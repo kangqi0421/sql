@@ -28,7 +28,7 @@ set termout off
 define _IF_ASM="--"
 define _IF_FS="--"
 
-define AUTOEXTEND=" autoextend on next 512m maxsize "
+define AUTOEXTEND="autoextend on next 512m maxsize "
 
 col if_asm	&noprint new_value _IF_ASM
 col if_fs	&noprint new_value _IF_FS
@@ -66,7 +66,7 @@ SELECT    tablespace_name
 ;
 
 prompt
-prompt dba_data_files - dba_free_space:
+prompt DB: dba_data_files JOIN dba_free_space:
 SELECT   f.tablespace_name,
     f.total_max_size "max size [MB]",
     f.total_size - NVL (s.free_space, 0) "alloc space [MB]",
@@ -101,12 +101,12 @@ SELECT   f.tablespace_name,
   ;
 
 prompt
-prompt ASM diskgroup info:
+prompt ASM: dg info:
 SELECT name, round(total_mb/1024) "Total GB", round(free_mb/1024) "Free GB" FROM v$asm_diskgroup
   WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest');
       
 prompt  
-prompt ASM - autoextend:
+prompt ASM: free for autoextend:
 SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
          FROM V$ASM_DISKGROUP
         WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest'))
@@ -126,7 +126,7 @@ SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
 FROM DUAL;
 
 prompt
-prompt Resize - prvni datafile se size < &dfSize.m
+prompt Resize: prvni datafile dle bytes ASC
 prompt ======
 
 set head off
@@ -147,10 +147,9 @@ SELECT file_id
 				FROM dba_data_files
                  WHERE UPPER (tablespace_name) LIKE UPPER ('&&1')
 									)
-			WHERE						
-                 bytes < &dfSize * 1048576
-&_IF_FS        ORDER BY SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1)
-&_IF_ASM       ORDER BY file_id
+			WHERE	1=1					
+            -- AND bytes < &dfSize * 1048576
+        ORDER BY bytes
         )
  WHERE ROWNUM = 1
 )
