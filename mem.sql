@@ -21,7 +21,7 @@ SELECT component, current_size/1048576 "current [MB]" FROM v$memory_dynamic_comp
 prompt SGA
 prompt ===
 prompt
-   
+
 prompt SGA_TARGET_ADVICE pro factor +- 5%
 prompt MIN, pokud = 1, nema smysl SGA snizovat
 prompt MAX, pokud = 2, nema smysl SGA navysovat (cim mensi hodnota, tim vetši efekt bude mit navyseni SGA)
@@ -34,8 +34,8 @@ SELECT  INST_ID, MIN(SGA_SIZE_FACTOR)||' ('||MIN(SGA_SIZE)/1024||'G)' min_sga,
   FROM GV$SGA_TARGET_ADVICE
  WHERE ESTD_DB_TIME_FACTOR BETWEEN 0.95 AND 1.05
  GROUP BY INST_ID;
-  
-prompt PGASTAT 
+
+prompt PGASTAT
 prompt =======
 select name,
   case

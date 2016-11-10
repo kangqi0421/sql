@@ -9,8 +9,8 @@ select name,
   where name in ('aggregate PGA target parameter','total PGA allocated','maximum PGA allocated','cache hit percentage');
 
 -- ALL PGA stats
-select name, 
-       case 
+select name,
+       case
          when unit = 'bytes' then round(value/1048576)
 	 else value
        end value,
@@ -19,13 +19,13 @@ select name,
 
 -- SQL workarea active
 select  sid, sql_id, active_time, operation_type,
-	actual_mem_used, max_mem_used, 
-	work_area_size, tempseg_size 
+	actual_mem_used, max_mem_used,
+	work_area_size, tempseg_size
   from V$SQL_WORKAREA_ACTIVE
 order by actual_mem_used;
 
 -- v$process_memory, detailne pak dotaz do v$process_memory_detail po zavolani
--- ORADEBUG SETMYPID; 
+-- ORADEBUG SETMYPID;
 -- ORADEBUG DUMP PGA_DETAIL_GET &pid;
 SELECT   pid, CATEGORY,
     round(allocated/POWER(1024,2)),
@@ -37,10 +37,18 @@ SELECT   pid, CATEGORY,
               WHERE sql_id = 'cck32amvj9156'
           )
     )
-order by allocated desc;  
+order by allocated desc;
 
--- sort usage
+-- SORT USAGE
+/*
 select sql_id, contents, blocks from v$sort_usage;
+
+select s.sid, s.serial#, s.username, sort.username, s.state, s.event
+  from V$SORT_USAGE sort join v$session s
+    on (sort.session_addr = s.saddr)
+  where tablespace = 'USER_TEMP';
+*/
+
 
 -- PGA AWR
 -- MAX PGA a TEMP allocated

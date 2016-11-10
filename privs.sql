@@ -1,6 +1,7 @@
 col grantee for a25
 col granted_role for a40
 col type_name for a40
+col table_name for a40
 
 -- ROLEs
 select grantee, granted_role, admin_option, default_role from dba_role_privs where upper(grantee) like upper('&1') order by grantee, granted_role;
@@ -31,7 +32,7 @@ select 'GRANT '||privilege||' "'||owner||'"."'||
 table_name||'" to '||grantee||' '||grantable||';' CMD, grantee
 from (
 select GRANTEE, OWNER, TABLE_NAME,
-  case 
+  case
     when privilege in ('READ','WRITE')  THEN privilege||' ON '||'DIRECTORY'
     else privilege||' ON'
   end privilege,

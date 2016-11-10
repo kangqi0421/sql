@@ -1,0 +1,254 @@
+O11 - tests
+Oracle Database 11g Enterprise Edition Release 11.1.0.2.0 - Beta + 11.1.0.6, 11.1.0.7
+
+system/manager - mjensen / mjensen
+
+alter session set nls_language=American;
+
+drop type t1_rec_typ;
+
+create or replace type t1_rec_typ as table of number;
+/
+
+  create or replace function counter(start_no number, offset number)
+    return t1_rec_typ
+    pipelined
+  is
+  begin
+    for i in start_no..start_no+offset-1 loop
+      pipe row(i);
+    end loop;
+    return;
+  end;
+/
+
+-- interval partitioning
+
+drop table B purge;
+
+create table B (
+  id number not null, trans varchar2(30) not null, c clob,
+  mf_fk number(1), createdate date)
+  partition by range (createdate)
+  INTERVAL(NUMTOYMINTERVAL(1, 'month'))
+  (
+    partition year_2005 values
+      less than(to_date('2006-01-01','YYYY-MM-DD')),
+    partition year_2006 values 
+      less than(to_date('2007-07-01','YYYY-MM-DD')),
+    partition year_2007 values 
+      less than(to_date('2008-01-01','YYYY-MM-DD')));
+
+
+ORA-14761: MAXVALUE partition cannot be specified for Interval partitioned
+objects
+
+set long 50000
+select dbms_metadata.get_ddl('TABLE', 'B') from dual;
+
+
+insert /*+APPEND */ into B (id, trans, c, mf_fk, createdate)
+select t.column_value id, 
+       'record '||to_char(t.column_value) trans,
+       'clob: '||to_char(t.column_value) c,
+       mod(t.column_value,2) mf_fk,
+       to_date('2005-01-01','YYYY-MM-DD')+mod(t.column_value,1000) createdate
+from table(counter(1,100000) ) t;
+commit;
+
+create unique index b_pk on b (id, createdate)   LOCAL
+ (PARTITION "YEAR_2005",
+  PARTITION "YEAR_2006",
+  PARTITION "YEAR_2007");
+
+alter table b add constraint b_pk primary key (id, createdate);
+
+execute DBMS_STATS.GATHER_TABLE_STATS(null, 'B', estimate_percent => 100, -
+  method_opt => 'FOR ALL INDEXED COLUMNS size 254', cascade => false);
+
+select partition_name, tablespace_name, num_rows from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+YEAR_2005                      SYSTEM                              36500
+YEAR_2006                      SYSTEM                              54600
+YEAR_2007                      SYSTEM                               8900
+
+insert /*+APPEND */ into B (id, trans, c, mf_fk, createdate)
+select t.column_value id, 
+       'record '||to_char(t.column_value) trans,
+       'clob: '||to_char(t.column_value) c,
+       mod(t.column_value,2) mf_fk,
+       to_date('2007-12-01','YYYY-MM-DD')+mod(t.column_value,1000) createdate
+from table(counter(100001,1000) ) t;
+commit;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+SYS_P102                       SYSTEM
+SYS_P105                       SYSTEM
+SYS_P108                       SYSTEM
+SYS_P111                       SYSTEM
+SYS_P114                       SYSTEM
+SYS_P117                       SYSTEM
+SYS_P120                       SYSTEM
+SYS_P27                        SYSTEM
+SYS_P30                        SYSTEM
+SYS_P33                        SYSTEM
+SYS_P36                        SYSTEM
+SYS_P39                        SYSTEM
+SYS_P42                        SYSTEM
+SYS_P45                        SYSTEM
+SYS_P48                        SYSTEM
+SYS_P51                        SYSTEM
+SYS_P54                        SYSTEM
+SYS_P57                        SYSTEM
+SYS_P60                        SYSTEM
+SYS_P63                        SYSTEM
+SYS_P66                        SYSTEM
+SYS_P69                        SYSTEM
+SYS_P72                        SYSTEM
+SYS_P75                        SYSTEM
+SYS_P78                        SYSTEM
+SYS_P81                        SYSTEM
+SYS_P84                        SYSTEM
+SYS_P87                        SYSTEM
+SYS_P90                        SYSTEM
+SYS_P93                        SYSTEM
+SYS_P96                        SYSTEM
+SYS_P99                        SYSTEM
+YEAR_2005                      SYSTEM                              36500
+YEAR_2006                      SYSTEM                              54600
+YEAR_2007                      SYSTEM                               8900
+
+select index_name, partition_name, leaf_blocks, tablespace_name, status 
+from user_ind_partitions
+where index_name in (select index_name from user_indexes where table_name = 'B')
+order by index_name, partition_name;
+
+both local indexes and lob indexes are there ...
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-1,  'record out of scope', 'clob out of scope', 1,
+       to_date('9999-10-01','YYYY-MM-DD'));
+
+select partition_name, tablespace_name, num_rows from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+
+Application error:
+
+select to_date('9999-12-01','YYYY-MM-DD') from dual;
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-1,  'record out of scope', 'clob out of scope', 1,
+       to_date('9999-11-01','YYYY-MM-DD'));
+
+select add_months(to_date('9999-12-01','YYYY-MM-DD'),1) from dual;
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-1,  'record out of scope', 'clob out of scope', 1,
+       to_date('9999-12-01','YYYY-MM-DD'));
+
+ERROR at line 1:
+ORA-01841: (helt) Õr skal vµre mellem -4713 og +9999, men mÕ ikke vµre 0
+
+-- new bug: 6061204
+-- dub of 5582184 or 5883750
+
+select count(*) 
+from user_ind_partitions
+where index_name in (select index_name from user_indexes where table_name = 'B');
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-1,  'record out of scope', 'clob out of scope', 1,
+       to_date('4000-12-01','YYYY-MM-DD'));
+
+select count(*) 
+from user_ind_partitions
+where index_name in (select index_name from user_indexes where table_name = 'B');
+
+72
+
+select count(*) from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+36
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-2,  'record out of scope', 'clob out of scope', 1,
+       to_date('3000-12-01','YYYY-MM-DD'));
+
+-------------------------
+
+Nulls?
+
+insert into B values (-5, 'null', null, 1, null);
+
+FEJL i linie 1:
+ORA-14400: den indsatte partitionsnøgle mapper ikke til nogen partition
+
+
+--------------------------------
+
+rollback?
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-1,  'record to be rolledback', 'clob out of scope', 1,
+       to_date('2006-01-01','YYYY-MM-DD'));
+
+insert into B (id, trans, c, mf_fk, createdate)
+values (-2,  'record to be rolledback', 'clob out of scope', 1,
+       to_date('2010-01-01','YYYY-MM-DD'));
+
+select partition_name, tablespace_name, num_rows from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+SYS_P47                        SYSTEM
+YEAR_2005                      SYSTEM
+YEAR_2006                      SYSTEM
+YEAR_2007                      SYSTEM
+
+rollback;
+
+select partition_name, tablespace_name, num_rows from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+SYS_P47                        SYSTEM
+YEAR_2005                      SYSTEM
+YEAR_2006                      SYSTEM
+YEAR_2007                      SYSTEM
+
+select * from b;
+
+-- no rows
+
+=======================================
+
+How about a combination of interval and virtual partitioning?
+
+drop table B purge;
+
+create table B (
+  id number not null, trans varchar2(30) not null, c clob,
+  mf_fk number(1), createdate date,
+  gen_date as (to_date('2008-01-01','YYYY-MM-DD')+mod(id,1000)))
+  partition by range (gen_date)
+  INTERVAL(NUMTOYMINTERVAL(1, 'month'))
+  (
+    partition year_2005 values
+      less than(to_date('2006-01-01','YYYY-MM-DD')),
+    partition year_2006 values 
+      less than(to_date('2007-07-01','YYYY-MM-DD')),
+    partition year_2007 values 
+      less than(to_date('2008-01-01','YYYY-MM-DD')));

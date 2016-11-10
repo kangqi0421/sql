@@ -13,7 +13,7 @@ ORDER BY username;
 
 -- špatně nastavený kerberos
 select username, external_name, authentication_type, profile
-  from dba_users 
+  from dba_users
  where authentication_type = 'EXTERNAL' and external_name is NULL;
 
 -- přegenerování kerberos uctu a přehození na OPEN
@@ -31,7 +31,7 @@ BEGIN
     ' account UNLOCK';
   END LOOP;
 END;
-/ 
+/
 
 -- DEFAULT profile
 SELECT username, profile, account_status, expiry_date
@@ -39,7 +39,7 @@ SELECT username, profile, account_status, expiry_date
       WHERE REGEXP_LIKE(username, '^(EXT|CEN|ITA|SOL)[^_].*')
         AND profile = 'DEFAULT'
      ORDER BY 1;
---     
+--
 BEGIN
   FOR rec IN
   (
@@ -52,4 +52,34 @@ BEGIN
     ' profile PROF_USER';
   END LOOP;
 END;
-/       
+/
+
+
+-- explicit ACCOUNT LOCK
+BEGIN
+  FOR rec IN
+  (
+    SELECT   username
+      FROM dba_users
+     WHERE REGEXP_LIKE(username, '^(EXT|CEN|ITA|SOL)[^_].*')
+        AND ACCOUNT_STATUS in ('OPEN','EXPIRED(GRACE)')
+        AND username in (
+                'CEN31465',
+                'CEN80113',
+                'EXT94401',
+                'EXT94704',
+                'EXT94147',
+                'EXT94001',
+                'EXT95783',
+                'EXT94182',
+                'EXT93695',
+                'EXT93540',
+                'EXT95433'
+                        )
+  )
+  LOOP
+    execute immediate 'alter user '||upper(rec.username)||
+    ' ACCOUNT LOCK';
+  END LOOP;
+END;
+/

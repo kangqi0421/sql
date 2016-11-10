@@ -2,8 +2,8 @@ set feedback off
 
 prompt Display indexes where table or index name matches &1....
 
-column ind_table_name1 heading TABLE_NAME
-column ind_index_name1 heading INDEX_NAME
+column ind_table_name1 heading TABLE_NAME format a20
+column ind_index_name1 heading INDEX_NAME format a30
 column ind_table_owner1 heading TABLE_OWNER format a20
 column ind_column_name1 heading COLUMN_NAME format a30
 column ind_dsc1 heading DSC format a4
@@ -12,19 +12,19 @@ column ind_column_position1 heading POS# format 999
 break on ind_table_owner1 skip 1 on ind_table_name1 on ind_index_name1
 
 
-select 
+select
     c.table_owner ind_table_owner1,
-    c.table_name ind_table_name1, 
-    c.index_name ind_index_name1, 
-    c.column_position ind_column_position1, 
-    c.column_name ind_column_name1, 
+    c.table_name ind_table_name1,
+    c.index_name ind_index_name1,
+    c.column_position ind_column_position1,
+    c.column_name ind_column_name1,
     decode(c.descend,'DESC','DESC',null) ind_dsc1
-from 
+from
     dba_ind_columns c
 where (
-    UPPER(table_name) LIKE 
-                UPPER(CASE 
-                    WHEN INSTR('&1','.') > 0 THEN 
+    UPPER(table_name) LIKE
+                UPPER(CASE
+                    WHEN INSTR('&1','.') > 0 THEN
                         SUBSTR('&1',INSTR('&1','.')+1)
                     ELSE
                         '&1'
@@ -38,9 +38,9 @@ AND UPPER(table_owner) LIKE
         END
 )
 OR (
-    UPPER(index_name) LIKE 
-                UPPER(CASE 
-                    WHEN INSTR('&1','.') > 0 THEN 
+    UPPER(index_name) LIKE
+                UPPER(CASE
+                    WHEN INSTR('&1','.') > 0 THEN
                         SUBSTR('&1',INSTR('&1','.')+1)
                     ELSE
                         '&1'
@@ -61,6 +61,8 @@ order by
 ;
 
 column ind_owner heading INDEX_OWNER format a20
+column table_name format a20
+column index_name format a30
 column ind_index_type heading IDXTYPE format a7
 column ind_uniq heading UNIQ format a4
 column ind_part heading PART format a4
@@ -71,14 +73,14 @@ column ind_distinct_keys heading NDK format 9999999999
 
 break on ind_owner on table_name
 
-select 
-    owner ind_owner, 
-    table_name, 
-    index_name, 
-    index_type ind_index_type, 
-    decode(uniqueness,'UNIQUE', 'YES', 'NONUNIQUE', 'NO', 'N/A') ind_uniq, 
-    status, 
-    partitioned ind_part, 
+select
+    owner ind_owner,
+    table_name,
+    index_name,
+    index_type ind_index_type,
+    decode(uniqueness,'UNIQUE', 'YES', 'NONUNIQUE', 'NO', 'N/A') ind_uniq,
+    status,
+    partitioned ind_part,
     temporary ind_temp,
     blevel+1 ind_blevel,
     leaf_blocks ind_leaf_blocks,
@@ -86,12 +88,12 @@ select
     num_rows,
     clustering_factor cluf,
     last_analyzed
-from 
+from
     dba_indexes
 where (
-    UPPER(table_name) LIKE 
-                UPPER(CASE 
-                    WHEN INSTR('&1','.') > 0 THEN 
+    UPPER(table_name) LIKE
+                UPPER(CASE
+                    WHEN INSTR('&1','.') > 0 THEN
                         SUBSTR('&1',INSTR('&1','.')+1)
                     ELSE
                         '&1'
@@ -105,9 +107,9 @@ AND UPPER(table_owner) LIKE
         END
 )
 OR (
-    UPPER(index_name) LIKE 
-                UPPER(CASE 
-                    WHEN INSTR('&1','.') > 0 THEN 
+    UPPER(index_name) LIKE
+                UPPER(CASE
+                    WHEN INSTR('&1','.') > 0 THEN
                         SUBSTR('&1',INSTR('&1','.')+1)
                     ELSE
                         '&1'
@@ -119,7 +121,7 @@ AND UPPER(owner) LIKE
         ELSE
             user
         END
-)    
+)
 order by
     owner,
     table_name,

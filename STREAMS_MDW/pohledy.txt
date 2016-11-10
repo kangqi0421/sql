@@ -1,0 +1,85 @@
+SOURCE - VIE:
+=============
+
+SELECT CAPTURE_NAME, STATE FROM V$STREAMS_CAPTURE;
+
+-- capture process
+SELECT CAPTURE_NAME, STATUS, ERROR_MESSAGE FROM DBA_CAPTURE ;
+
+-- propagation process
+SELECT propagation_name, status, error_message FROM DBA_PROPAGATION;
+
+
+SELECT RULE_NAME, RULE_TYPE, DML_CONDITION
+  FROM DBA_STREAMS_RULES;
+
+-- mìøení latence
+SELECT ((SYSDATE - CAPTURE_MESSAGE_CREATE_TIME)*86400) LATENCY_SECONDS
+ FROM V$STREAMS_CAPTURE WHERE capture_name = 'CAPTURE01'; 
+
+--- konkrétní záznamy spilled messages
+SELECT * FROM strmadm.AQ$STREAMS_QUEUE_TABLE;
+
+select state,count(*) from strmadm.AQ$_STREAMS_QUEUE_TABLE_P group by state;
+
+
+TARGET - PRG:
+=============
+
+
+SELECT APPLY_NAME, STATUS, ERROR_MESSAGE FROM DBA_APPLY;
+
+
+SELECT * FROM V$STREAMS_APPLY_COORDINATOR;
+
+select * from V$STREAMS_APPLY_READER;
+
+
+Apply chyby
+===========
+
+
+select count(*) from dba_apply_error;
+
+select error_number, error_message, error_creation_time
+ from dba_apply_error
+where error_creation_time > sysdate - 1/24
+order by error_creation_time desc;
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+   lcr SYS.AnyData;
+BEGIN
+    lcr := DBMS_APPLY_ADM.GET_ERROR_MESSAGE
+                (&MESSAGE_NUMBER, '&LOCAL_TRANSACTION_ID');
+    print_lcr(lcr);
+END;
+/
+
+
+ - smazání všech replikaèních chyb
+
+exec dbms_apply_adm.delete_all_errors;
+
+
+
+
+OBE INSTANCE:
+=============
+
+select * from mw.heartbeat;
+
+
+Restart HEARTBEATu
+==================
+
+nastavení tagu -> replikace nad sessions se nebudou provádìt
+
+begin
+  DBMS_STREAMS.SET_TAG(tag => HEXTORAW('17'));
+end;
+/
+
+update mw.heartbeat set datum=null;
+commit;

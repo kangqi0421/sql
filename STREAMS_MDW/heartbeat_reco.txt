@@ -1,0 +1,50 @@
+1/ smazání všech replikaèních chyb
+
+exec dbms_apply_adm.delete_all_errors;
+
+
+3/ nastavení tagu -> replikace nad sessions se nebudou provádìt
+
+EXEC DBMS_STREAMS.SET_TAG(tag => HEXTORAW('17'));
+
+
+2/ update heartbeatu - na obou DB
+
+update mw.heartbeat set datum=null;
+commit;
+
+
+
+
+
+
+
+
+
+
+
+
+1/ QUEUE TABULKY
+
+EXEC DBMS_STREAMS_ADM.SET_UP_QUEUE();
+
+--> streams_queue_table , streams_queue
+
+
+
+
+COLUMN SCRIPT_ID     HEADING 'Script ID'     FORMAT A35
+COLUMN BLOCK_NUM     HEADING 'Block|Number' FORMAT 999999
+COLUMN ERROR_MESSAGE HEADING 'Error Message' FORMAT A33
+
+
+
+SELECT SCRIPT_ID, STATUS from DBA_RECOVERABLE_SCRIPT;
+
+SELECT SCRIPT_ID, BLOCK_NUM, ERROR_MESSAGE FROM DBA_RECOVERABLE_SCRIPT_ERRORS;
+
+
+
+exec DBMS_STREAMS_ADM.RECOVER_OPERATION('620271B534011D89E0440018FE28104E','ROLLBACK');
+
+exec DBMS_STREAMS_ADM.RECOVER_OPERATION('621507F255810757E0440018FE28104E', 'PURGE');

@@ -1,27 +1,30 @@
 -- SGAINFO
 col name for a30
 select name, round(bytes/1048576) "MB", RESIZEABLE
- from v$sgainfo;
- 
+  from gv$sgainfo
+ where name like 'Large%'
+;
+
 -- historie = DBA_HIST_SGASTAT
 --select * from v$sga_dynamic_components;
 
 -- SGA resize operations V$SGA_RESIZE_OPS
--- pokud je hodnì èastý, pak je tøeba upravit 
+-- pokud je hodnì èastý, pak je tøeba upravit
 --  * "_memory_broker_stat_interval=999" - starší verze do 11.2.0.2
 --  * shared_pool_size na minimal hodnotu, pod kterou neklesne automatika
-SELECT COMPONENT ,OPER_TYPE,FINAL_SIZE Final,start_time
-  FROM V$SGA_RESIZE_OPS
-  where component in ('DEFAULT buffer cache', 'shared pool') 
-  and start_time > sysdate - 7
-order by start_time desc, component;  
+SELECT COMPONENT ,OPER_TYPE,FINAL_SIZE/1048576 Final,start_time
+  FROM GV$SGA_RESIZE_OPS
+  where 1=1
+  -- AND component in ('DEFAULT buffer cache', 'shared pool')
+  AND start_time > sysdate - 7
+order by start_time desc, component;
 
 -- Historie resize OPS
-select 
-    * 
+select
+    *
 	-- start_time, oper_type, component, initial_size/1048576/1024, final_size/1048576/1024
   from DBA_HIST_MEMORY_RESIZE_OPS
- where component = 'shared pool'   
+ where component = 'shared pool'
  and start_time > sysdate - 7
 order by start_time;
 
@@ -41,6 +44,6 @@ SELECT SUM(DECODE(bh.status, 'free', 1, 0)) AS free,
        SUM(DECODE(bh.status, 'read', 1, 0)) AS read,
        SUM(DECODE(bh.status, 'mrec', 1, 0)) AS mrec,
        SUM(DECODE(bh.status, 'irec', 1, 0)) AS irec
-FROM   v$bh bh;                
+FROM   v$bh bh;
 
 */

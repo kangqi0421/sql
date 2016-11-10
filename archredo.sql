@@ -1,17 +1,18 @@
---// denní velikost redologu a FRA --// 
+--// denní velikost redologu a FRA --//
 set lin 180 pages 100
 col db format a8
 col FRA_DG format A15
 col FRA_DG_SIZE for 999999
 
-define DNI = 7
+define DNI = 31
+--define DNI = 7
 
 --// Supplemental logging //--
-SELECT NAME, LOG_MODE, SUPPLEMENTAL_LOG_DATA_MIN SL_MIN, SUPPLEMENTAL_LOG_DATA_PK SL_PK, 
-       SUPPLEMENTAL_LOG_DATA_UI SL_UI, SUPPLEMENTAL_LOG_DATA_FK SL_FK, SUPPLEMENTAL_LOG_DATA_ALL SL_ALL 
+SELECT NAME, LOG_MODE, SUPPLEMENTAL_LOG_DATA_MIN SL_MIN, SUPPLEMENTAL_LOG_DATA_PK SL_PK,
+       SUPPLEMENTAL_LOG_DATA_UI SL_UI, SUPPLEMENTAL_LOG_DATA_FK SL_FK, SUPPLEMENTAL_LOG_DATA_ALL SL_ALL
  FROM V$DATABASE;
 
---// v$archived_log per day //-- 
+--// v$archived_log per day //--
 WITH QUERY AS
     (
       SELECT   TRUNC (FIRST_TIME)         AS DATUM,
@@ -21,7 +22,7 @@ WITH QUERY AS
              AND first_time > TRUNC (SYSDATE - &DNI)
         GROUP BY TRUNC (FIRST_TIME)
     )
-  SELECT   
+  SELECT
       to_char(DATUM,'dd.mm.yyyy') "date",
       ROUND(redo_size) "redo_size [GB]",
       ROUND(MAX(redo_size) over ()) "redo_max",
@@ -38,22 +39,22 @@ SELECT TRUNC (AVG (mb)), TRUNC (MAX (mb))
                  SUM (blocks * block_size) / 1048576 AS mb
             FROM gv$archived_log
         GROUP BY TRUNC (COMPLETION_TIME));
-		
-*/	
 
---// log file switches per hour //--
-prompt
+*/
+
+-- log file switches per hour
+/*
 prompt log file switches per hour > optimal = 6/hour
 prompt
 
-SELECT to_char(FIRST_TIME,'YYYYMMDD-HH24') DAYDATE, 
+SELECT to_char(FIRST_TIME,'YYYYMMDD-HH24') DAYDATE,
        count(*) switches
   FROM v$log_history
   WHERE first_time > TRUNC (SYSDATE - 0)
   group by to_char(FIRST_TIME,'YYYYMMDD-HH24')
   having count(*) > 6
   order by daydate;
-  
+
 --// redo max a FRA size //--
 WITH
   -- avg a max FRA in used
@@ -100,9 +101,9 @@ FROM
   WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_recovery_file_dest')) fra
 ;
 
+*/
 
-
-/*  
+/*
 
 --// :n 	... definuje interval po n minutach  //--
 SELECT   TRUNC (first_time, 'hh24') + (TRUNC (TO_CHAR (first_time, 'mi') / :n) * :n) / 24 / 60,
@@ -112,8 +113,8 @@ SELECT   TRUNC (first_time, 'hh24') + (TRUNC (TO_CHAR (first_time, 'mi') / :n) *
    WHERE first_time > TRUNC (SYSDATE - 7)
 GROUP BY   TRUNC (first_time, 'hh24')
          + (TRUNC (TO_CHAR (first_time, 'mi') / :n) * :n) / 24 / 60
- 
-// tabulka po hodine //        
+
+// tabulka po hodine //
 SELECT to_date(first_time) DAY,
 to_char(sum(decode(to_char(first_time,'HH24'),'00',1,0)),'999') "00",
 to_char(sum(decode(to_char(first_time,'HH24'),'01',1,0)),'999') "01",

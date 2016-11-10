@@ -1,0 +1,158 @@
+Praha, Viden
+============
+
+connect / as sysdba
+execute DBMS_STREAMS_ADM.REMOVE_STREAMS_CONFIGURATION();
+
+
+col db_name	noprint new_value db_name
+select RTRIM(name, 'V') db_name from v$database;
+
+Viden:
+======
+
+connect strmadm/strmadmpw2
+
+select * from global_name;
+-- pokud není ve tvaru db_name.db_domain, pak provedu
+--alter database rename global_name to &&db_name.V.CC.CSIN.CZ;
+
+-- recreate db linku, pokud je potøeba
+DROP DATABASE LINK &&db_name..VS.CSIN.CZ;
+CREATE DATABASE LINK &&db_name..VS.CSIN.CZ CONNECT TO strmadm IDENTIFIED by strmadmpw2 USING '&&db_name..VS.CSIN.CZ';
+
+
+begin
+ dbms_streams_adm.set_up_queue(
+ queue_name => 'Q_CAPTURE',
+ storage_clause => 'tablespace MDW_STREAMS_TS');
+end;
+/
+
+BEGIN
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.LOG_BE_REPLY',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.LOG_FE_CONFIRM',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.LOG_BE_REQUEST',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.LOG_FE_REPLY',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.LOG_FE_REQUEST',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+DBMS_STREAMS_ADM.ADD_TABLE_RULES( TABLE_NAME=>'MW.HEARTBEAT',
+ STREAMS_TYPE=>'CAPTURE', STREAMS_NAME=>'CAPTURE01',
+ QUEUE_NAME=>'Q_CAPTURE', INCLUDE_DML=>TRUE, INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE, INCLUSION_RULE=>TRUE);
+END;
+/
+
+begin
+dbms_streams_adm.ADD_GLOBAL_PROPAGATION_RULES(
+STREAMS_NAME=>'CAPTURE01',
+ SOURCE_QUEUE_NAME=>'Q_CAPTURE',
+ DESTINATION_QUEUE_NAME=>'Q_APPLY@&&db_name..VS.CSIN.CZ',
+ INCLUDE_DML=>TRUE,
+ INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE,
+ SOURCE_DATABASE=>'&&db_name.V.CC.CSIN.CZ',
+ INCLUSION_RULE=>TRUE
+);
+end;
+/
+
+begin
+DBMS_CAPTURE_ADM.ALTER_CAPTURE(capture_name=>'CAPTURE01', checkpoint_retention_time=>1);
+end;
+/
+
+
+Praha:
+======
+
+connect strmadm/strmadmpw2
+begin
+ dbms_streams_adm.set_up_queue(
+ queue_name => 'Q_APPLY',
+ storage_clause => 'tablespace MDW_STREAMS_TS'
+ );
+end;
+/
+
+
+begin
+dbms_streams_adm.ADD_GLOBAL_RULES(
+STREAMS_TYPE=>'APPLY',
+ STREAMS_NAME=>'APPLY01',
+ QUEUE_NAME=>'Q_APPLY',
+ INCLUDE_DML=>TRUE,
+ INCLUDE_DDL=>FALSE,
+ INCLUDE_TAGGED_LCR=>FALSE,
+ INCLUSION_RULE=>TRUE,
+ source_database => '&&db_name.V.CC.CSIN.CZ'
+);
+dbms_apply_adm.set_parameter(
+apply_name=>'APPLY01',
+parameter=>'DISABLE_ON_ERROR',
+VALUE=>'N');
+dbms_apply_adm.set_parameter(
+apply_name=>'APPLY01',
+parameter=>'PARALLELISM',
+VALUE=>'1');
+end;
+/
+BEGIN
+DBMS_APPLY_ADM.ALTER_APPLY(
+  apply_name => 'APPLY01',
+  apply_user => 'STRMADM');
+END;
+/
+
+Viden:
+======
+set numwidth 30
+select DBMS_FLASHBACK.GET_SYSTEM_CHANGE_NUMBER from dual;
+
+Praha:
+======
+-- pouzij scn z Vidne
+undefine scn
+
+BEGIN
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.LOG_BE_REPLY', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.LOG_FE_CONFIRM', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.LOG_BE_REQUEST', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.LOG_FE_REPLY', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.LOG_FE_REQUEST', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+DBMS_APPLY_ADM.SET_TABLE_INSTANTIATION_SCN(source_object_name=>'MW.HEARTBEAT', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn); 
+END;
+/
+
+BEGIN
+DBMS_APPLY_ADM.SET_SCHEMA_INSTANTIATION_SCN(source_schema_name=>'MW', source_database_name=>'&&db_name.V.CC.CSIN.CZ', instantiation_scn=>&&scn);
+END;
+/
+
+BEGIN
+ DBMS_APPLY_ADM.START_APPLY(apply_name  => 'APPLY01');
+END;
+/
+
+Viden:
+======
+
+BEGIN
+ DBMS_CAPTURE_ADM.START_CAPTURE(capture_name  => 'CAPTURE01');
+END;
+/
+

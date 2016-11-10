@@ -1,0 +1,32 @@
+The fetch size is restricted to the S(ession)D(ata)U(nit) of default 2048 bytes.
+On top of the that, the TCP layer has a MTU of 1508 bytes - 2x fragmentován
+
+
+SET AUTOTRACE TRACEONLY STATISTICS
+SET TIMING ON
+
+select utl_raw.cast_to_raw(CERTIFICATEREVOCATIONLIST) from CSCERT_OWNER_USER.CACERTIFICATES
+  where id = 227256
+;
+  
+select utl_raw.cast_to_varchar2(CERTIFICATEREVOCATIONLIST) from CSCERT_OWNER_USER.CACERTIFICATES
+  where id = 36807
+;
+  
+--
+Elapsed: 00:00:00.08
+
+Statistics
+------------------------------------------------------
+          1  recursive calls
+          0  db block gets
+          6  consistent gets
+          0  physical reads
+          0  redo size
+       1961  bytes sent via SQL*Net to client
+       1262  bytes received via SQL*Net from client
+          4  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+--

@@ -5,20 +5,20 @@ SELECT component, round(current_size/1048576/1024) "current [GB]" FROM v$memory_
    WHERE component LIKE '%Target';
 
 -- OEM
-SELECT   
+SELECT
    host_name, target_name, round(value/1048576/1024)
  FROM MGMT$DB_INIT_PARAMS
- where 
-  REGEXP_LIKE(host_name, '^[p]ordb0[0-5].vs.csin.cz') 
---  REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')  
+ where
+  REGEXP_LIKE(host_name, '^[p]ordb0[0-5].vs.csin.cz')
+--  REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
  and name = 'memory_target' and value > 0
- order by host_name, target_name;   
+ order by host_name, target_name;
 
 -- Linux
 define sga=24G
 define pga=8G
 
--- SODS HP-UX
+-- ARSTA
 define sga=12G
 define pga=4G
 

@@ -1,0 +1,103 @@
+O11 - tests
+Oracle Database 11g Enterprise Edition Release 11.1.0.2.0 - Beta + 11.1.0.6
+
+system/manager - mjensen / mjensen
+
+drop type t1_rec_typ;
+
+create or replace type t1_rec_typ as table of number;
+/
+
+  create or replace function counter(start_no number, offset number)
+    return t1_rec_typ
+    pipelined
+  is
+  begin
+    for i in start_no..start_no+offset-1 loop
+      pipe row(i);
+    end loop;
+    return;
+  end;
+/
+
+-- system partitioning
+
+drop table B purge;
+
+create table B (
+  id number not null, trans varchar2(30) not null, c clob,
+  mf_fk number(1), createdate date not null)
+  partition by system
+  (
+    partition year_2005 ,
+    partition year_2006 ,
+    partition year_2007 );
+
+
+insert /*+APPEND */ into B (id, trans, c, mf_fk, createdate)
+select t.column_value id, 
+       'record '||to_char(t.column_value) trans,
+       'clob: '||to_char(t.column_value) c,
+       mod(t.column_value,2) mf_fk,
+       to_date('2005-01-01','YYYY-MM-DD')+mod(t.column_value,1000) createdate
+from table(counter(1,100000) ) t;
+commit;
+
+FEJL i linie 1:
+ORA-14701: partition-extended name or bind variable must be used for DMLs on
+tables partitioned by the System method
+
+insert /*+APPEND */ into B partition (year_2005) (id, trans, c, mf_fk, createdate)
+select t.column_value id, 
+       'record '||to_char(t.column_value) trans,
+       'clob: '||to_char(t.column_value) c,
+       mod(t.column_value,2) mf_fk,
+       to_date('2005-01-01','YYYY-MM-DD')+mod(t.column_value,1000) createdate
+from table(counter(1,1000) ) t;
+commit;
+
+create unique index b_pk on b (id, createdate)   LOCAL
+ (PARTITION "YEAR_2005",
+  PARTITION "YEAR_2006",
+  PARTITION "YEAR_2007");
+
+FEJL i linie 1:
+ORA-14184: kan ikke oprette et UNIQUE-partitioneret indeks i en
+SYSTEM-partitioneret tabel
+ 
+alter table b add constraint b_pk primary key (id, createdate) initially DEFERRED;
+
+execute DBMS_STATS.GATHER_TABLE_STATS(null, 'B', estimate_percent => 100, -
+  method_opt => 'FOR ALL INDEXED COLUMNS size 254', cascade => false);
+
+select partition_name, tablespace_name, num_rows from user_tab_partitions
+where table_name = 'B'
+order by partition_name;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+YEAR_2005                      SYSTEM                               1000
+YEAR_2006                      SYSTEM                                  0
+YEAR_2007                      SYSTEM                                  0
+
+insert into b partition (year_2007)
+select * from b where to_char(createdate,'YYYY') = '2007';
+
+FEJL i linie 1:
+ORA-00001: unik begrænsning (SYSTEM.B_PK) er overtrådt
+
+if dereffable:
+
+insert into b partition (year_2007)
+select * from b where to_char(createdate,'YYYY') = '2007';
+
+delete from b partition (year_2005)
+where to_char(createdate,'YYYY') = '2007';
+
+commit;
+
+PARTITION_NAME                 TABLESPACE_NAME                  NUM_ROWS
+------------------------------ ------------------------------ ----------
+YEAR_2005                      SYSTEM                                730
+YEAR_2006                      SYSTEM                                  0
+YEAR_2007                      SYSTEM                                270

@@ -1,0 +1,1 @@
+# TRACE gather database stats jobsexec dbms_stats.set_param('TRACE', 2048);select SPARE1, SPARE2, SPARE3, SPARE4, SPARE5, SPARE6 from SYS.OPTSTAT_HIST_CONTROL$ WHere sname='TRACE';   alter session set tracefile_identifier=stats_trace;exec dbms_stats.GATHER_DATABASE_STATS_JOB_PROC();exec dbms_stats.set_param('TRACE', 0);

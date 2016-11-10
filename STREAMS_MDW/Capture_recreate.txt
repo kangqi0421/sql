@@ -1,0 +1,83 @@
+Required Steps to Recreate a Capture Process. [ID 471695.1]
+
+ERROR:
+======
+WAITING FOR DICTIONARY REDO: FIRST SCN 147999169760
+
+
+zjištìní chyby v CAPTURE procesu
+
+SQL> select capture_name, state from v$streams_capture;
+
+CAPTURE_NAME                   STATE
+------------------------------ --------------------------------------------------------------------------------
+CAPTURE01                      WAITING FOR DICTIONARY REDO: FIRST SCN 147999169760
+
+
+
+SQL> SELECT queue_owner,
+       queue_name,
+       capture_name,
+       rule_set_name,
+       rule_set_owner,
+       source_database,
+       checkpoint_retention_time
+  FROM dba_capture;
+
+QUEUE_NAME                     CAPTURE_NAME                   RULE_SET_NAME                  RULE_SET_OWNER
+------------------------------ ------------------------------ ------------------------------ ---------------
+SOURCE_DATABASE
+------------------------------------------------------------------------------------------------------------
+CHECKPOINT_RETENTION_TIME
+-------------------------
+Q_CAPTURE                      CAPTURE01                      RULESET$_63                    STRMADM
+MDWDAV.VS.CSIN.CZ
+
+
+Archivni redolog s SCN 147999169760 byl promazán, není možno ho použít:
+
+
+-- zastavení, drop capture procesu
+exec dbms_capture_adm.stop_capture('CAPTURE01');
+exec dbms_capture_adm.drop_capture('CAPTURE01'); 
+
+
+SQL> set serveroutput on
+SQL> declare
+  2  scn number;
+  3  begin
+  4  dbms_capture_adm.build(
+  5  first_scn => scn);
+  6  dbms_output.put_line('First SCN Value = ' || scn);
+  7  end;
+  8  /
+
+First SCN Value = 148002996536
+
+
+begin 
+dbms_capture_adm.create_capture( 
+queue_name => 'Q_CAPTURE', 
+capture_name => 'CAPTURE01', 
+rule_set_name => 'RULESET$_63', 
+first_scn => &scn); 
+end; 
+/
+
+-- restart APPLy procesu
+begin
+DBMS_CAPTURE_ADM.ALTER_CAPTURE(capture_name=>'CAPTURE01', checkpoint_retention_time=>1);
+end;
+/
+
+-- start capture procesu:
+BEGIN
+ DBMS_CAPTURE_ADM.START_CAPTURE(capture_name  => 'CAPTURE01');
+END;
+/
+
+
+
+
+
+

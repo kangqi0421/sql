@@ -14,7 +14,7 @@ DECLARE
 TYPE username_tab
 IS
   TABLE OF VARCHAR2 (8);
-  names username_tab := username_tab ( 
+  names username_tab := username_tab (
   &users
   ) ;
   user_conflict EXCEPTION; -- odchyt expception, pokud uzivatel jiz existuje
@@ -25,7 +25,7 @@ BEGIN
     BEGIN
       -- CREATE USER
       EXECUTE IMMEDIATE 'CREATE USER '||names (i)||
-      ' identified externally as '|| 
+      ' identified externally as '||
       DBMS_ASSERT.enquote_literal(lower(names(i))||'@CEN.CSIN.CZ') ||
 	    ' PROFILE '||v_profile;
       DBMS_OUTPUT.PUT_LINE(names (i)||' created');
@@ -69,7 +69,7 @@ FROM
 WHERE
   username IN ( &users );
 
-  
+
 -- revoke ROLESDECLARE
 TYPE username_tab
 IS
@@ -85,4 +85,4 @@ BEGIN
     END LOOP;
   END LOOP;
 END;
-/  
+/

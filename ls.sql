@@ -43,7 +43,7 @@ select decode(substr(value,1,1),'+','--',NULL,'') if_fs  from v$parameter where 
 -- 8k block -> 32 767M
 -- 16k+     -> 32 768M
 --
-select decode(value, 8192, 32767, 32768) dfSize from v$parameter where name = 'db_block_size';
+select decode(value, 8192, 32767, 65535) dfSize from v$parameter where name = 'db_block_size';
 
 set termout on
 
@@ -68,13 +68,14 @@ SELECT    tablespace_name
 prompt
 prompt DB: dba_data_files JOIN dba_free_space:
 SELECT   f.tablespace_name,
-    f.total_max_size "max size [MB]",
-    f.total_size - NVL (s.free_space, 0) "alloc space [MB]",
-	(f.total_max_size - f.total_size) + NVL (s.free_space, 0) "free space [MB]",
+    f.total_max_size                                  "max size [MB]",
+    f.total_size                                      "alloc space [MB]",
+    -- f.total_size - NVL (s.free_space, 0)           "alloc space [MB]",
+	 (f.total_max_size - f.total_size) + NVL (s.free_space, 0) "free space [MB]",
     round((f.total_size - NVL (s.free_space, 0))/f.total_max_size*100) "Space Used (%)"
   FROM
     (
-      SELECT   tablespace_name, 
+      SELECT   tablespace_name,
                round(SUM (bytes/1048576)) total_size,
                round(SUM (bytes_total/1048576)) total_max_size
         FROM
@@ -104,8 +105,8 @@ prompt
 prompt ASM: dg info:
 SELECT name, round(total_mb/1024) "Total GB", round(free_mb/1024) "Free GB" FROM v$asm_diskgroup
   WHERE name in (select ltrim(value,'+') from v$parameter where name = 'db_create_file_dest');
-      
-prompt  
+
+prompt
 prompt ASM: free for autoextend:
 SELECT ROUND( (SELECT TOTAL_MB / 1024 GB
          FROM V$ASM_DISKGROUP
@@ -147,7 +148,7 @@ SELECT file_id
 				FROM dba_data_files
                  WHERE UPPER (tablespace_name) LIKE UPPER ('&&1')
 									)
-			WHERE	1=1					
+			WHERE	1=1
             -- AND bytes < &dfSize * 1048576
         ORDER BY bytes
         )
@@ -159,7 +160,7 @@ SELECT 'alter database datafile ' || file_id || ' &AUTOEXTEND &dfSize.m;' from f
 /
 
 
-prompt 
+prompt
 prompt Add datafile:
 prompt =============
 
@@ -175,7 +176,7 @@ SELECT 'alter tablespace '||TABLESPACE_NAME||' add datafile '||
 UNION ALL
 SELECT 'alter tablespace '||TABLESPACE_NAME||' add datafile '||
 &_IF_FS    '''  ''' ||
-        ' size 512m &AUTOEXTEND &dfSize.m;' 
+        ' size 512m &AUTOEXTEND &dfSize.m;'
   FROM tablespace_row;
 
 prompt
