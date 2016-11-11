@@ -1,16 +1,57 @@
 
 -- CPU Usage per database
+-- hourly snapshot, sysdate - 3
 SELECT
    m.rollup_timestamp,
-   target_name,
-   m.average value
+   --m.target_name,
+   CASE
+      -- orezani podtrzitka v target name
+      WHEN instr(m.target_name, '_') > 0
+        THEN substr(m.target_name, 1, instr(m.target_name, '_')-1)
+      -- orezani domeny targetu s teckou
+      WHEN instr(m.target_name, '.') > 0
+        THEN substr(m.target_name, 1, instr(m.target_name, '.')-1)
+      -- vrat puvodni nazev
+      ELSE m.target_name
+   END DB,
+   round(m.average/100,2) "CPU"
 FROM
-  MGMT$METRIC_DAILY m join MGMT_TARGETS t
+  MGMT$METRIC_HOURLY m join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
 WHERE  1 = 1
-AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
-AND m.rollup_timestamp > sysdate - interval '3' month
-AND target_name in ('CTLP','CTLRP')
-order by M.Rollup_Timestamp
+  AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
+  AND m.rollup_timestamp > sysdate - interval '3' day
+  --AND REGEXP_LIKE(t.host_name, '^z?[pbtd]ordb0[0-9].vs.csin.cz')
+  AND t.host_name like 'dordb04.vs.csin.cz'
+order by 1, 2
+;
+
+-- CPU usage, daily, last month
+SELECT
+   m.rollup_timestamp,
+   --m.target_name,
+   CASE
+      -- orezani podtrzitka v target name
+      WHEN instr(m.target_name, '_') > 0
+        THEN substr(m.target_name, 1, instr(m.target_name, '_')-1)
+      -- orezani domeny targetu s teckou
+      WHEN instr(m.target_name, '.') > 0
+        THEN substr(m.target_name, 1, instr(m.target_name, '.')-1)
+      -- vrat puvodni nazev
+      ELSE m.target_name
+   END DB,
+   round(m.average/100,2) "CPU"
+FROM
+  --MGMT$METRIC_HOURLY m
+  MGMT$METRIC_DAILY m
+    join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
+WHERE  1 = 1
+  AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
+  AND m.rollup_timestamp > sysdate - interval '1' month
+  AND m.target_name like 'RTO%'
+  --AND REGEXP_LIKE(t.host_name, '^z?[pbtd]ordb0[0-9].vs.csin.cz')
+  -- AND t.host_name like 'dordb04.vs.csin.cz'
+order by 1, 2
+;
 
 -- CPU Usage v OEM
 SELECT

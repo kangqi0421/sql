@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 71s85whdjb166
+DEFINE SQLID = 7gp4w93xpav04
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -14,9 +14,9 @@ DEFINE PLAN_HASH=653645620
 SELECT  SQL_ID, COUNT(*) cnt
     FROM dba_hist_active_sess_history ash 
   WHERE 1=1
-    AND SAMPLE_TIME > sysdate - interval '4' hour
---    AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-02-25 00:30:00' 
---                        AND TIMESTAMP'2016-02-25 01:40:00'
+--    AND SAMPLE_TIME > sysdate - interval '4' hour
+    AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-10 01:00:00' 
+                        AND TIMESTAMP'2016-11-10 03:00:00'
   group by SQL_ID
   order by 2 desc;
 

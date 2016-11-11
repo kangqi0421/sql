@@ -123,19 +123,21 @@ END;
 --
 -- DELETE db
 --
-delete from ARM_ADMIN.ARM_DATABASES  where ARM_FULLID LIKE '1742801569MDWP'
+delete from ARM_ADMIN.ARM_DATABASES  where ARM_FULLID LIKE 'RTOP1330573738'
   and TRANSFER_ENABLED = 'N';
 -- pod arm_admin ARM_ADMIN/
 conn ARM_ADMIN/arm234arm
-drop database link MDWPV;
 
-select * from dba_db_links where db_link like '&db%';
+select * from dba_db_links where db_link like 'RTOP%';
 
 -- Paralellení provoz 2 DB souèasnì
+-- vytvorit 2 samostane linky a 2 zaznamy v ARM_DATABASES
 -- create db link
-create database link RTOP_OLD connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_OLD';
+drop database link RTOP;
+create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
 
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'MDWP_HPUX' WHERE ARM_FULLID LIKE '1742801569MDWP';
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'RTOP_AIX', ARM_DB_NAME = 'RTOP_AIX' 
+  WHERE ARM_FULLID LIKE 'RTOP1246254454';
 commit;
 
 --
