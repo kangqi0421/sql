@@ -12,26 +12,29 @@ column ses_recid format 9999999
 column device_type format a10
 column "rate MB/s" for a13
 
-SELECT b.session_key,
-	--b.session_recid ses_recid,
-	--b.session_stamp,
-	--b.command_id,
-	b.input_type,
-	to_char(b.start_time,'DD.MM.YYYY HH24:MI') "Start Time",
-	to_char(b.end_time,  'DD.MM.YYYY HH24:MI') "End Time"  ,
-	--b.elapsed_seconds,
-	b.time_taken_display,
-	b.output_device_type device_type,
-	round(b.output_bytes/1048576/1024) "output bytes [GB]",
-	--b.input_bytes_display,
-	b.output_bytes_display,
-	b.output_bytes_per_sec_display "rate MB/s",
-	b.status
+SELECT
+--  b.*,
+  --b.session_key,
+  --b.session_recid ses_recid,
+  --b.session_stamp,
+  --b.command_id,
+  b.input_type,
+  b.output_device_type device_type,
+  to_char(b.start_time,'DD.MM.YYYY HH24:MI') "Start Time",
+  b.time_taken_display,
+  round(b.input_bytes/1048576/1024) "input [GB]",
+  round(b.output_bytes/1048576/1024) "output [GB]",
+  round(b.compression_ratio,1) "compress ratio",
+  round(b.elapsed_seconds/60) "elapsed time [min]",
+  OUTPUT_BYTES_PER_SEC_DISPLAY "rate",
+  b.status
   FROM v$rman_backup_job_details b
- WHERE b.start_time > (SYSDATE - 1)
+ WHERE b.start_time > (SYSDATE - 4)
+     AND b.input_type like 'DB%'
 --    AND b.input_type = 'DATAFILE FULL'
---  	AND b.output_device_type = 'DISK'
-ORDER BY b.start_time;
+--    AND b.output_device_type = 'DISK'
+--   AND STATUS = 'COMPLETED'
+ORDER BY b.start_time DESC;
 
 -- summary per datafile backup
 SELECT min(b.start_time), max(b.end_time),

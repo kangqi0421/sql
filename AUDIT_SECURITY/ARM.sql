@@ -19,8 +19,9 @@ SELECT *
     -- FROM ARM11.ARM_LOG11
     FROM ARM12.ARM_LOG12
    WHERE 1=1
-     AND arm_db_name LIKE '%&db%'
-     AND sub_date > sysdate - 4/24
+--     AND arm_db_name LIKE '%&db%'
+      AND arm_db_name LIKE 'RTOP_AIX'
+     AND sub_date > sysdate - interval '4' hour
 --     AND status <> 'F'
 ORDER BY sub_date DESC;
 
@@ -33,7 +34,7 @@ order by sub_date desc;
 --// zjisteni presouvaciho jobu //--
 select * from dba_scheduler_jobs
   where owner = 'ARM_ADMIN'
-  and job_name like '%&db';
+  and job_name like '%&db%';
 
 --// running jobs //--
 select * from dba_scheduler_running_jobs
@@ -74,6 +75,20 @@ insert into arm_client.ARM_DATABASE@&db
 --// data ve stage tabulce //--
 select count(*) from ARM12.ARM_AUD$12STAGE s where S.ARM_DB_NAME = '&db';
 
+--
+-- oprave ARM prenosu
+--
+
+-- srovnam subpartition template s DB s povolenym prenosem v ARM_ADMIN.ARM_DATABASES:
+exec arm_admin.arm_adm.mod_template('ARM_UNIAUD12');
+
+-- najdu nejstrasi zaznam (doporucuji jeste overit na klientovy vlastni unified_audit_trail na min(event_timestamp) a arm_client.arm_uniaud12_TMP na min(arm_timestamp))
+select min(arm_timestamp) from arm12.arm_uniaud12stage where arm_fullid = 'RTOP1246254454';
+
+-- zavolam procku pro pridan subparticii, protoze modifikace template nezajisti vytvoreni subpartitions pro jiz existujici particie
+exec arm_admin.arm_adm.add_subpart('RTOP1246254454',DATE '2016-09-18', DATE '2016-11-14');
+
+-- a ted uz prenosy z RTOP@pordb06 funguji ...
 
 -- disable transfer after drop database
 update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'DWHP1517715351';
@@ -130,7 +145,7 @@ conn ARM_ADMIN/arm234arm
 
 select * from dba_db_links where db_link like 'RTOP%';
 
--- Paralellení provoz 2 DB souèasnì
+-- Paralellenï¿½ provoz 2 DB souï¿½asnï¿½
 -- vytvorit 2 samostane linky a 2 zaznamy v ARM_DATABASES
 -- create db link
 drop database link RTOP;
@@ -154,6 +169,10 @@ order by sub_date ;
 
 select count(*) from UNIFIED_AUDIT_TRAIL;
 select count(*) from ARM_CLIENT.ARM_AUD$12TMP;
+
+-- Simply clean all audit records
+exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
+truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 
 -- zjisteni, co zabira misto v SYSAUX
 SELECT

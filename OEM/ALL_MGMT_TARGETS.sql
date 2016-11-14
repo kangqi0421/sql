@@ -25,11 +25,24 @@ FROM
    --
 ORDER BY t.target_name;
 
-select count(*) 
+-- count
+select count(*)
   from MGMT_TARGETS t
 WHERE
   t.target_type IN ('oracle_database','rac_database')  ;
-  
+
+-- OEM Groups and members
+SELECT
+    AGGREGATE_TARGET_NAME "GROUP",
+    member_target_name "SERVER"
+    --member_target_type
+  FROM
+    MGMT$TARGET_FLAT_MEMBERS
+  WHERE
+    MEMBER_TARGET_TYPE  IN ('host')
+    --AND AGGREGATE_TARGET_NAME IN ('PRODUKCE')
+    AND MEMBER_TARGET_NAME like 'dordb04%'
+;
 
 -- DB version report
 SELECT
@@ -68,18 +81,18 @@ select target_name,
 ;
 
 -- Platforms
-select 
+select
   category_prop_1, count(*)
   from SYSMAN.MGMT_TARGETS
    where target_type IN ('oracle_database','rac_database')
-group by CATEGORY_PROP_1 order by 2 desc; 
+group by CATEGORY_PROP_1 order by 2 desc;
 
 -- Versions
-select 
+select
   category_prop_1, count(*)
   from SYSMAN.MGMT_TARGETS
 --   where target_type = 'host'
-group by CATEGORY_PROP_1 order by 2 desc; 
+group by CATEGORY_PROP_1 order by 2 desc;
 
 
 -- OS info MEM AIX

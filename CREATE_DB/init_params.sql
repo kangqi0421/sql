@@ -71,8 +71,43 @@ alter system set fast_start_mttr_target = 300;
 -- recycle bin vypnu, do DEV a TEST prostřeí klidně ponechám
 -- alter system set recyclebin = off scope=spfile;
 
+-- open_cursors zvednout minimálně na 4000
+DECLARE
+  v_open_cursors int;
+BEGIN
+  select TO_NUMBER(value) into v_open_cursors
+    FROM v$parameter where name = 'open_cursors';
+  IF (v_processes <3999) THEN
+    execute immediate 'alter system set open_cursors=4000';
+  END IF;
+END;
+/
+
 -- zvednu session_cached_cursors z 50 aspoň na 300
 alter system set session_cached_cursors = 300 scope=spfile;
 
 -- zvednout AWR retention na 14 dni
 exec  DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS(retention=>20160);
+
+-- recreate spfile do umisteni v ASM ve formatu spfile<DBNAME>.ora
+column db_name new_value db_name print
+SELECT SYS_CONTEXT ('USERENV', 'DB_NAME') as db_name from dual;
+
+column spfile new_value spfile
+select regexp_replace(name, '/datafile/.*$', '/spfile&db_name..ora', 1, 1, 'i') as spfile
+  from v$datafile where file# = 1;
+
+create pfile from spfile;
+create spfile = '&spfile' from pfile;
+host echo "spfile='&spfile'" > $ORACLE_HOME/dbs/init$ORACLE_SID.ora
+host srvctl modify database -db &db_name -spfile &spfile
+
+-- whenever sqlerror continue none
+-- shutdown immediate
+-- whenever sqlerror exit 2 rollback
+
+host if [ -f "$ORACLE_HOME/dbs/spfile$ORACLE_SID.ora" ]; then cp -p "$ORACLE_HOME/dbs/spfile$ORACLE_SID.ora" spfile$ORACLE_SID.ora.`date +%Y%m%d_%H%M%S` ; fi
+host rm -f $ORACLE_HOME/dbs/spfile$ORACLE_SID.ora
+
+-- startup
+-- show parameter spfile
