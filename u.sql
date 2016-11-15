@@ -63,6 +63,7 @@ select
   from dba_users
  where upper(username) like upper('&&1')
        and authentication_type = 'PASSWORD'
+       and REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
 order by username;
 
 prompt

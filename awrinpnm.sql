@@ -3,7 +3,7 @@ Rem $Header: awrinpnm.sql 05-jan-2005.14:23:20 adagarwa Exp $
 Rem
 Rem awrinpnm.sql
 Rem
-Rem Copyright (c) 2004, 2005, Oracle. All rights reserved.  
+Rem Copyright (c) 2004, 2005, Oracle. All rights reserved.
 Rem
 Rem    NAME
 Rem      awrinpnm.sql - AWR INput NaMe
@@ -52,7 +52,7 @@ set underline on;
 --
 set termout off;
 column dflt_name new_value dflt_name noprint;
-select '&&1'||:inst_num||'_'||:bid||'_'||:eid||'&&2' dflt_name from dual;
+select '&&1'||ora_database_name||'_'||:inst_num||'_'||:bid||'_'||:eid||'&&2' dflt_name from dual;
 set termout on;
 
 prompt

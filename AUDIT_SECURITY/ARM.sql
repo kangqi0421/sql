@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RTOP
+DEFINE db=IPCP
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES 
   WHERE ARM_DB_NAME LIKE '%&db%'
@@ -19,9 +19,9 @@ SELECT *
     -- FROM ARM11.ARM_LOG11
     FROM ARM12.ARM_LOG12
    WHERE 1=1
---     AND arm_db_name LIKE '%&db%'
-      AND arm_db_name LIKE 'RTOP_AIX'
-     AND sub_date > sysdate - interval '4' hour
+     AND arm_db_name LIKE '%&db%'
+--      AND arm_db_name LIKE 'RTOP_AIX'
+     AND sub_date > sysdate - interval '12' hour
 --     AND status <> 'F'
 ORDER BY sub_date DESC;
 

@@ -8,7 +8,7 @@ define role=SUPPORT_ROLE
 -- dbms_xplan
 GRANT select on sys.v_$session  to &role;
 GRANT select on sys.v_$sql  to &&role;
-GRANT select on sys.v_$sql_plan  to &&role;
+GRANT select on SYS.V_$SQL_PLAN  to &&role;
 GRANT select on sys.v_$sql_plan_statistics_all to &&role;
 
 -- AWR report
@@ -30,6 +30,17 @@ GRANT select on dba_tables to &&role;
 GRANT select on sys.v_$parameter to &&role;
 GRANT select on sys.v_$sga to &&role;
 GRANT select on sys.v_$pgastat to &&role;
+
+-- TOAD session browser
+GRANT SELECT ON GV_$SESSION TO &&role;
+GRANT SELECT ON GV_$PROCESS TO &&role;
+GRANT SELECT ON GV_$SESS_IO TO &&role;
+GRANT SELECT ON GV_$SESSION_WAIT TO &&role;
+GRANT SELECT ON GV_$SESSION_EVENT TO &&role;
+GRANT SELECT ON GV_$ACCESS TO &&role;
+GRANT SELECT ON GV_$SESSTAT TO &&role;
+GRANT SELECT ON GV_$SQL_PLAN TO &&role;
+GRANT SELECT ON GV_$SQLTEXT_WITH_NEWLINES TO &&role;
 
 -- definovat další v$view
 

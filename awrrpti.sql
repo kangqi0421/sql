@@ -3,8 +3,8 @@ Rem $Header: rdbms/admin/awrrpti.sql /st_rdbms_11.2.0/1 2011/07/25 11:37:43 shiy
 Rem
 Rem awrrpti.sql
 Rem
-Rem Copyright (c) 2001, 2011, Oracle and/or its affiliates. 
-Rem All rights reserved. 
+Rem Copyright (c) 2001, 2011, Oracle and/or its affiliates.
+Rem All rights reserved.
 Rem
 Rem    NAME
 Rem      awrrpti.sql - Workload Repository Report Instance
@@ -38,17 +38,17 @@ Rem      @@?/rdbms/admin/awrrpti
 Rem
 Rem    MODIFIED   (MM/DD/YY)
 Rem    shiyadav    07/22/11 - Backport shiyadav_bug-12317689 from main
-Rem    mlfeng      04/11/05 - move the warning for timed_statistics into the 
+Rem    mlfeng      04/11/05 - move the warning for timed_statistics into the
 Rem                           procedure
-Rem    pbelknap    08/04/04 - make awr html types bigger 
-Rem    mlfeng      05/17/04 - default to prompt users for num_days 
-Rem    pbelknap    12/11/03 - spelling fix 
-Rem    pbelknap    10/28/03 - changing swrf to awr 
-Rem    pbelknap    10/24/03 - swrfrpt to awrrpt 
-Rem    pbelknap    10/14/03 - moving params to rpti 
-Rem    pbelknap    10/06/03 - changing final comment 
-Rem    pbelknap    10/02/03 - changing swrfinput to awrinput 
-Rem    pbelknap    10/02/03 - adding non-interactive mode cmnts 
+Rem    pbelknap    08/04/04 - make awr html types bigger
+Rem    mlfeng      05/17/04 - default to prompt users for num_days
+Rem    pbelknap    12/11/03 - spelling fix
+Rem    pbelknap    10/28/03 - changing swrf to awr
+Rem    pbelknap    10/24/03 - swrfrpt to awrrpt
+Rem    pbelknap    10/14/03 - moving params to rpti
+Rem    pbelknap    10/06/03 - changing final comment
+Rem    pbelknap    10/02/03 - changing swrfinput to awrinput
+Rem    pbelknap    10/02/03 - adding non-interactive mode cmnts
 Rem    pbelknap    10/02/03 - adding filename echo at end of report
 Rem    veeve       10/01/03 - moved back some SWRF specific variables
 Rem    pbelknap    10/01/03 - unifying parameter code into input module
@@ -90,7 +90,7 @@ set echo off;
 -- define num_days = 0;
 --
 -- List past 3 day's snapshots
--- define num_days = 3;
+define num_days = 1;
 --
 -- Reports can be printed in text or html, and you must set the report_type
 -- in addition to the report_name
@@ -99,7 +99,7 @@ set echo off;
 --define report_type='text';
 --
 -- Issue Report in HTML Format
---define report_type='html';
+define report_type='html';
 
 -- Optionally, set the snapshots for the report.  If you do not set them,
 -- you will be prompted for the values.
@@ -171,7 +171,7 @@ set termout on;
 
 -- Get the common input!
 -- awrinput will set up the bind variables we need to call the PL/SQL procedure
-@@awrinput.sql 
+@@awrinput.sql
 -- Get the name of the report.
 @@awrinpnm.sql 'awrrpt_' &&ext
 
