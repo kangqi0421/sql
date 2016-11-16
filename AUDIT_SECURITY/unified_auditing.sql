@@ -23,11 +23,11 @@ SELECT DATABASE_ID, count(*) over () FROM DBA_AUDIT_MGMT_LAST_ARCH_TS;
 
 -- unified_audit_trail
 -- co nejvíce žere místo
-select dbusername,action_name,unified_audit_policies,count(*)
- -- from unified_audit_trail
- from ARM_CLIENT.ARM_AUD$12TMP
- group by dbusername,action_name,unified_audit_policies
-order by 4 desc;
+select dbusername,action_name,unified_audit_policies,return_code, count(*)
+  from unified_audit_trail
+-- from ARM_CLIENT.ARM_AUD$12TMP
+ group by dbusername,action_name,unified_audit_policies,return_code
+order by count(*) desc;
 --
 -- kontrola nataveni
 --
@@ -111,7 +111,7 @@ select
 --                            and timestamp'2015-07-08 22:05:00'
 --  AND event_timestamp > SYSTIMESTAMP - INTERVAL '30' MINUTE
 --  AND return_code in (1, 12899)
-  and unified_audit_policies = 'CS_ACTIONS_FREQUENT_DWH'
+  and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
 -- AND UNIFIED_AUDIT_POLICIES is null
 -- and action_name='LOGOFF BY CLEANUP'
 --   and dbusername='LDAPUSER'

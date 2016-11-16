@@ -27,5 +27,5 @@ where
     T.tablespace_name = F.tablespace_name(+)
 and T.tablespace_name = Q.tablespace_name(+)
 and T.tablespace_name = G.tablespace_name(+)
-order by 1
+order by pcused DESC
 ;

@@ -28,18 +28,18 @@ select
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-14 14:08:00'
-                           AND TIMESTAMP'2016-11-14 14:12:40'
---                         and sample_time > sysdate - interval '20' minute     -- poslednich NN minut
+--       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-14 14:08:00'
+--                           AND TIMESTAMP'2016-11-14 14:12:40'
+                         and sample_time > sysdate - interval '40' minute     -- poslednich NN minut
 --                         and SQL_ID = '71s85whdjb166'
---                         and event in ('cursor: pin S wait on X')
---                         and event not in ('enq: TX - row lock contention')
+--                         and event in ('enq: MC - Securefile log')
+--                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
 --                       AND IN_HARD_PARSE = 'Y' AND in_parse = 'Y' -- sql id na hard parsingu
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
---                         and SESSION_ID in (2816) -- and SESSION_SERIAL# in (25905)
+                         and SESSION_ID in (2)  and SESSION_SERIAL# in (6794)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')

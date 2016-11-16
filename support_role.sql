@@ -5,7 +5,9 @@
 define role=SUPPORT_ROLE
 --define role=EXT90032
 
--- dbms_xplan
+create role &role;
+
+-- SQL exec plan dbms_xplan
 GRANT select on sys.v_$session  to &role;
 GRANT select on sys.v_$sql  to &&role;
 GRANT select on SYS.V_$SQL_PLAN  to &&role;
