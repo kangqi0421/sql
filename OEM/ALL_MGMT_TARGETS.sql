@@ -25,7 +25,7 @@ FROM
    --
 ORDER BY t.target_name;
 
--- count
+-- count db
 select count(*)
   from MGMT_TARGETS t
 WHERE
@@ -44,6 +44,39 @@ SELECT
     AND MEMBER_TARGET_NAME like 'dordb04%'
 ;
 
+-- OEM connect string
+  -- single instance, hostname z MachineName
+    select t.target_guid,
+       t.target_name,
+       --target_name, target_type, host_name,
+       machine.property_value hostname
+       from MGMT$TARGET t
+       JOIN MGMT$TARGET_PROPERTIES machine on (t.TARGET_GUID=machine.TARGET_GUID) -- machine
+       where t.type_qualifier3     = 'DB'
+       and   t.target_type         = 'oracle_database'
+       AND   machine.PROPERTY_NAME = 'MachineName'
+    UNION ALL
+    -- RAC, hostname ze scanName
+    select t.target_guid,
+       t.target_name,
+       --t.target_name, t.target_type,
+       c.hostname
+     from   MGMT$TARGET t
+       JOIN MGMT$TARGET_PROPERTIES dp ON (t.TARGET_GUID=dp.TARGET_GUID)
+       JOIN (
+          SELECT t.target_name cluster_name,
+          c.Property_Value hostname
+     FROM
+       MGMT$TARGET t JOIN MGMT$TARGET_PROPERTIES c
+         ON (t.TARGET_GUID=c.TARGET_GUID)
+  WHERE
+          t.target_type   = 'cluster'
+      AND c.property_name = 'scanName'
+      ) c ON (dp.Property_Value = c.cluster_name)
+       where t.type_qualifier3 = 'DB'
+       and t.target_type = 'rac_database'
+       and dp.property_name = 'ClusterName'
+;
 -- DB version report
 SELECT
   p.target_name,

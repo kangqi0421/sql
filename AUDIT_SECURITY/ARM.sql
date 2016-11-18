@@ -20,8 +20,8 @@ SELECT *
     FROM ARM12.ARM_LOG12
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
---      AND arm_db_name LIKE 'RTOP_AIX'
-     AND sub_date > sysdate - interval '4' hour
+--      AND arm_db_name LIKE 'RTOP'
+     AND sub_date > sysdate - interval '2' day
 --     AND status <> 'F'
 ORDER BY sub_date DESC;
 
@@ -32,7 +32,8 @@ select *
 order by sub_date desc;
 
 --// zjisteni presouvaciho jobu //--
-select * from dba_scheduler_jobs
+select owner, job_name, job_action, repeat_interval, state
+  from dba_scheduler_jobs
   where owner = 'ARM_ADMIN'
   and job_name like '%&db%';
 

@@ -2,10 +2,12 @@
 -- support role
 --
 
-define role=SUPPORT_ROLE
+define role=AWR_SUPPORT_ROLE
 --define role=EXT90032
 
 create role &role;
+
+grant &role to ESPIS;
 
 -- SQL exec plan dbms_xplan
 GRANT select on sys.v_$session  to &role;
