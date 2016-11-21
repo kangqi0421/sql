@@ -1,6 +1,7 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RTOP
+DEFINE db=SK2O
+
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES 
   WHERE ARM_DB_NAME LIKE '%&db%'

@@ -30,7 +30,7 @@ select
   1=1                
 --       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-14 14:08:00'
 --                           AND TIMESTAMP'2016-11-14 14:12:40'
-                         and sample_time > sysdate - interval '40' minute     -- poslednich NN minut
+                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
 --                         and SQL_ID = '71s85whdjb166'
 --                         and event in ('enq: MC - Securefile log')
 --                         and event not in ('enq: MC - Securefile log')
@@ -39,7 +39,7 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
-                         and SESSION_ID in (2)  and SESSION_SERIAL# in (6794)
+--                         and SESSION_ID in (2)  and SESSION_SERIAL# in (6794)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
