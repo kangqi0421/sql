@@ -16,8 +16,8 @@ select
   '   '||Q.AUTOEXTENSIBLE||' / '||
   decode(nvl(round(T.maxbytes/1024/1024,0),0),32768,'Unlimited',nvl(round(T.maxbytes/1024/1024,0),0))	maxbyt,
   T.bytes/1024/1024				stotal,
-  nvl( F.bytes/1024/1024, 0 )			freesp,
-  ( 1-nvl( F.bytes, 0 ) / T.bytes ) * 100	pcused
+  nvl( round(F.bytes/1024/1024,0), 2 )			freesp,
+  round(( 1-nvl( F.bytes, 0 ) / T.bytes ) * 100,2)	pcused
 from
   ( select tablespace_name, sum(bytes) bytes,sum(maxbytes) maxbytes from dba_data_files  group by tablespace_name ) T,
   ( select tablespace_name, count(*) extents, sum(bytes) bytes, max(bytes) max_extent from dba_free_space group by tablespace_name ) F ,
