@@ -43,7 +43,7 @@ AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'buffer_cache'
 AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'pga_total'
 --AND m.metric_name = 'db_inst_pga_alloc' AND m.metric_column = 'total_pga_allocated'
 
--- I/O
+-- I/O server
 AND m.metric_name = 'DiskActivitySummary'
   AND m.metric_column = 'totiosmade'
   AND column_label like 'Total Disk I/O made across all disks (per second)'
@@ -51,6 +51,18 @@ AND m.metric_name = 'DiskActivitySummary'
 AND m.metric_name = 'DiskActivitySummary'
   AND m.metric_column = 'maxavserv'
   AND column_label like 'Max Average Disk I/O Service Time (ms) amongst all disks'
+
+-- Disk Reads (per second) - tohle je per disk, na serveru
+AND m.metric_name = 'DiskActivity' AND m.metric_column = 'diskActivReadsPerSec'
+  AND column_label like 'Disk Reads (per second)'
+
+-- I/O Megabytes (per second) - database
+AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iombs_ps'
+
+-- I/O Requests (per second) - database
+AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
+
+
 
 -- Current Logons Count
 AND m.metric_column like 'logons'
@@ -125,7 +137,7 @@ WHERE  1 = 1
 --  AND m.target_name in ('IPCTA')
   AND m.target_name like 'pasbo%'
  -- and m.target_name not like '%.cc.%'  -- nechci Viden
-   AND metric_name = 'Filesystems' AND metric_column = 'available' 
+   AND metric_name = 'Filesystems' AND metric_column = 'available'
      and key_value = '/u021'
 --AND m.rollup_timestamp > sysdate - interval '3' month
 --  order by m.rollup_timestamp asc
