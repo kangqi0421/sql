@@ -1,15 +1,20 @@
--- ASM disk groups
-sqlplus / as sysasm
+# ASM disk groups
+
+## list new asm diskgroups
+sqlplus / as sysasm <<ESQL
 select unique
         regexp_replace(path,
           '^/dev/mapper/asm.*_([A-Z]+)_(D01|FRA)p1',
           '\1_\2',
           1,0,'i') AS dg
-  from v$asm_disk
+  from v\$asm_disk
  where header_status in ('CANDIDATE','FORMER')
 order by 1;
+exit
+ESQL
 
-AU_SIZE=64M
+## create
+AU_SIZE=4M
 sqlplus -s / as sysasm <<ESQL
 SET heading off verify off feed off trims on pages 0 lines 32767
 define au_size=$AU_SIZE
@@ -43,25 +48,31 @@ FROM
         1,0,'i')
   )
 /
+
+prompt exit
+
 spool off;
 ESQL
 
 sqlplus / as sysasm @asm_create_dg.sql
 
-# RAC: mount asm dg na všech nodech
+## list ASM diskgroups and compatibility
+sqlplus / as sysasm <<ESQL
+set lines 180
+col name for a10
+col type for a6
+col COMPATIBILITY for a15
+col DATABASE_COMPATIBILITY for a15
+select name, TYPE, TOTAL_MB, FREE_MB, ALLOCATION_UNIT_SIZE/1048576 AU_SIZE, COMPATIBILITY, DATABASE_COMPATIBILITY
+  from v\$asm_diskgroup
+ORDER by NAME;
+ESQL
+
+
+## RAC: mount asm dg na všech nodech
 for dg in $(asmcmd lsdg --suppressheader | awk '{print $NF}' | tr -d '/')
 do
   srvctl start diskgroup -diskgroup $dg
 done
 
 crs
-
-set lines 120
-col name for a10
-col type for a6
-col COMPATIBILITY for a15
-col DATABASE_COMPATIBILITY for a15
-select name, TYPE, TOTAL_MB, FREE_MB, ALLOCATION_UNIT_SIZE/1048576 AU_SIZE, COMPATIBILITY, DATABASE_COMPATIBILITY from v$asm_diskgroup
-ORDER by NAME;
-
-

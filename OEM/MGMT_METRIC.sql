@@ -5,11 +5,31 @@
 http://jbaskar.blogspot.cz/2011/08/oms-grid-console-exploring-using-sql.html
 
 -- RAW data
-MGMT$METRIC_DETAILS   -  Stores details upto 7 days
 MGMT$METRIC_CURRENT   -  Stores the current metrics from the past 24 hours
+MGMT$METRIC_DETAILS   -  Stores details upto 7 days
 -- agregovane
-MGMT$METRIC_HOURLY    -  Stores details upto 30 days in a hourly snapshot with AVG, MIN and MAX values.
-MGMT$METRIC_DAILY     -  Stores the metrics in a daily snapshot format with AVG, MIN and MAX values.
+MGMT$METRIC_HOURLY    -  Stores details upto 31 days in a hourly snapshot with AVG, MIN and MAX values.
+MGMT$METRIC_DAILY     -  Stores the metrics in a daily snapshot format with AVG, MIN and MAX values. - 12 months
+
+-- RAW GC$ metrics
+em_metric_values
+em_metric_values_hourly
+em_metric_values_daily
+
+sysman.gc$metric_values_hourly
+
+select metric_item_id
+      ,collection_time
+      ,met_values
+  from em_metric_values
+ where rownum < 11;
+
+-- retention periods
+select table_name, partitions_retained
+from em_int_partitioned_tables
+where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VALUES_DAILY');
+
+
 
 -- hledani metriky
 select distinct metric_name, metric_column, metric_label, column_label

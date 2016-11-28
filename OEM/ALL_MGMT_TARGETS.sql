@@ -31,6 +31,16 @@ select count(*)
 WHERE
   t.target_type IN ('oracle_database','rac_database')  ;
 
+-- DB per verze a per OS verze
+select t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2, count(*)
+  from MGMT_TARGETS t inner join MGMT_TARGETS s ON (t.host_name = s.target_name)
+WHERE
+  t.target_type IN ('oracle_database','rac_database')
+  --and t.target_name like 'MCIP%'
+  --and t.category_prop_1 <> ''
+group by t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2
+order by 1,2;
+
 -- OEM Groups and members
 SELECT
     AGGREGATE_TARGET_NAME "GROUP",
