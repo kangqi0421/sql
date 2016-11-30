@@ -24,15 +24,16 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
-    FROM GV$ACTIVE_SESSION_HISTORY a
---    FROM dba_hist_active_sess_history a
+--    FROM GV$ACTIVE_SESSION_HISTORY a
+    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-14 14:08:00'
---                           AND TIMESTAMP'2016-11-14 14:12:40'
-                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
---                         and SQL_ID = '71s85whdjb166'
---                         and event in ('enq: MC - Securefile log')
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-25 15:07:00'
+                           AND TIMESTAMP'2016-11-25 15:10:00'
+--                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
+--                         and SQL_ID = '3cnag1nw7vnfz'
+                         and event in ('db file sequential read')
+--                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
 --                       AND IN_HARD_PARSE = 'Y' AND in_parse = 'Y' -- sql id na hard parsingu
@@ -95,7 +96,11 @@ SELECT *
   from GV$SQL_SHARED_CURSOR where SQL_ID = 'cnb44fs1u7aka';
 
 
-select * from dba_objects where object_id in (180838);
+select * from dba_objects where object_id in (566177346, 566174503);
+
+select * from dba_indexes
+  where owner = 'L1_OWNER'
+    and index_name = 'PT_PK';
 
 select * from dba_users 
 -- where username like 'ARM%'

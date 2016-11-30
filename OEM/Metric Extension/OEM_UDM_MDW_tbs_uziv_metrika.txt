@@ -1,0 +1,51 @@
+MDWP_tablespace
+===============
+
+Metric Name	MDWP_tablespace
+
+Metric Type:	NUMBER		
+	
+SQL Query Output: Two Columns
+
+---
+SELECT m.tablespace_name tablespace_name,
+      CASE
+         WHEN (m.total_max_space - m.total_space) = 0
+         THEN
+            NVL (s.free_space, 0)
+         ELSE
+            NVL (m.total_max_space - m.total_space + s.free_space, 0)
+      END
+         free_space
+FROM (SELECT tablespace_name,
+            SUM (bytes) / 1024 / 1024 total_space,
+            SUM (bytes_total / 1024 / 1024) total_max_space
+      FROM (SELECT tablespace_name,
+                  bytes,
+                  CASE
+                     WHEN autoextensible = 'NO' THEN bytes
+                     WHEN autoextensible = 'YES' THEN maxbytes
+                  END
+                     bytes_total
+            FROM dba_data_files)
+      GROUP BY tablespace_name) m,
+     (SELECT tablespace_name, SUM (bytes) / 1024 / 1024 free_space
+      FROM dba_free_space
+      GROUP BY tablespace_name) s
+WHERE m.tablespace_name = s.tablespace_name(+)
+      AND m.tablespace_name IN ('MDW_LOB_TS', 'MDW_DATA_TS', 'MDW_IDX_TS');
+---
+
+	
+Thresholds
+< Warning: 2500		
+
+Alert Message: V tablespace %Key% dochází místo, je tam ménì než 2500 MB, pøidej.
+
+Repeat Every 30 minutes
+		
+
+
+
+
+

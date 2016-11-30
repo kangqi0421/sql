@@ -1,5 +1,5 @@
 -- Oracle Linux farma z OEM
-REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-4].vs.csin.cz')
+ where REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
 
 -- filtr na personální účty
 REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')

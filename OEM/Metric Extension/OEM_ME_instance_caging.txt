@@ -1,0 +1,29 @@
+--
+-- OEM Metric Extension LOF CPU instance caging
+--
+-- ME$LOF_CPU_instance_caging
+
+/*
+
+dbsnmp nevidí tabulky MGMT$
+
+grant EXEMPT ACCESS POLICY to DBSNMP;
+
+resource_manager_plan - hodnota chybí v MGMT$DB_INIT_PARAMS
+
+zkusit resource_manager_cpu_allocation ?
+
+*/
+
+SELECT
+  --db.host_name,
+  db.target_name "db",
+  db.value "cpu"
+  --hw.logical_cpu_count
+ FROM SYSMAN.MGMT$DB_INIT_PARAMS_ALL db
+   join SYSMAN.MGMT$OS_HW_SUMMARY hw on (db.host_name = hw.host_name)
+ where REGEXP_LIKE(db.host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
+   and db.name = 'cpu_count'
+   and db.value = hw.logical_cpu_count
+ order by db.target_name;
+

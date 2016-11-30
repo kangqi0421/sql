@@ -1,18 +1,28 @@
-  -- single instance, hostname z MachineName
+--
+-- ME$REDIM_kontrola_hostname
+--
+
+REDIM kontrola connect stringu z TARGET_PROPERTIES
+
+REDIM - kontrola na úplnost vyplnění hostname včetně domény v connect stringu
+
+-- single instance, hostname z MachineName
     select
        t.target_name "db",
-       'ERR:'||machine.property_value "hostname"
-       from SYSMAN.MGMT$TARGET t
+       lower(machine.property_value) "hostname"
+       --count(*) cnt
+    from SYSMAN.MGMT$TARGET t
        JOIN SYSMAN.MGMT$TARGET_PROPERTIES machine on (t.TARGET_GUID=machine.TARGET_GUID) -- machine
        where t.type_qualifier3     = 'DB'
        and   t.target_type         = 'oracle_database'
        AND   machine.PROPERTY_NAME = 'MachineName'
        AND machine.property_value not like '%.cz'
     UNION ALL
-    -- RAC, hostname ze scanName
+-- RAC, hostname ze scanName
     select
        t.target_name "db",
-       'ERR:'||c.hostname "hostname"
+       lower(c.hostname) "hostname"
+       --count(*) cnt
      from   SYSMAN.MGMT$TARGET t
        JOIN SYSMAN.MGMT$TARGET_PROPERTIES dp ON (t.TARGET_GUID=dp.TARGET_GUID)
        JOIN (

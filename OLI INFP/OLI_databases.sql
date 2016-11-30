@@ -16,8 +16,7 @@ FROM
 ORDER BY APP_NAME  ;
 
 -- server per APP
-SELECT app_name, hostname
-      -- ,DBNAME
+SELECT DBNAME, hostname, app_name
 FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
@@ -25,11 +24,12 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE
+  REGEXP_LIKE(hostname, 'z?(p)ordb[[:digit:]]+')
   --s.hostname like 'tordb03'
-  a.app_name in ('SB')
-  and domain like 'cc.csin.cz'
-  group by app_name,hostname
-ORDER BY APP_NAME  ;
+  --a.app_name in ('SB')
+  --and domain like 'cc.csin.cz'
+  --group by app_name,hostname
+ORDER BY hostname, dbname  ;
 
 
 -- APP_NAME info data
