@@ -1,0 +1,81 @@
+--
+-- OEM Metric Extension LOF CPU instance caging
+--
+-- ME$LOF_CPU_instance_caging
+--
+/*
+- nepoužívat diakritiku ve zprávě
+- dbsnmp nevidí tabulky MGMT$
+- grant EXEMPT ACCESS POLICY to DBSNMP;
+
+- resource_manager_plan - hodnota chybí v MGMT$DB_INIT_PARAMS
+*/
+
+Warning message:
+
+%keyValue% nema nastaven instance caging, zmen init hodnoty resource_manager_plan = DEFAULT_PLAN a sniz hodnotu cpu_count (aktualne %value%).
+
+Frekvence: daily
+
+SELECT
+  --db.host_name,
+  db.target_name "db",
+  db.value "cpu"
+  --hw.logical_cpu_count
+ FROM SYSMAN.MGMT$DB_INIT_PARAMS_ALL db
+   join SYSMAN.MGMT$OS_HW_SUMMARY hw on (db.host_name = hw.host_name)
+ where REGEXP_LIKE(db.host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
+   and db.name = 'cpu_count'
+   and db.isdefault = 'TRUE'
+   and db.value = hw.logical_cpu_count
+ order by db.target_name;
+
+
+
+--
+-- ME$REDIM_kontrola_hostname
+--
+
+REDIM - kontrola na úplnost vyplnění hostname včetně domény v connect stringu databáze z TARGET_PROPERTIES
+
+
+Warning message:
+
+%keyValue% nema uvedenou domenu v Listener Machine Name, oprav hostname pridanim domeny (napr. .vs.csin.cz) pres Oracle Database > Target Setup > Monitoring Configuration > Listener Machine Name
+
+Frequency: daily
+
+select
+    -- single instance, hostname z MachineName
+       t.target_name "db",
+       lower(machine.property_value) "hostname"
+       --count(*) cnt
+    from SYSMAN.MGMT$TARGET t
+       JOIN SYSMAN.MGMT$TARGET_PROPERTIES machine on (t.TARGET_GUID=machine.TARGET_GUID) -- machine
+       where t.type_qualifier3     = 'DB'
+       and   t.target_type         = 'oracle_database'
+       AND   machine.PROPERTY_NAME = 'MachineName'
+       AND machine.property_value not like '%.cz'
+UNION ALL
+  select
+    -- RAC, hostname ze scanName
+       t.target_name "db",
+       lower(c.hostname) "hostname"
+       --count(*) cnt
+     from   SYSMAN.MGMT$TARGET t
+       JOIN SYSMAN.MGMT$TARGET_PROPERTIES dp ON (t.TARGET_GUID=dp.TARGET_GUID)
+       JOIN (
+          SELECT t.target_name cluster_name,
+          c.Property_Value hostname
+     FROM
+       SYSMAN.MGMT$TARGET t JOIN SYSMAN.MGMT$TARGET_PROPERTIES c 
+         ON (t.TARGET_GUID=c.TARGET_GUID)
+     WHERE
+          t.target_type   = 'cluster'
+      AND c.property_name = 'scanName'
+      AND c.Property_Value not like '%.cz'
+      ) c ON (dp.Property_Value = c.cluster_name)
+       where t.type_qualifier3 = 'DB'
+       and t.target_type = 'rac_database'
+       and dp.property_name = 'ClusterName'
+;

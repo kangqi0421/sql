@@ -2,16 +2,29 @@
 -- 	FAQ: SQL Plan Management (SPM) Frequently Asked Questions (Doc ID 1524658.1)
 --
 
--- automatický sběr
-OPTIMIZER_CAPTURE_SQL_PLAN_BASELINES = true
+
 
 Adaptive SQL Plan Management (SPM) - automaticky evolvuje plány
 
 
-DEFINE sqlid=3crh81fz1h5fd
-
 SELECT * FROM DBA_SQL_PLAN_BASELINES;
 
+SELECT SQL_HANDLE, PLAN_NAME, ENABLED, ACCEPTED, FIXED
+FROM DBA_SQL_PLAN_BASELINES
+  where origin = 'AUTO-CAPTURE'
+--    and sql_handle = 'SQL_ced5c732f0c8c027'
+      AND fixed = 'YES'
+order by elapsed_time desc;
+
+
+-- konfigurace
+SELECT parameter_name, parameter_value
+FROM   dba_sql_management_config;
+
+
+DEFINE sqlid=3crh81fz1h5fd
+
+--
 SELECT sql_handle, plan_name
 FROM dba_sql_plan_baselines
 WHERE signature IN (
@@ -21,6 +34,9 @@ WHERE signature IN (
 
 
 -- step by step SPM
+
+-- automatický sběr
+OPTIMIZER_CAPTURE_SQL_PLAN_BASELINES = true
 
 -- manual load the sql to base line from cursor cache
 DECLARE

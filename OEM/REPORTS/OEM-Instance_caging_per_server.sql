@@ -1,4 +1,4 @@
-SELECT   
+SELECT
     p.target_name,
     p.value "#CPU"
   FROM MGMT$DB_INIT_PARAMS p
@@ -6,23 +6,23 @@ SELECT
     AND p.name = 'cpu_count'
   ORDER BY p.target_name
 
--- /*  
-BarChart  
+-- /*
+BarChart
 SQL
 Right
-Value 200x150  
+Value 200x150
 */ --
 
--- kontrola zapnutí Instance cagingu a hodnoty cpu count > 24
--- odkomenovat první, zakomenotvat druhý a obráceně
+-- kontrola zapnutí Instance cagingu
 SELECT
-  TARGET_NAME, HOST_NAME,
-  name, value
-FROM
-  MGMT$DB_INIT_PARAMS_ALL
-WHERE
-  REGEXP_LIKE(host_name, '(d|t|zp|p)ordb0[0-4].vs.csin.cz')
---   AND name = 'resource_limit' and value not like 'TRUE'
-  AND name = 'cpu_count' and value > 24
-ORDER BY
-  target_name, name;
+  --db.host_name,
+  db.target_name "db",
+  db.value "cpu"
+  --hw.logical_cpu_count
+ FROM SYSMAN.MGMT$DB_INIT_PARAMS_ALL db
+   join SYSMAN.MGMT$OS_HW_SUMMARY hw on (db.host_name = hw.host_name)
+ where REGEXP_LIKE(db.host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
+   and db.name = 'cpu_count'
+   and db.isdefault = 'TRUE'
+   and db.value = hw.logical_cpu_count
+ order by db.target_name;
