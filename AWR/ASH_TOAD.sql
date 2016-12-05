@@ -28,11 +28,11 @@ select
     FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-25 15:07:00'
-                           AND TIMESTAMP'2016-11-25 15:10:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-29 11:15:00'
+                           AND TIMESTAMP'2016-11-29 11:30:00'
 --                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
 --                         and SQL_ID = '3cnag1nw7vnfz'
-                         and event in ('db file sequential read')
+--                         and event in ('db file sequential read')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'

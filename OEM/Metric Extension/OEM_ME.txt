@@ -18,8 +18,10 @@ Warning message:
 Frekvence: daily
 
 SELECT
-  --db.host_name,
-  db.target_name "db",
+  --db.host_name
+  db.target_name,
+  -- pro hromadnou změnu přes emcli
+  --listagg(db.target_name  || ':'|| db.target_type,';') within group(order by db.target_name)
   db.value "cpu"
   --hw.logical_cpu_count
  FROM SYSMAN.MGMT$DB_INIT_PARAMS_ALL db

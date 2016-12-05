@@ -24,8 +24,8 @@ SELECT DATABASE_ID, count(*) over () FROM DBA_AUDIT_MGMT_LAST_ARCH_TS;
 -- unified_audit_trail
 -- co nejvíce žere místo
 select dbusername,action_name,unified_audit_policies,return_code, count(*)
-  from unified_audit_trail
--- from ARM_CLIENT.ARM_AUD$12TMP
+--  from unified_audit_trail
+ from ARM_CLIENT.ARM_AUD$12TMP
  group by dbusername,action_name,unified_audit_policies,return_code
 order by count(*) desc;
 --
@@ -49,7 +49,7 @@ select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
  -- where policy_name like '%DWH'
   and policy_name like 'CS_ACTIONS_FREQUENT'
-  and AUDIT_OPTION like 'SELECT%'
+  and AUDIT_OPTION like 'INSERT%'
 --order by policy_name
  ;
 
@@ -95,8 +95,8 @@ order by 2 desc;
 exec dbms_audit_mgmt.flush_unified_audit_trail;
 
 select
-    *
---  object_schema, object_name, count(*) cnt
+--    *
+  object_schema, object_name, count(*) cnt
 --   substr(sql_text, 1, 32767)
 --    sql_text, count(*)
 --    action_name, return_code, count(*)
@@ -114,13 +114,14 @@ select
   and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
 -- AND UNIFIED_AUDIT_POLICIES is null
 -- and action_name='LOGOFF BY CLEANUP'
+  and action_name like 'INSERT'
 --   and dbusername='LDAPUSER'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
 --group by substr(sql_text, 1, 32767) 
---group by object_schema, object_name order by 3 desc
---FETCH FIRST 5 ROWS ONLY
+group by object_schema, object_name order by 3 desc
+fetch first 100 ROWS ONLY
 --order by event_timestamp desc
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;

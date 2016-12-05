@@ -7,17 +7,17 @@
 SELECT
 --  t.*
   t.target_name
---  ||':'|| t.target_type
+  ||':'|| t.target_type
 --  ,t.category_prop_1
---  ,T.Host_Name
+  ,T.Host_Name
 FROM
   MGMT_TARGETS t
  WHERE
---   t.target_type IN ('oracle_database','rac_database')
-   t.target_type IN ('host')
-   AND t.target_name like 'zo%'
+   t.target_type IN ('oracle_database','rac_database')
+--   t.target_type IN ('host')
+   AND t.target_name like 'APS%'
 --   AND category_prop_1 in ('HP-UX','AIX')
-    AND category_prop_1 in ('Linux','HP-UX','AIX')
+--    AND category_prop_1 in ('Linux','HP-UX','AIX')
    -- filtr na produkci
    --AND target_guid IN (SELECT TARGET_GUID FROM SYSMAN.MGMT$GROUP_MEMBERS WHERE group_name = 'PRODUKCE')
    -- bez Postgresu
@@ -30,6 +30,24 @@ select count(*)
   from MGMT_TARGETS t
 WHERE
   t.target_type IN ('oracle_database','rac_database')  ;
+
+-- DB Instances
+ select DB_TARGET_GUID,db_name,dbversion,nvl(dbracopt,'NO') dbracopt,envStatus,contact, department, comment_text from (
+        SELECT target_guid DB_TARGET_GUID, target_type, property_value,property_name
+             FROM MGMT$TARGET_PROPERTIES
+             WHERE target_type in ('rac_database','oracle_database')
+      )
+      PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN ('DBName' as db_name,
+                                                       'DBVersion' as dbversion,
+                                                       'RACOption' as dbracopt,
+                                                       'orcl_gtp_lifecycle_status' as envStatus,
+                                                       'orcl_gtp_contact' as contact,
+                                                       'orcl_gtp_department' as department,
+                                                       'orcl_gtp_comment' as comment_text))
+   where ((target_type='rac_database' and nvl(dbracopt,'NO')='YES')
+          or (target_type='oracle_database' and nvl(dbracopt,'NO')='NO'))
+  ;
+
 
 -- DB per verze a per OS verze
 select t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2, count(*)
