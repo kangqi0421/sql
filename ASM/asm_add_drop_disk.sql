@@ -1,7 +1,14 @@
 --
 -- ASM přidání disků
+--
 
-asmcmd lsdsk -k --candidate
+-- nové disky
+asmcmd lsdsk --candidate --suppressheader
+
+-- migrované asm dg
+asmcmd lsdsk --candidate --suppressheader | grep -Poi '([A-Z]+)_(D01|DATA|FRA)' | uniq
+
+([A-Z]+)_(D01|FRA)p1
 
 sqlplus / as sysasm
 
