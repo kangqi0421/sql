@@ -15,19 +15,24 @@ truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 
 -- kdy došlo k nárůstu auditních dat
 select *
-  from ARM_CLIENT.ARM_AUDIT_HISTOGRAM 
+  from ARM_CLIENT.ARM_AUDIT_HISTOGRAM
 order by log_id desc, bucket_id;
 
 -- DBID v auditu, po vytvoreni klonované db
 SELECT DATABASE_ID, count(*) over () FROM DBA_AUDIT_MGMT_LAST_ARCH_TS;
 
 -- unified_audit_trail
--- co nejvíce žere místo
+-- co nejvice zabira misto v auditu
+set lines 180 pages 999
+col ACTION_NAME for a20
+col UNIFIED_AUDIT_POLICIES for a25
 select dbusername,action_name,unified_audit_policies,return_code, count(*)
---  from unified_audit_trail
- from ARM_CLIENT.ARM_AUD$12TMP
+  from unified_audit_trail
+-- from ARM_CLIENT.ARM_AUD$12TMP
  group by dbusername,action_name,unified_audit_policies,return_code
 order by count(*) desc;
+
+
 --
 -- kontrola nataveni
 --
@@ -41,7 +46,7 @@ col POLICY_NAME for A30
 col AUDIT_CONDITION for a5
 select * from AUDIT_UNIFIED_ENABLED_POLICIES
 --WHERE USER_NAME = 'SYS'
-order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE 
+order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
 ;
 
 -- ALL audit policies
@@ -119,7 +124,7 @@ select
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
---group by substr(sql_text, 1, 32767) 
+--group by substr(sql_text, 1, 32767)
 group by object_schema, object_name order by 3 desc
 fetch first 100 ROWS ONLY
 --order by event_timestamp desc

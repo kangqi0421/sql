@@ -1,4 +1,15 @@
+--
+-- init parametry
+--
 http://jbaskar.blogspot.cz/2011/08/oms-grid-console-exploring-using-sql.html
+
+https://docs.oracle.com/cd/E73210_01/EMVWS/lot.htm
+
+-- init OER view
+MGMT$DB_INIT_PARAMS
+MGMT$DB_INIT_PARAMS_ALL
+CM$MGMT_DB_INIT_PARAMS_ECM
+
 
 -- init parametry produkce
 SELECT

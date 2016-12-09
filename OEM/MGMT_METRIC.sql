@@ -4,6 +4,12 @@
 --
 http://jbaskar.blogspot.cz/2011/08/oms-grid-console-exploring-using-sql.html
 
+http://petewhodidnottweet.com/2016/07/selecting-data-repository/
+
+http://docs.oracle.com/cd/E63000_01/EMVWS/toc.htm
+
+-- MGMT_VIEW - read only přístup z BI Publisheru, data source EMREPOS
+
 -- RAW data
 MGMT$METRIC_CURRENT   -  Stores the current metrics from the past 24 hours
 MGMT$METRIC_DETAILS   -  Stores details upto 7 days

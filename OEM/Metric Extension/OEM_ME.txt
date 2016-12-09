@@ -3,13 +3,14 @@
 --
 -- ME$LOF_CPU_instance_caging
 --
-/*
+
 - nepoužívat diakritiku ve zprávě
 - dbsnmp nevidí tabulky MGMT$
 - grant EXEMPT ACCESS POLICY to DBSNMP;
 
 - resource_manager_plan - hodnota chybí v MGMT$DB_INIT_PARAMS
-*/
+- přidáno omezeni na status Target Up, at se nereportuji zastavene db
+
 
 Warning message:
 
@@ -20,13 +21,16 @@ Frekvence: daily
 SELECT
   --db.host_name
   db.target_name,
+  db.value "cpu"
   -- pro hromadnou změnu přes emcli
   --listagg(db.target_name  || ':'|| db.target_type,';') within group(order by db.target_name)
-  db.value "cpu"
+  --db.collection_timestamp, a.AVAILABILITY_STATUS, a.AVAILABILITY_STATUS_code
   --hw.logical_cpu_count
  FROM SYSMAN.MGMT$DB_INIT_PARAMS_ALL db
    join SYSMAN.MGMT$OS_HW_SUMMARY hw on (db.host_name = hw.host_name)
+   join SYSMAN.mgmt$availability_current a on (db.target_guid = a.target_guid)
  where REGEXP_LIKE(db.host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
+   and a.AVAILABILITY_STATUS_code = 1    -- pouze status Target Up
    and db.name = 'cpu_count'
    and db.isdefault = 'TRUE'
    and db.value = hw.logical_cpu_count
