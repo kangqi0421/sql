@@ -1,4 +1,32 @@
+-- DB version update
+-- Lifecycle ENV_STATUS update
+Poznámky:
+- REDIM_GET_SHORT_NAME je funkce, která se z targetu typu COGT_pro_Honzu.nepouzivat snaží vytvořit DBNAME ;-)
+- MAX je tam z důvodu duplicitních targetů na straně OEM i OLI
+
+merge
+ into OLI_OWNER.DATABASES oli
+USING (
+-- data z OEM
+    SELECT REDIM_GET_SHORT_NAME(ver.target_name) DBNAME,
+           max(ver.property_value) DBVERSION,
+           max(env.property_value) ENV_STATUS
+    FROM DASHBOARD.MGMT$TARGET_PROPERTIES ver
+      JOIN DASHBOARD.MGMT$TARGET_PROPERTIES env ON (ver.TARGET_GUID=env.TARGET_GUID)
+     WHERE ver.target_type IN ('oracle_database','rac_database')
+      AND ver.property_name = 'Version'
+      AND env.property_name = 'orcl_gtp_lifecycle_status'
+     GROUP BY REDIM_GET_SHORT_NAME(ver.target_name)
+      ) oem
+ON (oem.dbname = oli.dbname)
+when matched then
+  update set oli.DBVERSION = oem.DBVERSION,
+             oli.ENV_STATUS = oem.ENV_STATUS
+;
+
+
 -- kontrola na rozdílné GUID
+-- dale se v podstate nepouziva
 select oli.dbname, oem.target_guid, oli.em_guid, target_type, oem.TYPE_QUALIFIER3
   from OLI_OWNER.databases oli, DASHBOARD.MGMT$TARGET oem
 where oli.dbname = REDIM_OWNER.REDIM_GET_SHORT_NAME(oem.target_name)
@@ -7,10 +35,11 @@ where oli.dbname = REDIM_OWNER.REDIM_GET_SHORT_NAME(oem.target_name)
 order by 1;
 
 -- merge DB guid from OEM -> OLI
+-- uz neni potreba pro REDIM
 merge
  into OLI_OWNER.DATABASES oli
 USING
-  (SELECT REDIM_OWNER.REDIM_GET_SHORT_NAME(target_name) target_name,
+  (SELECT REDIM_GET_SHORT_NAME(target_name) target_name,
           target_guid
 FROM
   DASHBOARD.MGMT$TARGET oem
@@ -29,6 +58,7 @@ update set oli.em_guid = oem.target_guid;
 
 
 -- merge server guid from OEM -> OLI
+-- pro redim uz neni potreba
 merge
  into OLI_OWNER.SERVERS oli
 USING
@@ -46,28 +76,4 @@ ON (oem.hostname = oli.hostname)
 when matched then
 update set oli.em_guid = oem.target_guid;
 
--- DB version
-merge
- into OLI_OWNER.DATABASES oli
-USING (
-    SELECT target_guid, property_value
-    FROM
-  DASHBOARD.MGMT$TARGET_PROPERTIES
-WHERE target_type IN ('oracle_database','rac_database')
-      AND property_name = 'Version') oem
-ON (oem.target_guid = oli.em_guid)
-when matched then
-update set oli.DBVERSION = oem.property_value;
 
--- Lifecycle
-merge
- into OLI_OWNER.DATABASES oli
-USING (
-    SELECT target_guid, property_value
-    FROM
-  DASHBOARD.MGMT$TARGET_PROPERTIES
-WHERE target_type IN ('oracle_database','rac_database')
-      AND property_name = 'orcl_gtp_lifecycle_status') oem
-ON (oem.target_guid = oli.em_guid)
-when matched then
-update set oli.ENV_STATUS = oem.property_value;

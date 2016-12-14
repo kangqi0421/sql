@@ -1,3 +1,7 @@
+--
+-- "DASHBOARD"."EM_DBINST_SLO_V"
+--
+
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DBINST_SLO_V"
 AS
 select SLO, count(*) pocet
@@ -21,4 +25,24 @@ group by SLO
 order by SLO desc
 ;
 
-select slo, pocet from DASHBOARD.EM_DBINST_SLO_V;
+--
+-- select slo, pocet from DASHBOARD.EM_DBINST_SLO_V;
+--
+
+--
+-- "DASHBOARD"."MGMT$DB_INIT_PARAMS"
+--
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."MGMT$DB_INIT_PARAMS" AS
+select
+  host_name,
+  target_name,
+  target_type,
+  target_guid,
+  collection_timestamp,
+  name,
+  isdefault,
+  value,
+  datatype
+from
+  MGMT$DB_INIT_PARAMS@oem_prod
+;
