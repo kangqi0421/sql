@@ -58,31 +58,39 @@ ALTER TABLE AUX_OWNER.MAP_CURRENCY INMEMORY;
 
 select owner, TABLE_NAME, inmemory, inmemory_priority
   from dba_tables
-  where inmemory = 'ENABLED';
+  where inmemory = 'ENABLED'
+  and table_name = 'MAP_CURRENCY'
+;
 
 -- sga status
 select name, round(value/1024/1024/1024) "GB" from v$sga;
 
+col POOL for a10
+col POPULATE_STATUS for a12
 select
   POOL, ROUND(ALLOC_BYTES/1024/1024/1024,2) as "ALLOC_BYTES_GB",
   ROUND(USED_BYTES/1024/1024/1024,2) as "USED_BYTES_GB",
   populate_status
  from V$INMEMORY_AREA;
 
-
+-- kolik dat se načetlo
 SELECT mem inmem_size,
        tot disk_size,
        bytes_not_pop,
-       (tot/mem) compression_ratio,
-       100 *((tot-bytes_not_pop)/tot) populate_percent
+       round((tot/mem),1) compression_ratio,
+       round(100 *((tot-bytes_not_pop)/tot)) populate_percent
 FROM
-  (SELECT SUM(INMEMORY_SIZE)/1024/1024/1024 mem,
-    SUM(bytes)              /1024/1024/1024 tot ,
-    SUM(bytes_not_populated)/1024/1024/1024 bytes_not_pop
+  (SELECT
+    ROUND(SUM(INMEMORY_SIZE)/1024/1024/1024) mem,
+    ROUND(SUM(bytes)              /1024/1024/1024) tot ,
+    ROUND(SUM(bytes_not_populated)/1024/1024/1024) bytes_not_pop
    FROM v$im_segments
    )
 /
 
+
+--
+--
 SELECT segment_name,
        inmemory_size, inmemory_compression,
        round(bytes/inmemory_size) comp_ratio,

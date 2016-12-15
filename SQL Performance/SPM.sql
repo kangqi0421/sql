@@ -1,10 +1,13 @@
 --
 -- 	FAQ: SQL Plan Management (SPM) Frequently Asked Questions (Doc ID 1524658.1)
 --
+https://oracle-base.com/articles/12c/adaptive-sql-plan-management-12cr1
 
+CRM - požadavek stability exekučních plánů na DB pro Siebel
 
-
-Adaptive SQL Plan Management (SPM) - automaticky evolvuje plány
+Adaptive SQL Plan Management (SPM)
+- advisor task SYS_AUTO_SPM_EVOLVE_TASK automaticky evolvuje plány
+- triggered by  "sql tuning advisor"
 
 
 SELECT * FROM DBA_SQL_PLAN_BASELINES;
