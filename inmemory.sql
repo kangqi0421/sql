@@ -9,6 +9,9 @@ In Memory přináší největší urychlení operací v následujících přípa
 - Dotazy, které spojují malou a velkou tabulku.
 - Dotazy, které provádějí agregace
 
+--
+-- STATUS - out of memery
+--
 
 -- Inmemory advisor
 stáhnout z MOS a spustit
@@ -20,6 +23,7 @@ stáhnout z MOS a spustit
 
 select * from DBA_IMA_TASK_INFORMATION;
 
+-- LOAD TABLES
 
 -- prvních 50 z každého tasku
 -- uniq, partition modify
@@ -46,20 +50,34 @@ from DBA_IMA_RECOMMENDATIONS
 )
 ;
 
+-- TABLESPACE level
 
 -- testováno na RTOP ve Vídni
 INMEMORY_SIZE = integer [K | M | G]
 
-alter system set SGA_TARGET = 150G scope=spfile;
-alter system set INMEMORY_SIZE = 50G scope=spfile;
+alter system set SGA_TARGET = 400G scope=spfile;
+alter system set INMEMORY_SIZE = 300G scope=spfile;
+
+-- když tak zvednout i
+PGA_AGGREGATE_TARGET = min (INMEMORY_SIZE X 0.5)
+alter system set PGA_AGGREGATE_TARGET = 150G;
+
 
 -- implementace
-ALTER TABLE AUX_OWNER.MAP_CURRENCY INMEMORY;
+ALTER TABLE AUX_OWNER.MAP_CURRENCY NO INMEMORY;
 
 select owner, TABLE_NAME, inmemory, inmemory_priority
   from dba_tables
   where inmemory = 'ENABLED'
   and table_name = 'MAP_CURRENCY'
+;
+
+-- NO INMEMORY
+select 'ALTER TABLE ' || owner||'.'||TABLE_NAME || ' NO INMEMORY;'
+  --, inmemory, inmemory_priority
+  from dba_tables
+  where inmemory = 'ENABLED'
+  --and table_name = 'MAP_CURRENCY'
 ;
 
 -- sga status
