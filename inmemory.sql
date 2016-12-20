@@ -55,8 +55,8 @@ from DBA_IMA_RECOMMENDATIONS
 -- testováno na RTOP ve Vídni
 INMEMORY_SIZE = integer [K | M | G]
 
-alter system set SGA_TARGET = 400G scope=spfile;
-alter system set INMEMORY_SIZE = 300G scope=spfile;
+alter system set SGA_TARGET = 200G scope=spfile;
+alter system reset INMEMORY_SIZE;
 
 -- když tak zvednout i
 PGA_AGGREGATE_TARGET = min (INMEMORY_SIZE X 0.5)
@@ -106,7 +106,6 @@ FROM
    )
 /
 
-
 --
 --
 SELECT segment_name,
@@ -117,7 +116,28 @@ SELECT segment_name,
 FROM v$im_segments;
 
 
--- testcase
+-- testcase - ověření xplain planu
 select sum(), count(*) from t;
 
 zobrazit na explain plain
+
+define sqlid = 5kmjyd8gqqm7j
+
+select * FROM v$sql_plan
+  where sql_id = '&sqlid'
+  and options like 'INMEMORY%';
+
+-- DBA_HIST_SQLSTAT
+SELECT
+    sql_id, FORCE_MATCHING_SIGNATURE, begin_interval_time,
+    round(elapsed_time_delta/1000/NULLIF(executions_delta,0))     elapsed_ms,
+    round(cpu_time_delta/1000/NULLIF(executions_delta,0))         cpu_time_ms,
+    round(ROWS_PROCESSED_DELTA/NULLIF(executions_delta,0))   rows_per_exec,
+    executions_delta                                  executions
+  FROM
+      DBA_HIST_SQLSTAT NATURAL JOIN dba_hist_snapshot
+  WHERE 1=1
+     -- and begin_interval_time between timestamp'2014-07-11 10:00:00'
+            --                  and timestamp'2014-07-11 12:00:00'
+      and sql_id in ('&sqlid')
+  ORDER by begin_interval_time

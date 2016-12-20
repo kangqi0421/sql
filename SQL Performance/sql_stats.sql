@@ -6,16 +6,16 @@
 select * from dba_hist_sqltext where sql_text like 'select distinct b.CR_DR_IND%';
 select * from dba_hist_sqltext where sql_id = :sqlid;
 
-define sqlid = f5stk73u70gcu
+define sqlid = 089m3xxurvbm0
 
 select * from DBA_HIST_SQLSTAT where sql_id = '&sqlid';
 
 -- DBA_HIST_SQLSTAT
 SELECT
     sql_id, FORCE_MATCHING_SIGNATURE, begin_interval_time,
-    elapsed_time_delta/NULLIF(executions_delta,0)     elapsed,
-    cpu_time_delta/NULLIF(executions_delta,0)         cpu_time,
-	  ROWS_PROCESSED_DELTA/NULLIF(executions_delta,0)   rows_per_exec,
+    round(elapsed_time_delta/1000/NULLIF(executions_delta,0))     elapsed_ms,
+    round(cpu_time_delta/1000/NULLIF(executions_delta,0))         cpu_time_ms,
+    ROWS_PROCESSED_DELTA/NULLIF(executions_delta,0)   rows_per_exec,
     executions_delta                                  executions
   FROM
       DBA_HIST_SQLSTAT NATURAL JOIN dba_hist_snapshot

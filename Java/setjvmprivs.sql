@@ -1,17 +1,16 @@
 spool setjvmprivs.sql
-set echo off
-set feedback off
-set heading off
-set linesize 80
-set pagesize 1000
+set echo off feedback off heading off linesize 80 pagesize 1000
 column stmt format a70 word_wrapped
+
 select 'exec '||stmt
 from (select seq, 'dbms_java.grant_permission('''||grantee||''','''||
              type_schema||':'||type_name||''','''||name||''','''||action||
              ''');' stmt
       from dba_java_policy
-      where grantee not in ('JAVADEBUGPRIV', 'JAVASYSPRIV', 'JAVAUSERPRIV',
-                         'JAVA_ADMIN', 'JAVA_DEPLOY', 'SYS', 'PUBLIC') and
+      where grantee not in ('JAVADEBUGPRIV', 'JAVASYSPRIV','JMXSERVER',
+                                  'JAVAUSERPRIV', 'JAVA_ADMIN', 'JAVA_DEPLOY',
+                                  'EJBCLIENT', 'SYS', 'PUBLIC')
+          and
             type_name!='oracle.aurora.rdbms.security.PolicyTablePermission'
       union all
       select seq,'dbms_java.grant_policy_permission('''||a.grantee||''','''||
@@ -23,12 +22,13 @@ from (select seq, 'dbms_java.grant_permission('''||grantee||''','''||
                           instr(name,':')-1) permition,
                    substr(name,instr(name,'#')+1 ) action
             from dba_java_policy
-            where grantee not in ('JAVADEBUGPRIV', 'JAVASYSPRIV',
+            where grantee not in ('JAVADEBUGPRIV', 'JAVASYSPRIV','JMXSERVER',
                                   'JAVAUSERPRIV', 'JAVA_ADMIN', 'JAVA_DEPLOY',
-                                  'SYS', 'PUBLIC') and
-                  type_name =
+                                  'EJBCLIENT', 'SYS', 'PUBLIC')
+                  and type_name =
                       'oracle.aurora.rdbms.security.PolicyTablePermission') a
       where u.user#=userid) order by seq;
+
 column stmt clear
 set pagesize 24
 set heading on
