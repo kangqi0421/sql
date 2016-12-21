@@ -90,7 +90,7 @@ set echo off;
 -- define num_days = 0;
 --
 -- List past 3 day's snapshots
-define num_days = 1;
+define num_days = 14;
 --
 -- Reports can be printed in text or html, and you must set the report_type
 -- in addition to the report_name
