@@ -4,7 +4,7 @@
 
 --
 -- BOSON > JIRKA
-SELECT dbname,
+SELECT dbname target_dbname,
    --CLONING_METHOD_ID, CLONE_SOURCE_LICDB_ID,
    env_status,
    --app_name,

@@ -27,6 +27,8 @@ select THREAD#, l.GROUP#, member, bytes/1048576
 --ALL nutný pro RAC
 BEGIN EXECUTE IMMEDIATE 'alter system switch ALL logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
+BEGIN EXECUTE IMMEDIATE 'alter system switch logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 BEGIN EXECUTE IMMEDIATE 'alter system archive log all'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 BEGIN EXECUTE IMMEDIATE 'alter system checkpoint global'; EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -48,7 +50,7 @@ DECLARE
           FROM v$log
       ORDER BY 1;
    stmt       VARCHAR2 (2048);
-   swtstmt    VARCHAR2 (1024) := 'alter system switch all logfile';
+   swtstmt    VARCHAR2 (1024) := 'alter system switch logfile';
    ckpstmt    VARCHAR2 (1024) := 'alter system checkpoint global';
    inststmt   VARCHAR2 (80);
 BEGIN
