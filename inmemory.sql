@@ -124,7 +124,8 @@ zobrazit na explain plain
 define sqlid = 5kmjyd8gqqm7j
 
 select * FROM v$sql_plan
-  where sql_id = '&sqlid'
+  where 1=1
+--  and sql_id = '&sqlid'
   and options like 'INMEMORY%';
 
 -- DBA_HIST_SQLSTAT

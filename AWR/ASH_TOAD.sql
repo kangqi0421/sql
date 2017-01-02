@@ -24,14 +24,14 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
---    FROM GV$ACTIVE_SESSION_HISTORY a
-    FROM dba_hist_active_sess_history a
+    FROM GV$ACTIVE_SESSION_HISTORY a
+--    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-29 11:15:00'
-                           AND TIMESTAMP'2016-11-29 11:30:00'
---                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
---                         and SQL_ID = '3cnag1nw7vnfz'
+--       AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-29 11:15:00'
+--                           AND TIMESTAMP'2016-11-29 11:30:00'
+                         and sample_time > sysdate - interval '240' minute     -- poslednich NN minut
+                         and SQL_ID = '9py2k899hdynq'
 --                         and event in ('db file sequential read')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
