@@ -2,6 +2,9 @@
 -- init parametry
 --
 
+--
+-- Oracle version 12.1
+--
 -- bugy a workaround pro verzi 12.1.0.2
 DECLARE
   v_platform VARCHAR2(101);
@@ -39,7 +42,16 @@ BEGIN
   END IF;
 END;
 /
-alter system reset sessions;
+
+-- reset default params: [sessions]
+BEGIN
+FOR REC in (select name FROM v$parameter where isdefault = 'FALSE'
+             AND name in ('sessions'))
+  LOOP
+    execute immediate 'alter system reset '||rec.name;
+  END LOOP;
+END;
+/
 
 -- diag adresář přesměrovat do /oracle
 alter system set diagnostic_dest = '/oracle';
@@ -86,9 +98,44 @@ END;
 -- zvednu session_cached_cursors z 50 aspoň na 300
 alter system set session_cached_cursors = 300 scope=spfile;
 
--- zvednout AWR retention na 14 dni
+-- kontrola nastaveni
+set lin 180
+col name for a40
+col value for a20
+col recommended for a20
+
+prompt
+prompt kontrola nastaveni init parametru
+prompt
+SELECT
+  name,
+  value,
+  case
+    when name = 'processes' and value < 500 then 'ERR:'||value
+    when name = 'audit_sys_operations' and value <> 'FALSE' then 'ERR:'||value
+    when name = 'resource_limit' and value <> 'TRUE' then 'ERR:'||value
+    when name = 'session_cached_cursors' and value < 299 then 'ERR:'||value
+    when name = 'fast_start_mttr_target' and value  < 300 then 'ERR:'||value
+    when name = 'archive_lag_target' and value < 1800 then 'ERR:'||value
+    when name = 'os_authent_prefix' and value is not NULL then 'ERR:'||value
+    ELSE 'OK'
+  END recommended
+FROM
+  v$parameter
+WHERE
+  name IN ('audit_sys_operations','resource_limit','processes',
+  'session_cached_cursors','fast_start_mttr_target','archive_lag_target',
+  'os_authent_prefix');
+
+
+--
+-- AWR - zvednout AWR retention na 14 dni
+--
 exec  DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS(retention=>20160);
 
+--
+-- spfile
+--
 -- recreate spfile do umisteni v ASM ve formatu spfile<DBNAME>.ora
 column db_name new_value db_name print
 SELECT SYS_CONTEXT ('USERENV', 'DB_NAME') as db_name from dual;

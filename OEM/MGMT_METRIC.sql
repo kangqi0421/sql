@@ -50,7 +50,7 @@ select distinct metric_name, metric_column, metric_label, column_label
 -- CPU util server
 AND metric_name = 'Load' AND metric_column = 'cpuUtil'
 
--- CPU util DB
+-- CPU util v DB
 AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
 AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
