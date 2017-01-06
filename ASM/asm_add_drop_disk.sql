@@ -56,34 +56,9 @@ show parameter spfile
 show parameter asm_diskstring
 ALTER SYSTEM SET asm_diskstring = '/dev/oracleasm/disks/*','/dev/mapper/asm_449*p1';
 
---//  START script  //--
-
--- definice diskgroup D01/FRA
-def dg="D01"
---def dg="FRA"
-
-SET heading off verify off feed off trims on pages 0 lines 4000
-
-spool asm_disks_&dg..sql
-
-
--- ALTER diskgroup
-select 'ALTER DISKGROUP '||name||' ADD DISK'||CHR(10)
-  from v$asm_diskgroup
- where name
-    like '%&dg'
---	in (select ltrim(value, '+') from v$parameter where name = 'db_create_file_dest')
-/
-
---ADD candidate disks
-select LISTAGG(''''||path||'''', ','||chr(10)) WITHIN GROUP (ORDER BY path)  -- path do uvozovek, kazdy disk na samostatny radek
-  from v$asm_disk
- where header_status = 'CANDIDATE'
-       and lower(path) like lower('%&dg%')
-order by disk_number
-;
 
 -- DROP disks
+set trims on pages 0 lines 32767
 select 'DROP DISK'||CHR(10) from dual;
 
 select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
@@ -91,46 +66,11 @@ select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
  where 1 = 1
    and header_status = 'MEMBER' -- pouze jiz existujici
    and GROUP_NUMBER in (
-		select GROUP_NUMBER from v$asm_diskgroup where name like 'ESPZA_D01'
+		select GROUP_NUMBER from v$asm_diskgroup where name like 'CLMT_D01'
 		)
-   and OS_MB = 111653               -- a velikost 55GB
-   --and substr(path, 6, 5) in ('vgr02')
+   --and OS_MB = 111653               -- a velikost 55GB
+   and path like '/dev/mapper/asm_210873%'
 ;
-
-
-select '/'||CHR(10) from dual;
-
-spool off;
-
---
--- End Of Scipt
---
-
-
--- add drop disk - old version
-SET heading off verify off feed off trims on pages 0 lines 4000
-
-spool asm_migration_disks.sql
-
-select 'ALTER DISKGROUP '||name||' ADD DISK'||CHR(10) from v$asm_diskgroup where name like '%D01';
-
-select LISTAGG(''''||path||'''', ','||chr(10)) WITHIN GROUP (ORDER BY path)  -- path do uvozovek, kazdy disk na samostatny radek
-  from v$asm_disk
- where header_status = 'CANDIDATE'
-and path like '%D01%';
-
-select 'DROP DISK'||CHR(10) from dual;
-
-select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
-  from v$asm_disk
- where GROUP_NUMBER = 1         -- pouze disky GRP#1
-   and header_status = 'MEMBER' -- pouze jiz existujici
-and OS_MB = 55808               -- a velikost 55GB
-and substr(path, 6, 5) in ('vgr02')  ;
-
-select '/'||CHR(10) from dual;
-
-spool off;
 
 
 -- funguje pouze z ASM instance
@@ -149,3 +89,22 @@ select name, TYPE, TOTAL_MB, FREE_MB, COMPATIBILITY, DATABASE_COMPATIBILITY from
 select name, header_status,state, path, total_mb, free_mb,disk_number
   from v$asm_disk
 order by NAME;
+
+
+--
+alter diskgroup CLMT_D01 drop disk
+CLMT_D01_0020,
+CLMT_D01_0021,
+CLMT_D01_0022,
+CLMT_D01_0023,
+CLMT_D01_0024,
+CLMT_D01_0025,
+CLMT_D01_0026,
+CLMT_D01_0027,
+CLMT_D01_0028,
+CLMT_D01_0029,
+CLMT_D01_0030,
+CLMT_D01_0031,
+CLMT_D01_0032,
+CLMT_D01_0033,
+CLMT_D01_0034;

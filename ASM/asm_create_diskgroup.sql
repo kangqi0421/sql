@@ -41,6 +41,7 @@ FROM
     FROM V\$ASM_DISK
     WHERE
       header_status in ('CANDIDATE','FORMER')
+      --and path like '%CLMT%'
     GROUP BY
        regexp_replace(path,
         '^/dev/mapper/asm.*_([A-Z]+)_(D01|DATA|FRA)p1',
