@@ -1,6 +1,8 @@
 set verify off
 
---select spare4 from sys.user$ where name = 'SYSTEM';
+--
+-- select spare4 from sys.user$ where name = 'SYSTEM';
+--
 
 -- nutno rozdelit na 3 casti z duvodu debilniho omezeni sqlplus na max. 240 char
 define hash_p1="S:26A30A50E092F00E30C954B8BB78ACACCF88CA425321169A2AC270513737;"

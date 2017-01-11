@@ -34,6 +34,18 @@ BEGIN EXECUTE IMMEDIATE 'alter system archive log all'; EXCEPTION WHEN OTHERS TH
 BEGIN EXECUTE IMMEDIATE 'alter system checkpoint global'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 
+-- RAC > single db - disable thread #2
+BEGIN
+for rec in (
+  SELECT distinct thread# thread FROM V$LOG
+   where thread# > (
+     select max(instance_number) from gv$instance)
+   )
+   LOOP
+     execute immediate  'alter database disable thread '||rec.thread;
+   END LOOP;
+END;
+/
 
 DECLARE
    -- TRUE  - print SQL statement
