@@ -2,13 +2,12 @@
 -- Orchestrace klonování
 --
 
---
--- BOSON > JIRKA
-SELECT dbname target_dbname,
+-- target_db, target hostname
+SELECT -- dbname target_dbname,
    --CLONING_METHOD_ID, CLONE_SOURCE_LICDB_ID,
-   env_status,
+   --env_status,
    --app_name,
-   CONCAT(hostname, '.'||domain) server
+   'target_hostname='||CONCAT(hostname, '.'||domain) server
 FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
@@ -16,21 +15,47 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE d.dbname
-   --in ('JIRKA', 'BOSON')
-   in ('CLMDC')
+   in ('RTOTP')
 ORDER BY APP_NAME;
+
+-- spfile
+SELECT
+    distinct 'source_spfile='||VALUE
+  FROM
+    dashboard.mgmt$db_init_params
+  WHERE NAME like 'spfile'
+    and TARGET_NAME like 'RTOZA%'
+;
 
 --
 -- init parametry pro klonování
+SELECT 'init_params='|| listagg(param,',') WITHIN GROUP (ORDER BY param)
+FROM (
+SELECT
+    --TARGET_NAME,
+    -- NAME,
+    CASE upper(ISDEFAULT)
+      WHEN 'FALSE' THEN name ||'='|| VALUE
+      WHEN 'TRUE' then name
+    END param
+  FROM
+    dashboard.mgmt$db_init_params
+  WHERE TARGET_NAME like 'RTOTP'
+    and NAME in ('memory_target','sga_target','pga_aggregate_target',
+                 'cpu_count')
+);
+
+-- init parametry pro klonování ALL
 SELECT
     TARGET_NAME,
     NAME,
     ISDEFAULT,
-    round(VALUE/1024/1024/1024) "GB"
+    value
   FROM
     dashboard.mgmt$db_init_params
-  WHERE TARGET_NAME like 'CLMDC'
-    and NAME in ('memory_target','sga_target','pga_aggregate_target')
+  WHERE TARGET_NAME like 'RTOTP'
+    and NAME in ('memory_target','sga_target','pga_aggregate_target',
+                 'cpu_count')
 ;
 
 

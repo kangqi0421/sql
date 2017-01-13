@@ -1,4 +1,4 @@
-col name for a30
+col name for a35
 col value for 999999
 
 -- vypis memory parametru
@@ -20,7 +20,12 @@ SELECT component, current_size/1048576 "current [MB]" FROM v$memory_dynamic_comp
 
 prompt SGA
 prompt ===
-prompt
+select INST_ID, name, round(bytes/1048576) "MB"
+   --, RESIZEABLE
+  from gv$sgainfo
+-- where name like 'Large%'
+order by name, inst_id
+;
 
 prompt SGA_TARGET_ADVICE pro factor +- 5%
 prompt MIN, pokud = 1, nema smysl SGA snizovat
