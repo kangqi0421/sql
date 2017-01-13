@@ -37,13 +37,28 @@ BEGIN EXECUTE IMMEDIATE 'alter system checkpoint global'; EXCEPTION WHEN OTHERS 
 -- RAC > single db - disable thread #2
 BEGIN
 for rec in (
-  SELECT distinct thread# thread FROM V$LOG
-   where thread# > (
+select thread#, enabled from v$thread
+  where enabled = 'PUBLIC' AND thread# > (
      select max(instance_number) from gv$instance)
    )
    LOOP
-     execute immediate  'alter database disable thread '||rec.thread;
+     execute immediate  'alter database disable thread '||rec.thread#;
    END LOOP;
+END;
+/
+
+--
+select thread#, enabled from v$thread;
+
+-- RAC > single: drop logfile of disabled thread
+BEGIN
+for rec in (select group# from v$log
+  where thread# in (select thread# from v$thread
+                      where enabled = 'DISABLED')
+  )
+  LOOP
+    execute immediate 'alter database drop logfile group ' || rec.group#;
+  END LOOP;
 END;
 /
 
