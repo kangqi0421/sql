@@ -2,29 +2,46 @@
 -- Orchestrace klonování
 --
 
+-- update CLONE_SOURCE_LICDB_ID
+update OLI_OWNER.DATABASES
+  set CLONE_SOURCE_LICDB_ID = (
+    -- source db
+    select licdb_id from OLI_OWNER.DATABASES where dbname = 'CLMZA')
+  -- target db
+  where dbname like 'CLMD%';
+
 -- target_db, target hostname
-SELECT -- dbname target_dbname,
-   --CLONING_METHOD_ID, CLONE_SOURCE_LICDB_ID,
+SELECT
+   'source_db='||s.dbname source_db,
+   'target_db='||d.dbname target_db,
+   --d.CLONE_SOURCE_LICDB_ID,
+   d.CLONING_METHOD_ID,
    --env_status,
    --app_name,
    'target_hostname='||CONCAT(hostname, '.'||domain) server
 FROM
+  -- target db
   OLI_OWNER.DATABASES d
+  -- source db
+  join OLI_OWNER.DATABASES s ON (d.CLONE_SOURCE_LICDB_ID = s.licdb_id)
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE d.dbname
-   in ('RTOTP')
+   in ('CLMTA')
 ORDER BY APP_NAME;
+
 
 -- spfile
 SELECT
     distinct 'source_spfile='||VALUE
   FROM
-    dashboard.mgmt$db_init_params
+    dashboard.mgmt$db_init_params p
+    join OLI_OWNER.DATABASES d ON (d.dbname = REDIM_GET_SHORT_NAME(p.target_name))
+    join OLI_OWNER.DATABASES s ON (s.CLONE_SOURCE_LICDB_ID = d.licdb_id)
   WHERE NAME like 'spfile'
-    and TARGET_NAME like 'RTOZA%'
+    and s.dbname like 'CLMTA'
 ;
 
 --
