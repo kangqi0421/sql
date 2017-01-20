@@ -46,3 +46,17 @@ select
 from
   MGMT$DB_INIT_PARAMS@oem_prod
 ;
+
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."CM$MGMT_ASM_CLIENT_ECM" AS
+SELECT
+  cm_target_guid,
+  cm_target_type,
+  cm_target_name,
+  cm_snapshot_type,
+  last_collection_timestamp,
+  ECM_SNAPSHOT_ID,
+  DISKGROUP,
+  INSTANCE_NAME,
+  DB_NAME
+FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
+;

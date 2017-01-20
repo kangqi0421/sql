@@ -6,9 +6,9 @@
 update OLI_OWNER.DATABASES
   set CLONE_SOURCE_LICDB_ID = (
     -- source db
-    select licdb_id from OLI_OWNER.DATABASES where dbname = 'CLMZA')
+    select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOTP')
   -- target db
-  where dbname like 'CLMD%';
+  where dbname like 'RTODP';
 
 -- target_db, target hostname
 SELECT
