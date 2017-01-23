@@ -16,16 +16,27 @@ BEGIN
 END;
 /
 
--- autoextend on na vsechny datafiles
+-- TEST = autoextend na maxsize na vsechny datafiles
 BEGIN
-   FOR rec IN (SELECT file_id
-                 FROM dba_data_files
-                where
-                 tablespace_name in ('OUT_DATA','OUT_INDX')
-        )
-   LOOP
-      execute immediate 'alter database datafile '|| rec.file_id ||' autoextend on next 512m maxsize 65535m';
-   END LOOP;
+  FOR rec IN (
+     select file_id, autoextensible, maxbytes,
+       -- pokud je incr mensi nez 256M, tak ho zvetsi na 256M
+       CASE
+         WHEN INCREMENT_BY * b.db_block_size /1024/1024  < 256  THEN 256
+         ELSE INCREMENT_BY * b.db_block_size /1024/1024
+       END incr
+   from dba_data_files d join dba_tablespaces t
+          on (d.tablespace_name = t.tablespace_name),
+        (select value db_block_size from v$parameter where name = 'db_block_size') b
+  where t.contents = 'PERMANENT'
+    AND t.tablespace_name not in
+          ('SYSTEM','SYSAUX','USERS','ARM_DATA')
+              )
+  LOOP
+      execute immediate 'alter database datafile '|| rec.file_id
+        || ' autoextend on next '|| rec.incr ||'M'
+        || ' maxsize UNLIMITED';
+  END LOOP;
 END;
 /
 
@@ -71,3 +82,65 @@ BEGIN
    END LOOP;
 END;
 /
+
+--
+-- autoextend CRM
+/* nastav autoextend pro prM-avM-l jeden datafile per tablespace */
+BEGIN
+   FOR rec IN (SELECT file_id
+          FROM (  SELECT tablespace_name,
+                 file_name,
+                 file_id,
+                 bytes,
+                 ROW_NUMBER ()
+                    OVER (PARTITION BY tablespace_name ORDER BY BYTES)
+                    rn
+            FROM dba_data_files
+           WHERE tablespace_name NOT IN
+                    ('SYSTEM','SYSAUX','UNDOTBS','TEMP','TOOLS','ARMON_TS','ARM_DATA')
+        ORDER BY 1)
+ WHERE rn = 1
+ )
+LOOP
+  execute immediate 'alter database datafile '||rec.file_id||' autoextend on next 512m maxsize 32767m';
+END LOOP;
+END;
+/
+
+/* tablespace pro LOAD - navM-mc pro nM-mM-^^e uvedenM-i tablespaces nastav autoextend pro vM-^Zechny datafiles */
+BEGIN
+   FOR rec
+      IN (SELECT file_id
+            FROM dba_data_files
+           WHERE tablespace_name IN
+                    ('SIEBSA_DATA','SIEBSA_INDX','SIEBEIM_DATA','SIEBEIM_INDX'))
+   LOOP
+      EXECUTE IMMEDIATE
+            'alter database datafile '
+         || rec.file_id
+         || ' autoextend on next 512m maxsize 32767m';
+   END LOOP;
+END;
+/
+
+
+-- ODI_DATA
+@ls ODI_DATA
+
+BEGIN
+   FOR rec
+      IN (SELECT file_id
+            FROM dba_data_files
+           WHERE tablespace_name IN
+                    ('ODI_DATA'))
+   LOOP
+      EXECUTE IMMEDIATE 'alter database datafile '
+         || rec.file_id  || ' autoextend on next 512m maxsize 32767m';
+   END LOOP;
+END;
+/
+
+alter tablespace ODI_DATA
+  add datafile  size 512m autoextend on next 512m maxsize 32767m;
+
+@ls ODI_DATA

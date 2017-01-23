@@ -2,12 +2,26 @@
 -- ASM storage
 --
 
-select disk_group, round(total_size) "size GB"
+select asm.db_name,
+       disk_group,
+       round(total_size) "total size GB",
+       member_disk_count
+  from CM$MGMT_ASM_CLIENT_ECM asm join CM$MGMT_ASM_DISKGROUP_ECM dg
+         on (asm.cm_target_guid = dg.cm_target_guid
+             and asm.diskgroup = dg.disk_group)
+  where asm.db_name like ('ODI%')
+order by db_name
+;  
+
+
+
+select 
+    disk_group, 
+    round(total_size) "size GB",
+    member_disk_count
   from SYSMAN.MGMT_ASM_DISKGROUP_ECM
   where
-       disk_group like 'RDSP_%'
-    or disk_group like 'BRAP_%'
-    or disk_group like 'RDLP_%'
+       disk_group like 'ODIP_%'
 order by disk_group;
 
 select disk_group,

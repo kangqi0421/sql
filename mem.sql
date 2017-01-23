@@ -13,7 +13,7 @@ WHERE name IN ('memory_target','memory_max_target','sga_max_size','sga_target',
 AND isdefault = 'FALSE'
 ;
 
--- SGA a PGA memory target rozdÏlenÌ
+-- SGA a PGA memory target rozd√¨len√≠
 prompt memory target
 SELECT component, current_size/1048576 "current [MB]" FROM v$memory_dynamic_components
    WHERE component LIKE '%Target';
@@ -29,9 +29,9 @@ order by name, inst_id
 
 prompt SGA_TARGET_ADVICE pro factor +- 5%
 prompt MIN, pokud = 1, nema smysl SGA snizovat
-prompt MAX, pokud = 2, nema smysl SGA navysovat (cim mensi hodnota, tim vetöi efekt bude mit navyseni SGA)
--- minim·lnÌ velikost SGA do 5% poklesu ˙Ëinnosti buffer cache a moûnost
--- nutnÈ nav˝öenÌ SGA pro zlepöenÌ ˙Ëinnosti o 5%
+prompt MAX, pokud = 2, nema smysl SGA navysovat (cim mensi hodnota, tim vet≈°i efekt bude mit navyseni SGA)
+-- minim√°ln√≠ velikost SGA do 5% poklesu √∫√®innosti buffer cache a mo≈ænost
+-- nutn√© nav√Ω≈°en√≠ SGA pro zlep≈°en√≠ √∫√®innosti o 5%
 col min_sga for a20
 col max_sga for a20
 SELECT  INST_ID, MIN(SGA_SIZE_FACTOR)||' ('||MIN(SGA_SIZE)/1024||'G)' min_sga,

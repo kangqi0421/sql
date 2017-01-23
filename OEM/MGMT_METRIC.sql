@@ -24,6 +24,10 @@ em_metric_values_daily
 
 sysman.gc$metric_values_hourly
 
+-- HW metriky
+CM$MGMT_ECM_HW
+MGMT$OS_HW_SUMMARY
+
 select metric_item_id
       ,collection_time
       ,met_values
@@ -57,7 +61,7 @@ AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
 -- Memory util
 AND metric_name = 'Load' AND metric_column = 'memUsedPct'
--- pro AIX
+-- pro AIX: Used Logical Memory (%)
 metric_column = usedLogicalMemoryPct
 
 -- SGA
