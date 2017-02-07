@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=SK2O
+DEFINE db=RTO%
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES 
@@ -93,7 +93,7 @@ exec arm_admin.arm_adm.add_subpart('RTOP1246254454',DATE '2016-09-18', DATE '201
 -- a ted uz prenosy z RTOP@pordb06 funguji ...
 
 -- disable transfer after drop database
-update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'DWHP1517715351';
+update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'RTOP1246254454';
 commit;
 
 --

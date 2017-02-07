@@ -16,10 +16,12 @@ BEGIN
 END;
 /
 
--- TEST = autoextend na maxsize na vsechny datafiles
+-- TEST, klonování
+-- autoextend maxsize na UNLIMITED-1M na vsechny datafiles
 BEGIN
   FOR rec IN (
-     select file_id, autoextensible, maxbytes,
+     select file_id, autoextensible,
+       ROUND(b.db_block_size * 4096/1024-1) maxsize,
        -- pokud je incr mensi nez 256M, tak ho zvetsi na 256M
        CASE
          WHEN INCREMENT_BY * b.db_block_size /1024/1024  < 256  THEN 256
@@ -35,11 +37,10 @@ BEGIN
   LOOP
       execute immediate 'alter database datafile '|| rec.file_id
         || ' autoextend on next '|| rec.incr ||'M'
-        || ' maxsize UNLIMITED';
+        || ' maxsize '||rec.maxsize ||'M';
   END LOOP;
 END;
 /
-
 
 
 /* nastav MAXBYTES na 2GB, kde MAXBYTES = UNLIMITED */

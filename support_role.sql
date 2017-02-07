@@ -2,6 +2,8 @@
 -- support role
 --
 
+-- nahradit za OEM_MONITOR ?
+
 define role=AWR_SUPPORT_ROLE
 --define role=EXT90032
 

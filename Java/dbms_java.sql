@@ -6,6 +6,7 @@ ORA-29548: Java system class reported: release of classes.bin in the database
 does not match that of the oracle executable
 
 -- znovu pustit datapatch -verbose
+$ORACLE_HOME/OPatch/datapatch -verbose
 
 -- reload JVM
 @?/javavm/install/update_javavm_db.sql
