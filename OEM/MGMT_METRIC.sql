@@ -59,10 +59,13 @@ AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
 AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
 
--- Memory util
+-- Memory util server
 AND metric_name = 'Load' AND metric_column = 'memUsedPct'
 -- pro AIX: Used Logical Memory (%)
 metric_column = usedLogicalMemoryPct
+
+-- SGA a PGA Total Memory [MB]
+AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
 
 -- SGA
 AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'sga_total'

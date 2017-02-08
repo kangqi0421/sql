@@ -3,7 +3,7 @@
 -- mgmt_target_properties
 --
 
--- ALL target
+-- ALL targets
 SELECT
 --  t.*
   t.target_name
@@ -24,6 +24,13 @@ FROM
    --and NOT (host_name like 'ppg%' or host_name like 'lintr%' or host_name like '%avlog%')
    --
 ORDER BY t.target_name;
+
+-- DB targets
+select database_name,
+       target_name,
+       host_name
+  FROM MGMT$DB_DBNINSTANCEINFO d
+ORDER by d.target_name;
 
 -- count db
 select count(*)

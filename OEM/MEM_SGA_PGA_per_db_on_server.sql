@@ -19,12 +19,16 @@ select
  where metric_name = 'Load' AND metric_column = 'memUsedPct'
 --   AND m.target_name like 'dordb01%'
    AND REGEXP_LIKE(m.target_name, '^(t|d)ordb[0-9][0-9].vs.csin.cz')
-   AND M.TARGET_NAME not like 'dordb05.vs.csin.cz'
 --   AND REGEXP_LIKE(m.target_name, '^(p|b|zp|zb|t|d)ordb0[0-9].vs.csin.cz')
    AND m.rollup_timestamp > sysdate - interval '1' month
    -- AND m.rollup_timestamp > systimestamp - NUMTOYMINTERVAL( :MONTHS, 'MONTH' )
 ORDER by m.rollup_timestamp, target_name
 ;
+
+
+-- SGA a PGA - Total Memory MB
+AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
+
 
 -- Memory init params
 SELECT
