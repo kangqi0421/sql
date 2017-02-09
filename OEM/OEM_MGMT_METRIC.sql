@@ -10,6 +10,9 @@ http://docs.oracle.com/cd/E63000_01/EMVWS/toc.htm
 
 -- MGMT_VIEW - read only přístup z BI Publisheru, data source EMREPOS
 
+-- hezký přehled view dostupných view, rozdělených dle kategorií
+https://docs.oracle.com/cd/E24628_01/doc.121/e24474/ch2_db_mgmt.htm#OEMLI133
+
 -- RAW data
 MGMT$METRIC_CURRENT   -  Stores the current metrics from the past 24 hours
 MGMT$METRIC_DETAILS   -  Stores details upto 7 days
@@ -27,6 +30,7 @@ sysman.gc$metric_values_hourly
 -- HW metriky
 CM$MGMT_ECM_HW
 MGMT$OS_HW_SUMMARY
+MGMT$HW_CPU_DETAILS
 
 select metric_item_id
       ,collection_time
@@ -50,6 +54,9 @@ select distinct metric_name, metric_column, metric_label, column_label
    --metric_column like 'cursors'
   AND target_name like 'pasbo%'
 ;
+
+-- BACKUP
+MGMT$HA_BACKUP
 
 -- CPU util server
 AND metric_name = 'Load' AND metric_column = 'cpuUtil'
@@ -89,6 +96,7 @@ AND m.metric_name = 'DiskActivitySummary'
 AND m.metric_name = 'DiskActivity' AND m.metric_column = 'diskActivReadsPerSec'
   AND column_label like 'Disk Reads (per second)'
 
+-- IO Database
 -- I/O Megabytes (per second) - database
 AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iombs_ps'
 
@@ -124,6 +132,7 @@ AND column_label like 'Average Active Sessions'
 
 -- Database Size
 AND m.metric_name ='DATABASE_SIZE' AND (m.metric_column ='ALLOCATED_GB' OR m.metric_column ='USED_GB')
+AND m.metric_name ='DATABASE_SIZE' AND m.metric_column ='ALLOCATED_GB'
 
 -- Tablespace Allocated Space (MB)
 -- free space in tablespace

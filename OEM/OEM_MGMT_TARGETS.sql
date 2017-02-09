@@ -32,6 +32,9 @@ select database_name,
   FROM MGMT$DB_DBNINSTANCEINFO d
 ORDER by d.target_name;
 
+-- RAC targets
+select * from MGMT$RAC_TOPOLOGY r;
+
 -- count db
 select count(*)
   from MGMT_TARGETS t
