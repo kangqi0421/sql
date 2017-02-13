@@ -2,6 +2,26 @@
 -- Orchestrace klonování
 --
 
+-- Flask start
+/dba/clone/rest/run.sh
+
+-- spusteni klonu
+http://127.0.0.1:5000/clone/BOSON
+
+-- LOG
+SELECT * FROM cloning_task
+ORDER BY TASK_ID desc
+;
+
+SELECT * FROM cloning_status_history
+ORDER BY status_date DESC
+;
+
+-- TRACE
+SELECT * FROM cloning_trace
+ORDER BY TASK_ID desc, INS_ID DESC
+;
+
 -- update CLONE_SOURCE_LICDB_ID
 update OLI_OWNER.DATABASES
   set CLONE_SOURCE_LICDB_ID = (
@@ -12,6 +32,11 @@ update OLI_OWNER.DATABASES
 
 select * FROM OLI_OWNER.DATABASES
   where dbname in ('BOSON', 'JIRKA');
+
+-- update serveru
+update  OLI_OWNER.DBINSTANCES
+  set server_id = 569
+  where inst_name = 'BOSON';
 
 
 -- target_db, target hostname
@@ -33,7 +58,7 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE d.dbname
-   in ('CLMTA')
+   in ('BOSON')
 ORDER BY APP_NAME;
 
 
@@ -138,10 +163,29 @@ select
   where cloning_method_id = 3
 order by position  ;
 
--- upravy od Rasti
+-- CLONNING PARAMS
+asm_source_dg=JIRKA_DATA
+source_spfile=+JIRKA_DATA/JIRKA/spfilejirka.ora
+clone_opts=
+init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
+
+REM INSERTING into CLONING_PARAMETER
+SET DEFINE OFF;
+Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','init_params','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('3','snapshot_name','N','0',null,null);
+Insert into CLONING_PARAMETER values ('3','recover_opts','N','0',null,'--noarchivelog');
+Insert into CLONING_PARAMETER values ('3','asm_source_dg','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('3','source_spfile','Y','0',null,null);
+--
+
+REM INSERTING into CLONING_PARAM_VALUE
+SET DEFINE OFF;
+Insert into CLONING_PARAM_VALUE values ('371','C','asm_source_dg','JIRKA_DATA','N');
+Insert into CLONING_PARAM_VALUE values ('371','C','source_spfile','+JIRKA_DATA/JIRKA/spfilejirka.ora','N');
+
+
+-- upravy od Rasti ...
 ALTER TABLE CLONING_OWNER.CLONING_METHOD_STEP  ADD (LOCAL VARCHAR2(1) DEFAULT 'N' NOT NULL);
-
--- IMPORT
-impdp \'/ as sysdba\'  directory=DATA_PUMP_DIR dumpfile=expdat.dmp logfile=expdat.log sqlfile=expdat.sql
-
-impdp \'/ as sysdba\'  directory=DATA_PUMP_DIR dumpfile=expdat.dmp logfile=expdat.log
