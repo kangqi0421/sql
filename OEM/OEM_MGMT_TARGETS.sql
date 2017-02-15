@@ -60,6 +60,7 @@ WHERE
 
 
 -- DB per verze a per OS verze
+-- Pozor, nutno upravit, pro PKI DB treba vubec nevraci host_name ...
 select t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2, count(*)
   from MGMT_TARGETS t inner join MGMT_TARGETS s ON (t.host_name = s.target_name)
 WHERE

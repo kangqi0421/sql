@@ -5,6 +5,29 @@
 select * from MGMT$APPLIED_PATCHES;
 select * from MGMT$OH_PATCH;
 
+-- patche na Linuxu, pouze predprodukce
+select
+    p.*,
+    p.host,
+    p.home_location,
+    P.PATCH,
+    patch_release,
+    P.INSTALLATION_TIME
+  from MGMT$APPLIED_PATCHES p
+    --inner join MGMT_TARGETS t ON (p.TARGET_GUID = t.TARGET_GUID)
+WHERE 1=1
+and platform = 'Linux x86-64'
+and host like 'z%'
+and home_location like '%grid/%'
+--and home_location like '%/db/%'
+and patch_release like '12.%'
+--and IS_PSU = 'N'  -- nefunguje
+and patch in ('24732088')
+order by p.host
+;
+
+
+
 -- AUDIT 18743542 pro 12.1
 SELECT
   host_name,

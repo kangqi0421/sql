@@ -1,4 +1,19 @@
 --
+-- INFP
+--
+
+create user SVOBODA identified by abcd1234 profile prof_dba;
+grant dba to SVOBODA;
+grant dba to DKRCH;
+
+
+db linky:
+CREATE DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMSP';
+CREATE DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMST';
+
+
+
+--
 -- "DASHBOARD"."EM_DBINST_SLO_V"
 --
 
@@ -34,29 +49,18 @@ order by SLO desc
 --
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."MGMT$DB_INIT_PARAMS" AS
 select
-  host_name,
-  target_name,
-  target_type,
-  target_guid,
-  collection_timestamp,
-  name,
-  isdefault,
-  value,
-  datatype
+  *
 from
   MGMT$DB_INIT_PARAMS@oem_prod
 ;
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."CM$MGMT_ASM_CLIENT_ECM" AS
 SELECT
-  cm_target_guid,
-  cm_target_type,
-  cm_target_name,
-  cm_snapshot_type,
-  last_collection_timestamp,
-  ECM_SNAPSHOT_ID,
-  DISKGROUP,
-  INSTANCE_NAME,
-  DB_NAME
+  *
 FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
+;
+
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."MGMT$DB_DBNINSTANCEINFO"  AS
+  select  *
+from MGMT$DB_DBNINSTANCEINFO@oem_prod
 ;

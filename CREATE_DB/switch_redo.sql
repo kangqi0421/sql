@@ -78,6 +78,7 @@ DECLARE
       ORDER BY 1;
    stmt       VARCHAR2 (2048);
    swtstmt    VARCHAR2 (1024) := 'alter system switch logfile';
+   swtallstmt VARCHAR2 (1024) := 'alter system switch ALL logfile';
    ckpstmt    VARCHAR2 (1024) := 'alter system checkpoint global';
    inststmt   VARCHAR2 (80);
 BEGIN
@@ -97,8 +98,9 @@ BEGIN
       EXCEPTION
          WHEN OTHERS
          THEN
-            BEGIN EXECUTE IMMEDIATE swtstmt; EXCEPTION WHEN OTHERS THEN NULL; END;
-            BEGIN EXECUTE IMMEDIATE ckpstmt; EXCEPTION WHEN OTHERS THEN NULL; END;
+            BEGIN EXECUTE IMMEDIATE ckpstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
+            BEGIN EXECUTE IMMEDIATE swtstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
+            BEGIN EXECUTE IMMEDIATE swtallstmt; EXCEPTION WHEN OTHERS THEN NULL; END;
             EXECUTE IMMEDIATE stmt;
       END;
       -- pokud je nastavena nova hodnota redo size, pouzij ji

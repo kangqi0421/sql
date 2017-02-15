@@ -2,33 +2,15 @@
 -- Orchestrace klonování
 --
 
--- Flask start
-/dba/clone/rest/run.sh
-
--- spusteni klonu
-http://127.0.0.1:5000/clone/BOSON
-
--- LOG
-SELECT * FROM cloning_task
-ORDER BY TASK_ID desc
-;
-
-SELECT * FROM cloning_status_history
-ORDER BY status_date DESC
-;
-
--- TRACE
-SELECT * FROM cloning_trace
-ORDER BY TASK_ID desc, INS_ID DESC
-;
-
 -- update CLONE_SOURCE_LICDB_ID
 update OLI_OWNER.DATABASES
-  set CLONE_SOURCE_LICDB_ID = (
-    -- source db
-    select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOTP')
+  set CLONING_METHOD_ID = 3,
+      CLONE_SOURCE_LICDB_ID = (
+      -- source db
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'CLMZA')
   -- target db
-  where dbname like 'RTODP';
+  where dbname like 'CLMD%';
+
 
 select * FROM OLI_OWNER.DATABASES
   where dbname in ('BOSON', 'JIRKA');
@@ -58,52 +40,8 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE d.dbname
-   in ('BOSON')
+   in ('BOSON','CLMDD')
 ORDER BY APP_NAME;
-
-
--- spfile
-SELECT
-    distinct 'source_spfile='||VALUE
-  FROM
-    dashboard.mgmt$db_init_params p
-    join OLI_OWNER.DATABASES d ON (d.dbname = REDIM_GET_SHORT_NAME(p.target_name))
-    join OLI_OWNER.DATABASES s ON (s.CLONE_SOURCE_LICDB_ID = d.licdb_id)
-  WHERE NAME like 'spfile'
-    and s.dbname like 'CLMTA'
-;
-
---
--- init parametry pro klonování
-SELECT 'init_params='|| listagg(param,',') WITHIN GROUP (ORDER BY param)
-FROM (
-SELECT
-    --TARGET_NAME,
-    -- NAME,
-    CASE upper(ISDEFAULT)
-      WHEN 'FALSE' THEN name ||'='|| VALUE
-      WHEN 'TRUE' then name
-    END param
-  FROM
-    dashboard.mgmt$db_init_params
-  WHERE TARGET_NAME like 'RTOTP'
-    and NAME in ('memory_target','sga_target','pga_aggregate_target',
-                 'cpu_count')
-);
-
--- init parametry pro klonování ALL
-SELECT
-    TARGET_NAME,
-    NAME,
-    ISDEFAULT,
-    value
-  FROM
-    dashboard.mgmt$db_init_params
-  WHERE TARGET_NAME like 'RTOTP'
-    and NAME in ('memory_target','sga_target','pga_aggregate_target',
-                 'cpu_count')
-;
-
 
 
 -- drop user
@@ -119,9 +57,11 @@ create user cloning_owner identified by abcd1234 profile PROF_APPL
   default tablespace users quota unlimited on users ;
 
 grant select,references on OLI_OWNER.DATABASES  to CLONING_OWNER;
+grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
 grant select on OLI_OWNER.SERVERS to CLONING_OWNER;
 grant select on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
-grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
+grant select on OLI_OWNER.APP_DB to CLONING_OWNER;
+grant select on OLI_OWNER.APPLICATIONS to CLONING_OWNER;
 
 
 -- cloning methods
@@ -164,9 +104,25 @@ select
 order by position  ;
 
 -- CLONNING PARAMS
-asm_source_dg=JIRKA_DATA
+asm_source_dg=${source_db}_D01
 source_spfile=+JIRKA_DATA/JIRKA/spfilejirka.ora
+
+source_spfile==+${asm_source_dg}/${source_db}/spfile${source_db}.ora
+
+
+-- CLMZA > CLMDD
+
+4252: CLMDD
+source_spfile=+CLMZA_D01/CLMZA/spfile
+asm_source_dg=CLMZA_D01
+
+init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
+
 clone_opts=
+
+-- init params RESET
+init_params=
+
 init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
 
 REM INSERTING into CLONING_PARAMETER

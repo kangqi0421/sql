@@ -3,9 +3,12 @@
 --
 -- https://oem12-m.vs.csin.cz:1161/xmlpserver/
 
--- metrics
-  AND metric_column = 'cpuUtil'
-  AND metric_column = 'memUsedPct'
+-- server metrics
+ where metric_name in ('Load','DiskActivitySummary')
+   AND metric_column in ('cpuUtil', 'memUsedPct','totiosmade')
+
+
+-- DB metrics
   metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
   metric_name = 'memory_usage' AND metric_column = 'total_memory'
   iorequests_ps
