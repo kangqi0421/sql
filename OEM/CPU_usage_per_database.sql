@@ -2,6 +2,9 @@
 -- OEM CPU Usage
 --
 
+-- pocty CPU cores a CPU_COUNT
+CM$MGMT_DB_CPU_USAGE_ECM
+
 -- CPU Usage per database
 -- hourly snapshot, sysdate - 3
 SELECT

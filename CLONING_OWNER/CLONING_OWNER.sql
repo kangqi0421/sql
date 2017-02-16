@@ -9,27 +9,25 @@ update OLI_OWNER.DATABASES
       -- source db
       select licdb_id from OLI_OWNER.DATABASES where dbname = 'CLMZA')
   -- target db
-  where dbname like 'CLMD%';
-
-
-select * FROM OLI_OWNER.DATABASES
-  where dbname in ('BOSON', 'JIRKA');
-
--- update serveru
-update  OLI_OWNER.DBINSTANCES
-  set server_id = 569
-  where inst_name = 'BOSON';
-
+  where dbname like 'CLMT%';
 
 -- target_db, target hostname
 SELECT
    'source_db='||s.dbname source_db,
    'target_db='||d.dbname target_db,
-   --d.CLONE_SOURCE_LICDB_ID,
+--   d.CLONE_SOURCE_LICDB_ID,
    d.CLONING_METHOD_ID,
    --env_status,
    --app_name,
-   'target_hostname='||CONCAT(hostname, '.'||domain) server
+   d.LICDB_ID,
+   'target_hostname='||CONCAT(hostname, '.'||domain) server,
+   'init_params='||p.param,
+   -- SRDF/Metro, dle RAC a hostname na z
+   case
+     WHEN s.rac = 'Y' and hostname like 'z%'
+      then 'clone_opts="--metro"'
+    else 'clone_opts=""'
+   end clone_opts
 FROM
   -- target db
   OLI_OWNER.DATABASES d
@@ -39,9 +37,38 @@ FROM
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
- WHERE d.dbname
-   in ('BOSON','CLMDD')
+  -- init params
+  JOIN (SELECT
+           dbname,
+           listagg(param,',') WITHIN GROUP (ORDER BY param) param
+    from (SELECT
+    distinct database_name dbname,
+    -- distinct kvuli RAC instance params
+    CASE upper(ISDEFAULT)
+      WHEN 'FALSE' THEN name ||'='|| VALUE
+      WHEN 'TRUE' then name
+    END param
+  FROM
+   MGMT$DB_INIT_PARAMS p
+    inner join MGMT$DB_DBNINSTANCEINFO i
+      ON (p.target_name = i.target_name)
+  WHERE p.NAME in ('memory_target','sga_target','pga_aggregate_target',
+                   'cpu_count')
+         )
+   group by dbname
+        ) p ON (p.dbname = d.dbname)
+ WHERE d.dbname like 'CLMD%'
 ORDER BY APP_NAME;
+
+
+select * FROM OLI_OWNER.DATABASES
+  where dbname like 'CLMD%';
+
+-- update serveru
+update  OLI_OWNER.DBINSTANCES
+  set server_id = (
+      select server_id from OLI_OWNER.SERVERS where HOSTNAME like 'dordb02%')
+  where inst_name = 'CLMDC';
 
 
 -- drop user
@@ -111,18 +138,23 @@ source_spfile==+${asm_source_dg}/${source_db}/spfile${source_db}.ora
 
 
 -- CLMZA > CLMDD
-
 4252: CLMDD
 source_spfile=+CLMZA_D01/CLMZA/spfile
 asm_source_dg=CLMZA_D01
 
-init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
+CLMD
+295 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
+399 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
+321 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
+
+CLMT
+init_params cpu_count=4,memory_target=17179869184,pga_aggregate_target,sga_target
+
+init_params cpu_count=8,sga_target=10G,pga_aggregate_target=8G,memory_target
 
 clone_opts=
 
 -- init params RESET
-init_params=
-
 init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
 
 REM INSERTING into CLONING_PARAMETER
@@ -139,9 +171,19 @@ Insert into CLONING_PARAMETER values ('3','source_spfile','Y','0',null,null);
 
 REM INSERTING into CLONING_PARAM_VALUE
 SET DEFINE OFF;
-Insert into CLONING_PARAM_VALUE values ('371','C','asm_source_dg','JIRKA_DATA','N');
-Insert into CLONING_PARAM_VALUE values ('371','C','source_spfile','+JIRKA_DATA/JIRKA/spfilejirka.ora','N');
+REM INSERTING into CLONING_PARAMETER
+SET DEFINE OFF;
+Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','recover_opts','Y','0',null,'--noarchivelog');
+Insert into CLONING_PARAMETER values ('-999','init_params','Y','0',null,'cpu_count=4,memory_target=8G,pga_aggregate_target,sga_target');
+Insert into CLONING_PARAMETER values ('-999','asm_source_dg','Y','0',null,'$\{source_db}_D01');
+Insert into CLONING_PARAMETER values ('-999','source_spfile','Y','0',null,'+\${asm_source_dg}/\${source_db}/spfile$\{source_db}.ora');
+Insert into CLONING_PARAMETER values ('-999','snapshot_name','Y','0',null,null);
 
 
 -- upravy od Rasti ...
 ALTER TABLE CLONING_OWNER.CLONING_METHOD_STEP  ADD (LOCAL VARCHAR2(1) DEFAULT 'N' NOT NULL);
+
+

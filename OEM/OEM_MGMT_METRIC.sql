@@ -32,6 +32,17 @@ CM$MGMT_ECM_HW
 MGMT$OS_HW_SUMMARY
 MGMT$HW_CPU_DETAILS
 
+-- BACKUP
+MGMT$HA_BACKUP
+
+-- CM Configuration metriky
+CM$MGMT_ASM_CLIENT_ECM
+
+select * from dba_views
+  where view_name like 'CM$%ASM%'
+order by view_name
+;
+
 select metric_item_id
       ,collection_time
       ,met_values
@@ -54,9 +65,6 @@ select distinct metric_name, metric_column, metric_label, column_label
    --metric_column like 'cursors'
   AND target_name like 'pasbo%'
 ;
-
--- BACKUP
-MGMT$HA_BACKUP
 
 -- CPU util server
 AND metric_name = 'Load' AND metric_column = 'cpuUtil'
