@@ -1,3 +1,7 @@
+--
+-- zmena hesel pres hash values
+--
+
 set verify off
 
 --

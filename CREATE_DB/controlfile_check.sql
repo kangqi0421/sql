@@ -1,7 +1,7 @@
-WHENEVER OSERROR  EXIT FAILURE
-WHENEVER SQLERROR EXIT SQL.SQLCODE
-
+--
 -- kontrola na umisteni controlfile do stejne ASM diskgroupy jako jsou data, vhodne pro klonovani
+--
+
 DECLARE
   v_data varchar2(4000);
 BEGIN

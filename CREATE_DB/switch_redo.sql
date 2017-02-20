@@ -1,14 +1,14 @@
 --
 --
--- skript pro resize online redo
+-- SQL skript pro resize online redo
 --
---   params: $1 - redo size in MB
+--   :params: $1 - redo size in MB, NULL = beze zmeny velikosti redo
 --
 -- 2x member přes groupu, DG odvozena z nastaveni db_create_file_dest
 
-WHENEVER SQLERROR EXIT SQL.SQLCODE
-
 set verify off
+
+-- nastav redo_size_mb na NULL, pokud se nema hodnota menit
 define size_mb = &1
 
 -- optimal_logfile_size
@@ -24,15 +24,18 @@ select THREAD#, l.GROUP#, member, bytes/1048576
   from v$log l join v$logfile f on l.group# = f.group#
   order by THREAD#, f.GROUP#;
 
+select thread#, current_group# from v$thread where status = 'OPEN';
+alter system switch logfile;
+
 --ALL nutný pro RAC
-BEGIN EXECUTE IMMEDIATE 'alter system switch ALL logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
-/
-BEGIN EXECUTE IMMEDIATE 'alter system switch logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
-/
-BEGIN EXECUTE IMMEDIATE 'alter system archive log all'; EXCEPTION WHEN OTHERS THEN NULL; END;
-/
-BEGIN EXECUTE IMMEDIATE 'alter system checkpoint global'; EXCEPTION WHEN OTHERS THEN NULL; END;
-/
+--BEGIN EXECUTE IMMEDIATE 'alter system switch logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
+--/
+--BEGIN EXECUTE IMMEDIATE 'alter system switch ALL logfile'; EXCEPTION WHEN OTHERS THEN NULL; END;
+--/
+--BEGIN EXECUTE IMMEDIATE 'alter system archive log all'; EXCEPTION WHEN OTHERS THEN NULL; END;
+--/
+--BEGIN EXECUTE IMMEDIATE 'alter system checkpoint global'; EXCEPTION WHEN OTHERS THEN NULL; END;
+--/
 
 -- RAC > single db - disable thread #2
 BEGIN
@@ -71,17 +74,29 @@ DECLARE
    -- redo_size_mb  NUMBER := NULL;
    redo_size_mb  INTEGER := &size_mb ;
    --
+   -- archivelog mode
+   v_log_mode VARCHAR2(12);
+   -- pocet public threadu
+   v_thread# INTEGER;
+   --
    CURSOR rlc
    IS
         SELECT group# grp, thread# thr, bytes / 1024 bytes_k
           FROM v$log
       ORDER BY 1;
-   stmt       VARCHAR2 (2048);
-   swtstmt    VARCHAR2 (1024) := 'alter system switch logfile';
-   swtallstmt VARCHAR2 (1024) := 'alter system switch ALL logfile';
-   ckpstmt    VARCHAR2 (1024) := 'alter system checkpoint global';
-   inststmt   VARCHAR2 (80);
+   stmt            VARCHAR2 (2048);
+   inststmt        VARCHAR2 (80);
+   swtstmt         VARCHAR2 (1024) := 'ALTER SYSTEM SWITCH LOGFILE';
+   -- switch pro RAC
+   swtstmt_rac     VARCHAR2 (1024) := 'ALTER SYSTEM ARCHIVE LOG CURRENT';
+   ckpstmt         VARCHAR2 (1024) := 'alter system checkpoint global';
 BEGIN
+   -- detekce RAC
+   select count(*) INTO v_thread#
+     from v$thread where enabled = 'PUBLIC';
+   IF v_thread# > 1 THEN
+     swtstmt := swtstmt_rac;
+   END IF;
    SELECT TRIM (VALUE)
      INTO inststmt
      FROM v$parameter
@@ -89,18 +104,19 @@ BEGIN
    FOR rlcRec IN rlc
    LOOP
       BEGIN
-         stmt := 'alter database drop logfile group ' || rlcRec.grp;
-         IF debug THEN
-			DBMS_OUTPUT.put_line (stmt||';');
-		 ELSE
-            execute immediate stmt;
-		 END IF;
+        BEGIN EXECUTE IMMEDIATE swtstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN EXECUTE IMMEDIATE ckpstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
+        stmt := 'alter database drop logfile group ' || rlcRec.grp;
+        IF debug THEN
+			     DBMS_OUTPUT.put_line (stmt||';');
+		    ELSE
+           execute immediate stmt;
+		    END IF;
       EXCEPTION
          WHEN OTHERS
          THEN
-            BEGIN EXECUTE IMMEDIATE ckpstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
             BEGIN EXECUTE IMMEDIATE swtstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
-            BEGIN EXECUTE IMMEDIATE swtallstmt; EXCEPTION WHEN OTHERS THEN NULL; END;
+            BEGIN EXECUTE IMMEDIATE ckpstmt;    EXCEPTION WHEN OTHERS THEN NULL; END;
             EXECUTE IMMEDIATE stmt;
       END;
       -- pokud je nastavena nova hodnota redo size, pouzij ji
@@ -134,4 +150,3 @@ select THREAD#, l.GROUP#, member, bytes/1048576
 
 -- kontrola pro RAC, minimum aspoň 3 groupy pro každý thread
 select THREAD#, count(*) from v$log group by THREAD#;
-

@@ -1,11 +1,9 @@
 --
--- skript pro pridani dalsich redolog group, typicky aspoò 4
+-- SQL skript pro pridani dalsich redolog group, typicky aspon 4
 --
 
 define size_mb = &1
 define pocet_redo_group = &2
-
-WHENEVER SQLERROR EXIT SQL.SQLCODE
 
 DECLARE
 		debug BOOLEAN          := FALSE;
@@ -35,8 +33,8 @@ BEGIN
             DBMS_OUTPUT.put_line (stmt||';');
           ELSE
             execute immediate stmt;
-        END IF;	
-       END LOOP; 
+        END IF;
+       END LOOP;
      END LOOP;
    END IF;
 END;
