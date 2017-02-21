@@ -15,17 +15,8 @@ SELECT
  order by host_name, target_name;
 
 -- Linux
-define sga=24G
-define pga=8G
-
--- ARSTA
-define sga=12G
-define pga=4G
-
--- ESPPA
-define sga=10G
-define pga=6G
-
+define sga=13G
+define pga=3G
 
 alter system reset sga_max_size;
 alter system reset memory_target;
