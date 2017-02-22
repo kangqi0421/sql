@@ -4,61 +4,12 @@
 
 -- update CLONE_SOURCE_LICDB_ID
 update OLI_OWNER.DATABASES
-  set CLONING_METHOD_ID = 3,
+  set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'CLMZA')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'APSPK')
   -- target db
-  where dbname like 'CLMT%';
-
--- target_db, target hostname
-SELECT
-   'source_db='||s.dbname source_db,
-   'target_db='||d.dbname target_db,
---   d.CLONE_SOURCE_LICDB_ID,
-   d.CLONING_METHOD_ID,
-   --env_status,
-   --app_name,
-   d.LICDB_ID,
-   'target_hostname='||CONCAT(hostname, '.'||domain) server,
-   'init_params='||p.param,
-   -- SRDF/Metro, dle RAC a hostname na z
-   case
-     WHEN s.rac = 'Y' and hostname like 'z%'
-      then 'clone_opts="--metro"'
-    else 'clone_opts=""'
-   end clone_opts
-FROM
-  -- target db
-  OLI_OWNER.DATABASES d
-  -- source db
-  join OLI_OWNER.DATABASES s ON (d.CLONE_SOURCE_LICDB_ID = s.licdb_id)
-  join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
-  JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-  JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
-  -- init params
-  JOIN (SELECT
-           dbname,
-           listagg(param,',') WITHIN GROUP (ORDER BY param) param
-    from (SELECT
-    distinct database_name dbname,
-    -- distinct kvuli RAC instance params
-    CASE upper(ISDEFAULT)
-      WHEN 'FALSE' THEN name ||'='|| VALUE
-      WHEN 'TRUE' then name
-    END param
-  FROM
-   MGMT$DB_INIT_PARAMS p
-    inner join MGMT$DB_DBNINSTANCEINFO i
-      ON (p.target_name = i.target_name)
-  WHERE p.NAME in ('memory_target','sga_target','pga_aggregate_target',
-                   'cpu_count')
-         )
-   group by dbname
-        ) p ON (p.dbname = d.dbname)
- WHERE d.dbname like 'CLMD%'
-ORDER BY APP_NAME;
+  where dbname like 'APST%';
 
 
 select * FROM OLI_OWNER.DATABASES
@@ -154,7 +105,7 @@ init_params cpu_count=8,sga_target=10G,pga_aggregate_target=8G,memory_target
 
 clone_opts=
 
--- init params RESET
+-- init params - default RESET ponechán ve skriptu
 init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
 
 REM INSERTING into CLONING_PARAMETER
