@@ -101,34 +101,34 @@ exec dbms_audit_mgmt.flush_unified_audit_trail;
 
 select
 --    *
-  object_schema, object_name, count(*) cnt
+--  object_schema, object_name, count(*) cnt
 --   substr(sql_text, 1, 32767)
 --    sql_text, count(*)
 --    action_name, return_code, count(*)
 --    dbusername, count(*)
 --    return_code, count(*)
--- event_timestamp, Dbusername, Client_Program_Name, Action_Name, sql_text,
--- Unified_Audit_Policies, return_code
+ event_timestamp, Dbusername, Action_Name, return_code
+-- sql_text, Unified_Audit_Policies,
   from UNIFIED_AUDIT_TRAIL
 --   FROM ARM_CLIENT.ARM_AUD$12TMP --meziskladiste
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
 --                            and timestamp'2015-07-08 22:05:00'
---  AND event_timestamp > SYSTIMESTAMP - INTERVAL '30' MINUTE
---  AND return_code in (1, 12899)
-  and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
+  AND event_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
+   AND return_code > 0
+--  and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
 -- AND UNIFIED_AUDIT_POLICIES is null
--- and action_name='LOGOFF BY CLEANUP'
-  and action_name like 'INSERT'
---   and dbusername='LDAPUSER'
+ and action_name like 'LOG%'
+--  and action_name like 'INSERT'
+   and dbusername='INTRAS'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
 --group by substr(sql_text, 1, 32767)
-group by object_schema, object_name order by 3 desc
-fetch first 100 ROWS ONLY
---order by event_timestamp desc
---FETCH FIRST 5 PERCENT ROWS ONLY
+--group by object_schema, object_name order by 3 desc
+--fetch first 100 ROWS ONLY
+order by event_timestamp desc
+FETCH FIRST 5 PERCENT ROWS ONLY
 ;
 
 -- group by HOUR - lokálně , group by client
