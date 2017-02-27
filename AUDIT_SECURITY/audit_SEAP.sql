@@ -1,4 +1,4 @@
-define db=RTOP
+define db=INEP
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -12,16 +12,18 @@ select ARM_DB_NAME, ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME li
 -- kdo co komu grantoval pres REDIM
 select --/*+ parallel full  (a) */
 --    a.*
---      object_schema, object_name, SQL_TEXT_VARCHAR2  
-    ARM_TIMESTAMP, ARM_DB_NAME, ARM_ACTION_NAME,DBUSERNAME, OS_USERNAME, USERHOST,
-    RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
+--      object_schema, object_name, SQL_TEXT_VARCHAR2
+    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
+    -- ARM_ACTION_NAME,DBUSERNAME, OS_USERNAME, USERHOST,
+    -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db')
-  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
+  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
   and ARM_ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-    and upper(dbusername)='C4ADMIN'
+    and upper(dbusername)='INTRAS'
     and return_code > 0
+    and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role
@@ -68,8 +70,8 @@ select
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
---group by substr(sql_text, 1, 32767) 
-group by object_schema, object_name, return_code 
+--group by substr(sql_text, 1, 32767)
+group by object_schema, object_name, return_code
    order by 4 desc
 --FETCH FIRST 5 ROWS ONLY
 --order by event_timestamp desc

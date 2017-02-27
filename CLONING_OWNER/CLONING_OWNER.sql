@@ -7,9 +7,9 @@ update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'APSPK')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'JIRKA')
   -- target db
-  where dbname like 'APST%';
+  where dbname like 'BOSON';
 
 
 select * FROM OLI_OWNER.DATABASES
@@ -34,12 +34,16 @@ drop user cloning_owner cascade;
 create user cloning_owner identified by abcd1234 profile PROF_APPL
   default tablespace users quota unlimited on users ;
 
-grant select,references on OLI_OWNER.DATABASES  to CLONING_OWNER;
+grant SELECT,references on OLI_OWNER.DATABASES  to CLONING_OWNER;
 grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
-grant select on OLI_OWNER.SERVERS to CLONING_OWNER;
-grant select on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
-grant select on OLI_OWNER.APP_DB to CLONING_OWNER;
-grant select on OLI_OWNER.APPLICATIONS to CLONING_OWNER;
+grant SELECT on OLI_OWNER.SERVERS to CLONING_OWNER;
+grant SELECT on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
+grant SELECT on OLI_OWNER.APP_DB to CLONING_OWNER;
+grant SELECT on OLI_OWNER.APPLICATIONS to CLONING_OWNER;
+--
+grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
+grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
+grant SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
 
 
 -- cloning methods
