@@ -2,6 +2,11 @@
 -- Orchestrace klonování
 --
 
+- přidat REST API pro GET a PUT metodu
+- přidat pro GET možnost vypsat di parametry klonování
+
+sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
+
 -- update CLONE_SOURCE_LICDB_ID
 update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to

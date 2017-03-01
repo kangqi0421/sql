@@ -2,10 +2,56 @@
 --where username like 'AS1_DISCOVERER%';
 
 def export_users="'&1'"
---def export_users="'MW'"
+-- def export_users="'PMWDT1','WCRT2','WCRT2WORK'"
 
 set long 200000 pages 0 lin 32767 trims on head off feed off verify off
 col cmd for a32767
+
+/*
+-- export tablespaces
+prompt -- list of tablespaces
+prompt
+select unique tablespace_name
+      from dba_segments
+        where owner in (&export_users)
+    union
+    select default_tablespace
+      from dba_users
+       where username in (&export_users)
+ORDER BY tablespace_name
+;
+*/
+
+/*
+create tablespace PMWD_DATA3 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace PMWD_IDX3 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_DATAT2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_IDXT2 datafile size 128M autoextend on next 128M maxsize 1G;
+
+create tablespace WCR_LOBT2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_AUDITT2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_CONFIGT2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_DATAD2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_IDXD2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_LOBD2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_AUDITD2 datafile size 128M autoextend on next 128M maxsize 1G;
+create tablespace WCR_CONFIGD2 datafile size 128M autoextend on next 128M maxsize 1G;
+
+*/
+
+/*
+-- create roles
+create ROLE PMWD_DATAD2;
+create ROLE PMWD_USERT1;
+create ROLE PMWD_APLD2;
+create ROLE PMWD_APLT1;
+create ROLE PMWD_APLT2;
+create ROLE PMWD_USERD1;
+create ROLE PMWD_DATAT2;
+create ROLE PMWD_USERD2;
+create ROLE PMWD_USERT2;
+*/
+
 
 spool Clone_User_&export_users..sql
 
@@ -20,39 +66,42 @@ select dbms_metadata.get_ddl('USER', username) cmd
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('TABLESPACE_QUOTA', USERNAME) cmd
-  FROM DBA_USERS 
+  FROM DBA_USERS
  where username in (select username from dba_ts_quotas where upper(username) in (&export_users))
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('ROLE_GRANT', USERNAME) cmd
-  FROM DBA_USERS 
+  FROM DBA_USERS
  where username in (select grantee from dba_role_privs where upper(grantee) in (&export_users))
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('SYSTEM_GRANT', USERNAME) cmd
-  FROM DBA_USERS 
+  FROM DBA_USERS
  where username in (select grantee from dba_sys_privs where upper(grantee) in (&export_users))
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('OBJECT_GRANT', USERNAME) cmd
-  FROM DBA_USERS 
+  FROM DBA_USERS
  where username in (select grantee from dba_tab_privs where grantee in (&export_users))
 /
 
+--
+--
 spool off
 
-
+--
+--
 
 
 -- PASSWORDS
 /*
-select 'alter user '||username|| 
+select 'alter user '||username||
    ' identified by "'||
-   dbms_random.string('a',1)||dbms_random.string('x',7)||'";' 
-  from dba_users 
+   dbms_random.string('a',1)||dbms_random.string('x',7)||'";'
+  from dba_users
  where username in (&export_users);
 
--- password as like as username 
+-- password as like as username
 select 'alter user '||username||' identified by "'||lower(username)||'";' from dba_users where username in (&export_users);
 */
 
@@ -107,3 +156,5 @@ from (select seq, 'dbms_java.grant_permission('''||grantee||''','''||
             where grantee in (&export_users)
                   and type_name = 'oracle.aurora.rdbms.security.PolicyTablePermission') a
       where u.user#=userid) order by seq;
+
+
