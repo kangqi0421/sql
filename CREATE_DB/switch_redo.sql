@@ -24,6 +24,7 @@ select THREAD#, l.GROUP#, member, bytes/1048576
   from v$log l join v$logfile f on l.group# = f.group#
   order by THREAD#, f.GROUP#;
 
+prompt current group:
 select thread#, current_group# from v$thread where status = 'OPEN';
 alter system switch logfile;
 
