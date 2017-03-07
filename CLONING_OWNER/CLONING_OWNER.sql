@@ -12,9 +12,9 @@ update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'JIRKA')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOZA')
   -- target db
-  where dbname like 'BOSON';
+  where dbname like 'RTOTF';
 
 
 select * FROM OLI_OWNER.DATABASES
@@ -26,6 +26,18 @@ update  OLI_OWNER.DBINSTANCES
       select server_id from OLI_OWNER.SERVERS where HOSTNAME like 'dordb02%')
   where inst_name = 'CLMDC';
 
+-- EXPORT/IMPORT
+SCHEMA=CLONING_OWNER,CLONING_PY
+OPTIONS=" directory=DATA_PUMP_DIR COMPRESSION=ALL EXCLUDE=STATISTICS METRICS=YES LOGTIME=ALL FLASHBACK_TIME=SYSTIMESTAMP "
+expdp \'/ as sysdba\' schemas=$SCHEMA $OPTIONS dumpfile=cloning.dmp logfile=cloning_exp.log
+--
+impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloning_imp.log
+--
+
+--
+-- WALLET
+--
+mkstore -wrl . -createCredential INFP_CLONING_PY CLONING_PY abcd1234
 
 -- drop user
 --

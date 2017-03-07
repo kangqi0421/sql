@@ -1,3 +1,17 @@
+
+
+-- databases targets
+SELECT *
+    FROM MGMT$DB_DBNINSTANCEINFO d
+      JOIN MGMT$TARGET t ON d.target_guid = t.target_guid
+ORDER BY 1;
+
+-- vcetne hostname
+SELECT *
+    FROM MGMT$DB_DBNINSTANCEINFO d
+      JOIN MGMT$TARGET t ON d.host_name = t.host_name
+ORDER BY 1;
+
 -- group by version
   SELECT SUBSTR (banner, 1, 57), COUNT ( * )
     FROM MGMT$DB_DBNINSTANCEINFO

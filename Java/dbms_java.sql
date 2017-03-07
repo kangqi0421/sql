@@ -25,7 +25,11 @@ where 1=1
 ;
 
 -- Grant JAVA permission
-exec  dbms_java.grant_permission('INT_OWNER','java.io.FilePermission','/srv/data/pred/ccd/cont/remote/fint/Import/CTLT/int_owner','read,write');
+-- zmenit cestu prod, pred, test .. atd.
+exec  dbms_java.grant_permission('INT_OWNER',
+  'java.io.FilePermission',
+  '/srv/data/pred/ccd/cont/remote/fint/Import/CTLT/int_owner',
+  'read,write');
 
 prompt
 prompt Revoke existing privs
