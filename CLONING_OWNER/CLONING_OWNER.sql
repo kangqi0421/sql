@@ -20,19 +20,21 @@ update OLI_OWNER.DATABASES
 select * FROM OLI_OWNER.DATABASES
   where dbname like 'CLMD%';
 
--- update serveru
-update  OLI_OWNER.DBINSTANCES
-  set server_id = (
-      select server_id from OLI_OWNER.SERVERS where HOSTNAME like 'dordb02%')
-  where inst_name = 'CLMDC';
+--
+http://flask-sqlalchemy.pocoo.org/2.1/
+http://stackoverflow.com/questions/17972020/how-to-execute-raw-sql-in-sqlalchemy-flask-app
+
+select * FROM cloning_databases
+  where target_dbname = 'BOSON';
 
 -- EXPORT/IMPORT
+```
 SCHEMA=CLONING_OWNER,CLONING_PY
 OPTIONS=" directory=DATA_PUMP_DIR COMPRESSION=ALL EXCLUDE=STATISTICS METRICS=YES LOGTIME=ALL FLASHBACK_TIME=SYSTIMESTAMP "
 expdp \'/ as sysdba\' schemas=$SCHEMA $OPTIONS dumpfile=cloning.dmp logfile=cloning_exp.log
 --
 impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloning_imp.log
---
+```
 
 --
 -- WALLET
@@ -46,10 +48,12 @@ mkstore -wrl . -createCredential INFP_CLONING_PY CLONING_PY abcd1234
 -- grant execute on cloning_owner.cloning_api to cloning_py;
 -- grant SELECT on CLONING_OWNER.CLONING_TASKS to CLONING_PY ;
 
-
+```
 drop user cloning_owner cascade;
 create user cloning_owner identified by abcd1234 profile PROF_APPL
   default tablespace users quota unlimited on users ;
+
+grant create view, create synonym to CLONING_OWNER;
 
 grant SELECT,references on OLI_OWNER.DATABASES  to CLONING_OWNER;
 grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
@@ -57,43 +61,11 @@ grant SELECT on OLI_OWNER.SERVERS to CLONING_OWNER;
 grant SELECT on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
 grant SELECT on OLI_OWNER.APP_DB to CLONING_OWNER;
 grant SELECT on OLI_OWNER.APPLICATIONS to CLONING_OWNER;
---
-grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
-grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
+-- DASHBOARD MGMT view
 grant SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
-
-
--- cloning methods
-REM INSERTING into CLONING_METHOD
-SET DEFINE OFF;
-Insert into CLONING_METHOD (CLONING_METHOD_ID,METHOD_NAME,METHOD_TITLE,DESCRIPTION) values ('1','RMAN_DUPLICATE','Duplikace RMAN - do GUI',null);
-Insert into CLONING_METHOD (CLONING_METHOD_ID,METHOD_NAME,METHOD_TITLE,DESCRIPTION) values ('2','HUSVM','Pole HITACHI snapshot metoda',null);
-Insert into CLONING_METHOD (CLONING_METHOD_ID,METHOD_NAME,METHOD_TITLE,DESCRIPTION) values ('3','VMAX3_SNAPVX','Pole VMAX3 přes SnapVX snapshoty',null);
-Insert into CLONING_METHOD (CLONING_METHOD_ID,METHOD_NAME,METHOD_TITLE,DESCRIPTION) values ('4','GI_CREATE','Create Golden Image on SBT_TAPE',null);
-
-
--- CLONING_METHOD_STEP: VMAX3
-REM INSERTING into CLONING_METHOD_STEP
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP001_prepare.sh',001,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP005_pre_sql_scripts.sh',005,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP010_shutdown_db.sh',010,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP020_umount_asm_dg.sh',020,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP100_create_disk_snapshot.sh',100,'Desc','N','Y');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP109_mount_asm_dg.sh',109,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP110_recover_clone_db.sh',110,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP120_rename_clone_db.sh',120,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP130_rename_clone_asmdg.sh',130,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP140_password_file.sh',140,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP180_rac_drop_unused_redo_thread.sh',180,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP205_emcli_stop_blackout.sh',205,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP210_rman_reset_config.sh',210,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP220_rman_resync.sh',220,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP230_rman_backup_validate.sh',230,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP300_app_sql_scripts.sh',300,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP310_grant_dba.sh',310,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP320_autoextend_on.sh',320,'Desc','Y','N');
-INSERT INTO CLONING_OWNER.CLONING_METHOD_STEP values (3,'STEP400_arm_audit.sh',400,'Desc','Y','Y');
---
+grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
+grant SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
+```
 
 select
   --*
