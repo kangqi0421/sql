@@ -21,10 +21,7 @@ select * FROM OLI_OWNER.DATABASES
   where dbname like 'CLMD%';
 
 --
-http://flask-sqlalchemy.pocoo.org/2.1/
-http://stackoverflow.com/questions/17972020/how-to-execute-raw-sql-in-sqlalchemy-flask-app
-
-select * FROM cloning_databases
+select * FROM CLONING_OWNER.CLONING_DATABASES
   where target_dbname = 'BOSON';
 
 -- EXPORT/IMPORT

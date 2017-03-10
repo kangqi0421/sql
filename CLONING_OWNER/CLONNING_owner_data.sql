@@ -11,7 +11,7 @@ CREATE OR REPLACE SYNONYM "CLONING_OWNER"."CM$MGMT_ASM_CLIENT_ECM"
 --
 -- VIEW
 --
-create or replace view cloning_owner.cloning_databases
+create or replace view cloning_owner.cloning_relation
 AS
       SELECT
         s.dbname source_dbname,
@@ -19,14 +19,19 @@ AS
         s.rac source_is_rac_yn,
         t.dbname target_dbname,
         t.licdb_id target_licdb_id,
-        t.rac p_target_is_rac_yn,
+        t.rac target_is_rac_yn,
         t.env_status target_env_status,
         m.method_name
       FROM oli_owner.databases t
-           JOIN oli_owner.databases s ON t.clone_source_licdb_id= s.licdb_id
-           JOIN cloning_method m ON t.cloning_method_id    = m.cloning_method_id
+           LEFT JOIN oli_owner.databases s ON t.clone_source_licdb_id= s.licdb_id
+           LEFT JOIN cloning_owner.cloning_method m ON t.cloning_method_id    = m.cloning_method_id
       WHERE 1=1
 ;
+
+grant select on oli_owner.databases to cloning_py with grant option;
+grant select on cloning_owner.cloning_method to cloning_py with grant option;
+grant select on cloning_owner.cloning_relation to cloning_py;
+create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
 -- pipelined type - jde jen špatně přepsat vo selecktu ...
 
