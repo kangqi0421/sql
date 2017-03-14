@@ -1,15 +1,16 @@
 --
--- bez zaruky, ob�as tam chyb� Oracle Home v OEM
+-- bez zaruky, obèas tam chybí Oracle Home v OEM
 --
 
 select * from MGMT$APPLIED_PATCHES;
 select * from MGMT$OH_PATCH;
 
--- patche na Linuxu, pouze predprodukce
+-- patche na Linuxu
+-- pouze pokud existuje Grid nebo Oracle DB HOME, jinak to nevrátí žádné řádky
 select
-    p.*,
+--    p.*,
     p.host,
-    p.home_location,
+--    p.home_location,
     P.PATCH,
     patch_release,
     P.INSTALLATION_TIME
@@ -17,13 +18,13 @@ select
     --inner join MGMT_TARGETS t ON (p.TARGET_GUID = t.TARGET_GUID)
 WHERE 1=1
 and platform = 'Linux x86-64'
-and host like 'z%'
+and host like 'p%'
 and home_location like '%grid/%'
 --and home_location like '%/db/%'
 and patch_release like '12.%'
 --and IS_PSU = 'N'  -- nefunguje
-and patch in ('24732088')
-order by p.host
+and patch in ('24732088', '24917972')
+order by p.host, patch
 ;
 
 

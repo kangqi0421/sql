@@ -37,6 +37,8 @@ impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloni
 -- WALLET
 --
 mkstore -wrl . -createCredential INFP_CLONING_PY CLONING_PY abcd1234
+mkstore -wrl . -createCredential INFP_CLONING_OWNER CLONING_OWNER abcd1234
+mkstore -wrl . -createCredential INFP_DASHBOARD DASHBOARD abcd1234
 
 -- drop user
 --
