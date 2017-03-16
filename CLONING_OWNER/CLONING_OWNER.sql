@@ -12,16 +12,18 @@ update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOZA')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'MCIP')
   -- target db
-  where dbname like 'RTOTF';
+  where dbname like 'MCIZ';
 
 
-select * FROM OLI_OWNER.DATABASES
-  where dbname like 'CLMD%';
+select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
+  FROM OLI_OWNER.DATABASES
+  where dbname like 'MCI%'
+  order by DBNAME;
 
 --
-select * FROM CLONING_OWNER.CLONING_DATABASES
+select * FROM CLONING_OWNER.CLONING_RELATION
   where target_dbname = 'BOSON';
 
 -- EXPORT/IMPORT

@@ -15,16 +15,17 @@ create or replace view cloning_owner.cloning_relation
 AS
       SELECT
         s.dbname source_dbname,
-        s.licdb_id source_licdb_id,
-        s.rac source_is_rac_yn,
+        s.rac source_is_rac,
         t.dbname target_dbname,
-        t.licdb_id target_licdb_id,
-        t.rac target_is_rac_yn,
-        t.env_status target_env_status,
-        m.method_name
+        t.licdb_id target_id,
+        t.rac target_is_rac,
+        t.env_status target_env,
+        m.method_name method
       FROM oli_owner.databases t
-           LEFT JOIN oli_owner.databases s ON t.clone_source_licdb_id= s.licdb_id
-           LEFT JOIN cloning_owner.cloning_method m ON t.cloning_method_id    = m.cloning_method_id
+           -- poze db s definovanou vazbou
+           JOIN oli_owner.databases s ON t.clone_source_licdb_id= s.licdb_id
+           -- pouze db s definovanou cloning method
+           JOIN cloning_owner.cloning_method m ON t.cloning_method_id    = m.cloning_method_id
       WHERE 1=1
 ;
 
