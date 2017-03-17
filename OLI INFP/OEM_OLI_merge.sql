@@ -55,8 +55,6 @@ ON (oem.target_name = oli.DBNAME)
 when matched then
 update set oli.em_guid = oem.target_guid;
 
-
-
 -- merge server guid from OEM -> OLI
 -- pro redim uz neni potreba
 merge
@@ -76,4 +74,34 @@ ON (oem.hostname = oli.hostname)
 when matched then
 update set oli.em_guid = oem.target_guid;
 
+
+-- CMDB update DATABASES
+merge
+ into OLI_OWNER.DATABASES o
+USING
+  (SELECT
+  cmdb_ci_id,
+  oli_licdb_id
+FROM
+  OLI_OWNER.CA_DATABASES
+  ) c
+ON (o.licdb_id = c.oli_licdb_id)
+when matched then
+  update set o.ca_id = c.cmdb_ci_id;
+;
+
+-- OLI_OWNER.DBINSTANCES
+merge
+ into OLI_OWNER.DBINSTANCES o
+USING
+  (SELECT
+  dbinst_cmdb_ci_id,
+  oli_dbinst_id
+FROM
+  OLI_OWNER.CA_DBINSTANCES
+  ) c
+ON (o.dbinst_id = c.oli_dbinst_id)
+when matched then
+  update set o.ca_id = c.dbinst_cmdb_ci_id;
+;
 
