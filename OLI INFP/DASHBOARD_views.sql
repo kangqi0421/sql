@@ -16,6 +16,8 @@ CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 US
 -- SLO
 
 -- DB SIZE
+-- pridat TYPE_QUALIFIER3 = 'DB' pouze pro db
+-- posilat target guid i dbname ? nebo vyhodit mgmt$db_dbninstanceinfo ?
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_SIZE"
 AS
 SELECT

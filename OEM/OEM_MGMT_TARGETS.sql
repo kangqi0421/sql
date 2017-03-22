@@ -42,7 +42,15 @@ WHERE
   t.target_type IN ('oracle_database','rac_database')  ;
 
 -- DB Instances
- select DB_TARGET_GUID,db_name,dbversion,nvl(dbracopt,'NO') dbracopt,envStatus,contact, department, comment_text from (
+-- upravit na SELECT TARGET_NAME FROM MGMT$TARGET WHERE TYPE_QUALIFIER3 = 'DB'
+--
+--  WHERE dt.target_name IN (SELECT TARGET_NAME
+                         FROM MGMT$TARGET
+                        WHERE TYPE_QUALIFIER3 = 'DB')
+--
+ select DB_TARGET_GUID,db_name,dbversion,nvl(dbracopt,'NO') dbracopt,
+        envStatus,contact, department, comment_text
+    from (
         SELECT target_guid DB_TARGET_GUID, target_type, property_value,property_name
              FROM MGMT$TARGET_PROPERTIES
              WHERE target_type in ('rac_database','oracle_database')
