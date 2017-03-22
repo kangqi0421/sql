@@ -38,6 +38,14 @@ MGMT$HA_BACKUP
 -- CM Configuration metriky
 CM$MGMT_ASM_CLIENT_ECM
 
+-- CPU instance caging
+MGMT$DB_CPU_USAGE
+
+-- DB users - hodilo by se pro REDIM ?
+MGMT$DB_USERS
+
+
+
 select * from dba_views
   where view_name like 'CM$%ASM%'
 order by view_name
@@ -57,6 +65,8 @@ where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VAL
 
 
 -- hledani metriky
+-- zaměnit za sysman.mgmt_metrics ?
+
 select distinct metric_name, metric_column, metric_label, column_label
   from mgmt$metric_current
  where
