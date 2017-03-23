@@ -25,21 +25,17 @@ FROM
    --
 ORDER BY t.target_name;
 
--- DB targets
-select database_name,
-       target_name,
-       host_name
+-- DB targets - pouze single DB a RAC DB
+-- MGMT$DB_DBNINSTANCEINFO
+select *
   FROM MGMT$DB_DBNINSTANCEINFO d
+    JOIN MGMT$TARGET t ON d.target_guid = t.target_guid
+  WHERE t.TYPE_QUALIFIER3 = 'DB'
 ORDER by d.target_name;
 
 -- RAC targets
 select * from MGMT$RAC_TOPOLOGY r;
 
--- count db
-select count(*)
-  from MGMT_TARGETS t
-WHERE
-  t.target_type IN ('oracle_database','rac_database')  ;
 
 -- DB Instances
 -- upravit na SELECT TARGET_NAME FROM MGMT$TARGET WHERE TYPE_QUALIFIER3 = 'DB'

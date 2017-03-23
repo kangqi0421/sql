@@ -13,6 +13,8 @@ CREATE PUBLIC DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 US
 CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMST';
 
 
+connect DASHBOARD/abcd1234
+
 -- SLO
 
 -- DB SIZE
@@ -21,16 +23,18 @@ CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 US
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_SIZE"
 AS
 SELECT
+    d.target_guid,
     d.database_name dbname,
-    round(max(m.value)) as size_gb
+    round(m.value) as size_gb
 FROM
     mgmt$metric_current m
-    JOIN mgmt$db_dbninstanceinfo d ON (
-        m.target_guid = d.target_guid
-    )
-WHERE m.metric_name = 'DATABASE_SIZE'
-  AND m.metric_column = 'ALLOCATED_GB'
-GROUP BY d.database_name
+    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+    JOIN MGMT$TARGET t ON (d.target_guid = t.target_guid)
+WHERE m.metric_name     = 'DATABASE_SIZE'
+  AND m.metric_column   = 'ALLOCATED_GB'
+  -- pouze DB
+  AND t.TYPE_QUALIFIER3 = 'DB'
+ORDER BY d.database_name
 ;
 
 -- MEM SIZE
