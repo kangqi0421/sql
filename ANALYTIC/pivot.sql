@@ -1,5 +1,37 @@
---// memory parameters //--
+--
+-- PIVOT
+--
 
+-- database info
+select t.target_guid, t.target_name,
+       db_name, dbversion, env_status,
+       DECODE(is_rac, 'YES', 'Y', 'NO', 'N', is_rac) is_rac,
+       -- pokud je db v clsteru, vrat scanName, jinak server name
+       NVL2(cluster_name, scanName, server_name) server_name,
+       port
+  from MGMT$TARGET_PROPERTIES
+  PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN (
+    'DBName' as db_name,
+    'DBVersion' as dbversion,
+    'orcl_gtp_lifecycle_status' as env_status,
+    'RACOption' as is_rac,
+    'ClusterName' as cluster_name,
+    'MachineName' as server_name,
+    'Port' as port
+    )) p
+  -- pouze DB bez RAC instance
+  JOIN MGMT$TARGET t on (p.target_guid = t.target_guid)
+  -- join scanName dle clusterName
+  LEFT JOIN (select target_name, property_value scanName
+         from MGMT$TARGET_PROPERTIES
+        where property_name = 'scanName') s
+    ON p.cluster_name = s.target_name
+  -- pouze DB bez RAC instance
+WHERE t.TYPE_QUALIFIER3 = 'DB'
+ORDER BY DB_NAME
+;
+
+-- memory parameters --
 with pivot_data as
 (
 select sys_context('USERENV', 'INSTANCE_NAME') as inst, name, ceil(value/1048576) as mb from v$parameter

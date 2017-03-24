@@ -27,8 +27,15 @@ em_metric_values_daily
 
 sysman.gc$metric_values_hourly
 
+-- MGMT / CM metriky
+  where object_name like 'CM$MGMT%'
+  like 'MGMT$DB_%'
+and owner = 'SYSMAN'
+
+
 -- HW metriky
 CM$MGMT_ECM_HW
+CM$MGMT_ECM_HW_VIRTUAL
 MGMT$OS_HW_SUMMARY
 MGMT$HW_CPU_DETAILS
 
@@ -39,11 +46,17 @@ MGMT$HA_BACKUP
 CM$MGMT_ASM_CLIENT_ECM
 
 -- CPU instance caging
-MGMT$DB_CPU_USAGE
+MGMT$DB_CPU_USAGE  -- per instance
+
 
 -- DB users - hodilo by se pro REDIM ?
 MGMT$DB_USERS
 
+-- cluster services
+CM$MGMT_CLUSTER_ACTV_SRVS_ECM
+
+-- cluster scan adress
+CM$MGMT_CLUSTER_CONFIG
 
 
 select * from dba_views

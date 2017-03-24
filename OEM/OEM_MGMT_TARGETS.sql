@@ -42,42 +42,40 @@ select * from MGMT$RAC_TOPOLOGY t
     and db_instance_name like 'DLKP%';
 
 
--- DB Instances
--- upravit na SELECT TARGET_NAME FROM MGMT$TARGET WHERE TYPE_QUALIFIER3 = 'DB'
---
---  WHERE dt.target_name IN (SELECT TARGET_NAME
-                         FROM MGMT$TARGET
-                        WHERE TYPE_QUALIFIER3 = 'DB')
---
- select DB_TARGET_GUID,db_name,dbversion,nvl(dbracopt,'NO') dbracopt,
-        envStatus,contact, department, comment_text
-    from (
-        SELECT target_guid DB_TARGET_GUID, target_type, property_value,property_name
-             FROM MGMT$TARGET_PROPERTIES
-             WHERE target_type in ('rac_database','oracle_database')
-      )
-      PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN ('DBName' as db_name,
-                                                       'DBVersion' as dbversion,
-                                                       'RACOption' as dbracopt,
-                                                       'orcl_gtp_lifecycle_status' as envStatus,
-                                                       'orcl_gtp_contact' as contact,
-                                                       'orcl_gtp_department' as department,
-                                                       'orcl_gtp_comment' as comment_text))
-   where ((target_type='rac_database' and nvl(dbracopt,'NO')='YES')
-          or (target_type='oracle_database' and nvl(dbracopt,'NO')='NO'))
-  ;
+-- Database Info
+select t.target_guid, t.target_name,
+       database_name dbname,
+       log_mode,
+       characterset,
+       substr(d.supplemental_log_data_min, 1, 1) SL_MIN,
+       dbversion, env_status,
+       substr(is_rac, 1,1) is_rac,
+       -- servername
+       -- pokud je db v clsteru, vrat scanName, jinak server name
+       NVL2(cluster_name, scanName, server_name) server_name,
+       port
+  FROM
+    MGMT$DB_DBNINSTANCEINFO d
+    JOIN MGMT$TARGET_PROPERTIES
+      PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN (
+        'orcl_gtp_lifecycle_status' as env_status,
+        'RACOption' as is_rac,
+        'ClusterName' as cluster_name,
+        'MachineName' as server_name,
+        'Port' as port
+        )) p ON (d.target_guid = p.target_guid)
+  -- pouze DB bez RAC instance
+  JOIN MGMT$TARGET t on (p.target_guid = t.target_guid)
+  -- join scanName dle clusterName
+  LEFT JOIN (select target_name, property_value scanName
+         from MGMT$TARGET_PROPERTIES
+        where property_name = 'scanName') s
+    ON p.cluster_name = s.target_name
+  -- pouze DB bez RAC instance
+WHERE t.TYPE_QUALIFIER3 = 'DB'
+ORDER BY dbname
+;
 
-
--- DB per verze a per OS verze
--- Pozor, nutno upravit, pro PKI DB treba vubec nevraci host_name ...
-select t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2, count(*)
-  from MGMT_TARGETS t inner join MGMT_TARGETS s ON (t.host_name = s.target_name)
-WHERE
-  t.target_type IN ('oracle_database','rac_database')
-  --and t.target_name like 'MCIP%'
-  --and t.category_prop_1 <> ''
-group by t.category_prop_1, s.category_prop_1 || ' ' || s.category_prop_2
-order by 1,2;
 
 -- OEM Groups and members
 SELECT
@@ -92,54 +90,6 @@ SELECT
     AND MEMBER_TARGET_NAME like 'dordb04%'
 ;
 
--- OEM connect string
-  -- single instance, hostname z MachineName
-    select t.target_guid,
-       t.target_name,
-       --target_name, target_type, host_name,
-       machine.property_value hostname
-       from MGMT$TARGET t
-       JOIN MGMT$TARGET_PROPERTIES machine on (t.TARGET_GUID=machine.TARGET_GUID) -- machine
-       where t.type_qualifier3     = 'DB'
-       and   t.target_type         = 'oracle_database'
-       AND   machine.PROPERTY_NAME = 'MachineName'
-    UNION ALL
-    -- RAC, hostname ze scanName
-    select t.target_guid,
-       t.target_name,
-       --t.target_name, t.target_type,
-       c.hostname
-     from   MGMT$TARGET t
-       JOIN MGMT$TARGET_PROPERTIES dp ON (t.TARGET_GUID=dp.TARGET_GUID)
-       JOIN (
-          SELECT t.target_name cluster_name,
-          c.Property_Value hostname
-     FROM
-       MGMT$TARGET t JOIN MGMT$TARGET_PROPERTIES c
-         ON (t.TARGET_GUID=c.TARGET_GUID)
-  WHERE
-          t.target_type   = 'cluster'
-      AND c.property_name = 'scanName'
-      ) c ON (dp.Property_Value = c.cluster_name)
-       where t.type_qualifier3 = 'DB'
-       and t.target_type = 'rac_database'
-       and dp.property_name = 'ClusterName'
-;
--- DB version report
-SELECT
-  p.target_name,
-  t.host_name,
-  p.property_name,
-  p.property_value --"DBVersion"
-  --, t.category_prop_1
-  --t.*
-FROM mgmt$target_properties p join MGMT_TARGETS t on (t.TARGET_GUID = p.target_guid)
-WHERE --t.target_type IN ('oracle_database')
-      t.target_type IN ('oracle_database','rac_database')
-  AND   p.property_name = 'Version'
-  --AND p.target_name in('SK1O','SK2O','CRMRA','MCISTA','BRAEA','CPSEA','DMSLAPTS')
---  AND p.property_value LIKE '11.1%'
-ORDER BY upper(t.target_name) ;
 
 -- OS info/HW info short AIX/Linux/Win ..
 select * from MGMT$OS_HW_SUMMARY  ;

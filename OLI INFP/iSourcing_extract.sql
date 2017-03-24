@@ -15,10 +15,7 @@
   - Na Silver kašlu v
   - zbytek je Bronze.
 
--- zjednodu3ena verze, pouze OEM data, bez Kar+t8ku
-select * from "DASHBOARD"."EM_DBINST_SLO_V";
-
--- report SQL serveru
+-- report SQL serveru - zrušeno
 http://reports12.csin.cz/Reports/Pages/Report.aspx?ItemPath=%2fDashBoard%2fOracleSlo
 
 -- zjednodusena verze, pouze SL
