@@ -20,38 +20,76 @@ connect DASHBOARD/abcd1234
 -- DB SIZE
 -- pridat TYPE_QUALIFIER3 = 'DB' pouze pro db
 -- posilat target guid i dbname ? nebo vyhodit mgmt$db_dbninstanceinfo ?
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_SIZE"
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_FRA_SIZE"
 AS
 SELECT
     d.target_guid,
     d.database_name dbname,
-    round(m.value) as size_gb
+    round(s.value*1024) as db_size_mb,
+    round(f.value/power(1024,2)) as db_log_size_mb
 FROM
-    mgmt$metric_current m
-    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+    mgmt$metric_current s
+    JOIN mgmt$metric_current f ON (s.target_guid = f.target_guid)
+    JOIN mgmt$db_dbninstanceinfo d ON (f.target_guid = d.target_guid)
     JOIN MGMT$TARGET t ON (d.target_guid = t.target_guid)
-WHERE m.metric_name     = 'DATABASE_SIZE'
-  AND m.metric_column   = 'ALLOCATED_GB'
-  -- pouze DB
+WHERE s.metric_name     = 'DATABASE_SIZE'
+  AND s.metric_column   = 'ALLOCATED_GB'
+  AND f.metric_name     = 'ha_flashrecovery'
+  AND f.metric_column   = 'flash_recovery_area_size'
+  -- pouze DB bez RAC instancí
   AND t.TYPE_QUALIFIER3 = 'DB'
 ORDER BY d.database_name
 ;
 
 -- MEM SIZE
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_SIZE"
-mgmt$metric_current
-'memory_usage'
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_INSTANCE_MEM_SIZE"
+AS
+SELECT
+    d.target_guid,
+    d.database_name dbname,
+    d.instance_name,
+    round(m.value) as db_mem_size_mb
+FROM
+    mgmt$metric_current m
+    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+WHERE m.metric_name     = 'memory_usage'
+  AND m.metric_column   = 'total_memory'
+ORDER BY d.database_name
+;
+
+-- DSN connect string
+select t.target_guid,
+   REDIM_GET_SHORT_NAME(t.target_name) AS dbname, -- orezane target name
+   --target_name, target_type, host_name,
+   machine.property_value hostname
+   from DASHBOARD.MGMT$TARGET t
+   JOIN DASHBOARD.MGMT$TARGET_PROPERTIES machine on (t.TARGET_GUID=machine.TARGET_GUID) -- machine
+   where t.type_qualifier3     = 'DB'
+   and   t.target_type         = 'oracle_database'
+   AND   machine.PROPERTY_NAME = 'MachineName'
+
+select distinct --d.target_name,
+       rac_db_name, property_value
+  from MGMT$TARGET_PROPERTIES p
+       JOIN MGMT$RAC_TOPOLOGY t on (p.target_name = t.cluster_name)
+       JOIN MGMT$DB_DBNINSTANCEINFO d on (t.db_instance_name = d.target_name)
+  where 1=1
+  --and d.target_name like 'DLKP%'
+  and property_name = 'scanName'
+  --and property_value like '%scan%'
+order by 1;
+
+select * from MGMT$RAC_TOPOLOGY t
+  where cluster_name = 'ordb02-cluster'
+    and db_instance_name like 'DLKP%';
+
+
 
 
 --
 -- "DASHBOARD"."EM_DBINST_SLO_V"
 --
-
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DBINST_SLO_V"
-AS
-select SLO, count(*) pocet
-from
-(select
+select
     dbracopt,
     envstatus,
     case
@@ -65,9 +103,6 @@ from
     else 'Bronze'
   end SLO
   from DASHBOARD.EM_DBINSTANCES_V
-)
-group by SLO
-order by SLO desc
 ;
 
 --

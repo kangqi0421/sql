@@ -171,8 +171,8 @@ AND column_label like 'All Network Interfaces Total I/O Rate (MB/sec)'
 
 -- zaplnena FRA v %
 AND METRIC_NAME   = 'ha_flashrecovery'
+and metric_column = 'flash_recovery_area_size'
 and metric_column = 'usable_area'
-and column_label = 'Usable Flash Recovery Area (%)'
 
 -- server Filesystem Space Available (MB)
 AND metric_name = 'Filesystems' AND metric_column = 'available'

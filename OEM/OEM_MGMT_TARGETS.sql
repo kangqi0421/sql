@@ -27,14 +27,19 @@ ORDER BY t.target_name;
 
 -- DB targets - pouze single DB a RAC DB
 -- MGMT$DB_DBNINSTANCEINFO
-select *
+select
+--   *
+    database_name, dbversion
   FROM MGMT$DB_DBNINSTANCEINFO d
     JOIN MGMT$TARGET t ON d.target_guid = t.target_guid
   WHERE t.TYPE_QUALIFIER3 = 'DB'
+    and database_name like 'CPS%'
 ORDER by d.target_name;
 
 -- RAC targets
-select * from MGMT$RAC_TOPOLOGY r;
+select * from MGMT$RAC_TOPOLOGY t
+  where cluster_name = 'ordb02-cluster'
+    and db_instance_name like 'DLKP%';
 
 
 -- DB Instances
