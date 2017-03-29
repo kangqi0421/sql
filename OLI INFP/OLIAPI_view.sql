@@ -1,18 +1,28 @@
+--
+-- OLIAPI view
+--
+
 select * from all_views
 where view_name like 'OLAPI%';
-
---
--- používaná view
 
 -- moje upravné view o další sloupečky
 select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
--- mělo by být nahraženo
+-- mělo by být nahraženo za moje
 select * from OLI_OWNER.OLAPI2_APPS_DB_SRVS_FARM_FLG;
 
 -- Alešova původní view
 select * from OLI_OWNER.OLAPI_ACQUIRED_LICENSES;
 select * from OLI_OWNER.OLAPI_LICENCE_USAGE_DETAIL;
+
+
+-- kontroly:
+
+select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG
+  -- mimo kartak
+  WHERE domain not like 'ack-prg%'
+order by inst_name;
+
 
 -- ostatné view
 select * from OLI_OWNER.OLAPI_DATABASES;
@@ -38,6 +48,7 @@ CREATE OR REPLACE FORCE VIEW "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG"
 AS
 SELECT DISTINCT    a.app_name,
                    A.CA_ID app_ca_id,
+                   I.EM_GUID,
                    I.INST_NAME,
                    I.INST_ROLE,
                    I.PERCENT_ON_SERVER,

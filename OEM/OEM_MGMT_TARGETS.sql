@@ -45,6 +45,7 @@ select * from MGMT$RAC_TOPOLOGY t
 -- Database Info
 select t.target_guid, t.target_name,
        database_name dbname,
+       oracle_home,
        log_mode,
        characterset,
        substr(d.supplemental_log_data_min, 1, 1) SL_MIN,
@@ -59,6 +60,7 @@ select t.target_guid, t.target_name,
     JOIN MGMT$TARGET_PROPERTIES
       PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN (
         'orcl_gtp_lifecycle_status' as env_status,
+        'OracleHome' as oracle_home,
         'RACOption' as is_rac,
         'ClusterName' as cluster_name,
         'MachineName' as server_name,
@@ -75,6 +77,19 @@ select t.target_guid, t.target_name,
 WHERE t.TYPE_QUALIFIER3 = 'DB'
 ORDER BY dbname
 ;
+
+
+-- DB verze a Oracle Home
+select 'emcli modify_target -name="'|| t.target_name
+     ||'" -type="'|| t.target_type
+     ||'" -properties="OracleHome:/oracle/product/db/12.1.0.2"'
+  FROM
+  ...
+WHERE 1=1
+--t.TYPE_QUALIFIER3 = 'DB'
+        and dbversion = '12.1.0.2.0'
+        and oracle_home <> '/oracle/product/db/12.1.0.2'
+
 
 
 -- OEM Groups and members

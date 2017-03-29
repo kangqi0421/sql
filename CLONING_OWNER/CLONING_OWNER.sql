@@ -12,9 +12,9 @@ update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'MCIP')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOZA')
   -- target db
-  where dbname like 'MCIZ';
+  where dbname like 'RTODP';
 
 
 select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID

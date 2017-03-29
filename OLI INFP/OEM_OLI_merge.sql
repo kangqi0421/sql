@@ -13,19 +13,31 @@ where t.TYPE_QUALIFIER3 = 'DB'    -- mimo RAC
   and oli.em_guid <> d.target_guid
 order by 1;
 
+-- DB Inst target GUID
+select oli.inst_name, oli.em_guid,
+       d.target_guid
+  from   OLI_OWNER.dbinstances oli
+    JOIN DASHBOARD.MGMT$DB_DBNINSTANCEINFO d
+      ON upper(oli.inst_name) = upper(d.instance_name)
+    JOIN DASHBOARD.MGMT$TARGET t ON d.target_guid = t.target_guid
+       -- pouze DB instance bez RAC database
+where  t.target_type = 'oracle_database'
+    AND oli.em_guid <> d.target_guid
+order by oli.inst_name;
+
 -- kontrola na rozdílná EM GUID u DB Instance
--- update: GUID, DBVERSION, ENV_STATUS
 merge
  into OLI_OWNER.DBINSTANCES oli
 USING (
     -- data z OEM
-    select target_guid, instance_name
-        from DASHBOARD.MGMT$DB_DBNINSTANCEINFO
-        where instance_name NOT IN (select instance_name
-                from DASHBOARD.MGMT$DB_DBNINSTANCEINFO
-                group by instance_name having count(*) > 1)
+    select d.target_guid, d.instance_name
+        from DASHBOARD.MGMT$DB_DBNINSTANCEINFO d
+        JOIN DASHBOARD.MGMT$TARGET t ON d.target_guid = t.target_guid
+        WHERE t.target_type = 'oracle_database'
+          AND instance_name NOT IN (
+            'dbfwdb', 'COGP2', 'BRJ', 'ISS', 'RETAD', 'CRMDB')
       ) oem
-ON (oli.inst_name = oem.instance_name)
+ON (upper(oli.inst_name) = upper(oem.instance_name))
 when matched then
   update set oli.em_guid = oem.target_guid
 ;
