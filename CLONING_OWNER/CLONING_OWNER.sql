@@ -7,14 +7,14 @@
 
 sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
--- update CLONE_SOURCE_LICDB_ID
+-- CLONE_SOURCE_LICDB_ID - SnapVX
 update OLI_OWNER.DATABASES
-  set CLONING_METHOD_ID = 3,   -- set to
+  set CLONING_METHOD_ID = 2,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'CRMPK')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'RDBPKA')
   -- target db
-  where dbname like 'CRMTA';
+  where dbname like 'RDBTA%';
 
 
 select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
@@ -24,10 +24,10 @@ select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
 
 -- zrusit CLONING_RELATION a nahradit za cloning_target_database
 select * FROM CLONING_OWNER.CLONING_RELATION
-  where target_dbname = 'BOSON';
+  where target_dbname like 'RDBTA%';
 
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
-  where target_dbname = 'BOSON';
+  where target_dbname like 'BOSON';
 
 -- EXPORT/IMPORT
 ```
@@ -97,34 +97,4 @@ clone_opts=
 
 -- init params - default RESET ponechán ve skriptu
 init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
-
-REM INSERTING into CLONING_PARAMETER
-SET DEFINE OFF;
-Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','init_params','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('3','snapshot_name','N','0',null,null);
-Insert into CLONING_PARAMETER values ('3','recover_opts','N','0',null,'--noarchivelog');
-Insert into CLONING_PARAMETER values ('3','asm_source_dg','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('3','source_spfile','Y','0',null,null);
---
-
-REM INSERTING into CLONING_PARAM_VALUE
-SET DEFINE OFF;
-REM INSERTING into CLONING_PARAMETER
-SET DEFINE OFF;
-Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','recover_opts','Y','0',null,'--noarchivelog');
-Insert into CLONING_PARAMETER values ('-999','init_params','Y','0',null,'cpu_count=4,memory_target=8G,pga_aggregate_target,sga_target');
-Insert into CLONING_PARAMETER values ('-999','asm_source_dg','Y','0',null,'$\{source_db}_D01');
-Insert into CLONING_PARAMETER values ('-999','source_spfile','Y','0',null,'+\${asm_source_dg}/\${source_db}/spfile$\{source_db}.ora');
-Insert into CLONING_PARAMETER values ('-999','snapshot_name','Y','0',null,null);
-
-
--- upravy od Rasti ...
-ALTER TABLE CLONING_OWNER.CLONING_METHOD_STEP  ADD (LOCAL VARCHAR2(1) DEFAULT 'N' NOT NULL);
-
 
