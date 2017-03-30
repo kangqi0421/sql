@@ -12,9 +12,9 @@ update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 3,   -- set to
       CLONE_SOURCE_LICDB_ID = (
       -- source db
-      select licdb_id from OLI_OWNER.DATABASES where dbname = 'RTOZA')
+      select licdb_id from OLI_OWNER.DATABASES where dbname = 'CRMPK')
   -- target db
-  where dbname like 'RTODP';
+  where dbname like 'CRMTA';
 
 
 select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
@@ -22,8 +22,11 @@ select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
   where dbname like 'MCI%'
   order by DBNAME;
 
---
+-- zrusit CLONING_RELATION a nahradit za cloning_target_database
 select * FROM CLONING_OWNER.CLONING_RELATION
+  where target_dbname = 'BOSON';
+
+select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
   where target_dbname = 'BOSON';
 
 -- EXPORT/IMPORT
@@ -34,13 +37,6 @@ expdp \'/ as sysdba\' schemas=$SCHEMA $OPTIONS dumpfile=cloning.dmp logfile=clon
 --
 impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloning_imp.log
 ```
-
---
--- WALLET
---
-mkstore -wrl . -createCredential INFP_CLONING_PY CLONING_PY abcd1234
-mkstore -wrl . -createCredential INFP_CLONING_OWNER CLONING_OWNER abcd1234
-mkstore -wrl . -createCredential INFP_DASHBOARD DASHBOARD abcd1234
 
 -- drop user
 --

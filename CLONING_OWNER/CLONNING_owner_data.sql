@@ -10,7 +10,7 @@ CREATE OR REPLACE SYNONYM "CLONING_OWNER"."CM$MGMT_ASM_CLIENT_ECM"
 
 --
 -- VIEW
---
+-- zrušit a nahradit za cloning_target_database
 create or replace view cloning_owner.cloning_relation
 AS
       SELECT
@@ -29,6 +29,7 @@ AS
       WHERE 1=1
 ;
 
+-- granty zatím moc nefungují ...
 grant select on oli_owner.databases to cloning_py with grant option;
 grant select on cloning_owner.cloning_method to cloning_py with grant option;
 grant select on cloning_owner.cloning_relation to cloning_py;
@@ -66,3 +67,18 @@ Insert into CLONING_METHOD_STEP values ('3','STEP400_arm_audit.sh','400','Desc',
 Insert into CLONING_METHOD_STEP values ('3','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP230_rman_backup_validate.sh','230','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP320_autoextend_on.sh','320','Desc','Y','N');
+
+
+REM INSERTING into CLONING_PARAMETER
+SET DEFINE OFF;
+Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','recover_opts','Y','0',null,'--noarchivelog');
+Insert into CLONING_PARAMETER values ('-999','asm_source_dg','Y','0',null,'$\{source_db}_D01');
+Insert into CLONING_PARAMETER values ('-999','source_spfile','Y','0',null,'+\${asm_source_dg}/\${source_db}/spfile$\{source_db}.ora');
+Insert into CLONING_PARAMETER values ('-999','snapshot_name','Y','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','cpu_count','N','0',null,'4');
+Insert into CLONING_PARAMETER values ('-999','memory_target','N','0',null,null);
+Insert into CLONING_PARAMETER values ('-999','sga_target','N','0',null,'16G');
+Insert into CLONING_PARAMETER values ('-999','pga_aggregate_target','N','0',null,'8G');
