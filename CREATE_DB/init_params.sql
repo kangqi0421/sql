@@ -13,6 +13,7 @@ SELECT
   name,
   value,
   case
+    when name = 'audit_sys_operations' and value <> 'TRUE' then 'ERR:'||value
     when name = 'processes' and value < 500 then 'ERR:'||value
     when name = 'resource_limit' and value <> 'TRUE' then 'ERR:'||value
     when name = 'session_cached_cursors' and value < 299 then 'ERR:'||value
@@ -24,8 +25,9 @@ SELECT
 FROM
   v$parameter
 WHERE
-  name IN ('resource_limit','processes', 'session_cached_cursors',
-          'fast_start_mttr_target','archive_lag_target', 'os_authent_prefix')
+  name IN ('audit_sys_operations', 'resource_limit','processes',
+           'session_cached_cursors', 'fast_start_mttr_target',
+           'archive_lag_target', 'os_authent_prefix')
 ;
 
 --
@@ -149,8 +151,9 @@ SELECT
   name,
   value,
   case
+    when name = 'audit_sys_operations' and value <> 'TRUE' then 'ERR:'||value
     when name = 'processes' and value < 500 then 'ERR:'||value
-    --when name = 'audit_sys_operations' and value <> 'TRUE' then 'ERR:'||value
+    when name = 'resource_limit' and value <> 'TRUE' then 'ERR:'||value
     when name = 'resource_limit' and value <> 'TRUE' then 'ERR:'||value
     when name = 'session_cached_cursors' and value < 299 then 'ERR:'||value
     when name = 'fast_start_mttr_target' and value  < 300 then 'ERR:'||value
@@ -161,8 +164,9 @@ SELECT
 FROM
   v$spparameter
 WHERE
-  name IN ('resource_limit','processes', 'session_cached_cursors',
-          'fast_start_mttr_target','archive_lag_target', 'os_authent_prefix')
+  name IN ('audit_sys_operations', 'resource_limit','processes',
+           'session_cached_cursors', 'fast_start_mttr_target',
+           'archive_lag_target', 'os_authent_prefix')
 ;
 
 

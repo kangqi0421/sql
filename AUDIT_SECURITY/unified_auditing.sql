@@ -115,12 +115,13 @@ select
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
 --                            and timestamp'2015-07-08 22:05:00'
   AND event_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
-   AND return_code > 0
+   -- AND return_code > 0
+   AND return_code = 1017
 --  and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
 -- AND UNIFIED_AUDIT_POLICIES is null
- and action_name like 'LOG%'
+ -- and action_name like 'LOG%'
 --  and action_name like 'INSERT'
-   and dbusername='INTRAS'
+   and dbusername='JOB_APP'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc

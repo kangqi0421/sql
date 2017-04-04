@@ -22,7 +22,7 @@ select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
   where dbname like 'MCI%'
   order by DBNAME;
 
--- zrusit CLONING_RELATION a nahradit za cloning_target_database
+-- zrusit CLONING_RELATION a nahradit za CLONING_TARGET_DATABASE
 select * FROM CLONING_OWNER.CLONING_RELATION
   where target_dbname like 'RDBTA%';
 

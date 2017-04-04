@@ -1,4 +1,4 @@
-define db=INEP
+define db=CMTTB
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -18,10 +18,10 @@ select --/*+ parallel full  (a) */
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db')
-  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
+  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '8' HOUR
   and ARM_ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-    and upper(dbusername)='INTRAS'
+    and upper(dbusername)='JOB_APP'
     and return_code > 0
     and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')

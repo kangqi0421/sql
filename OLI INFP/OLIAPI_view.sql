@@ -48,7 +48,8 @@ CREATE OR REPLACE FORCE VIEW "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG"
 AS
 SELECT DISTINCT    a.app_name,
                    A.CA_ID app_ca_id,
-                   I.EM_GUID,
+                   d.EM_GUID DB_EM_GUID,
+                   I.EM_GUID INST_EM_GUID,
                    I.INST_NAME,
                    I.INST_ROLE,
                    I.PERCENT_ON_SERVER,
