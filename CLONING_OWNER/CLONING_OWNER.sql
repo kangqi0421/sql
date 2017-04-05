@@ -8,8 +8,11 @@
 sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
 -- CLONE_SOURCE_LICDB_ID - SnapVX
+-- zmenit method_id
+-- zmenit template_id
 update OLI_OWNER.DATABASES
   set CLONING_METHOD_ID = 2,   -- set to
+      CLONING_TEMPLATE_ID = 3,
       CLONE_SOURCE_LICDB_ID = (
       -- source db
       select licdb_id from OLI_OWNER.DATABASES where dbname = 'RDBPKA')
@@ -17,17 +20,19 @@ update OLI_OWNER.DATABASES
   where dbname like 'RDBTA%';
 
 
-select licdb_id, dbname, rac, CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID
+select licdb_id, dbname, rac,
+    CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID, CLONING_TEMPLATE_ID
   FROM OLI_OWNER.DATABASES
-  where dbname like 'MCI%'
+  where dbname like 'RDBTA%'
   order by DBNAME;
+
 
 -- zrusit CLONING_RELATION a nahradit za CLONING_TARGET_DATABASE
 select * FROM CLONING_OWNER.CLONING_RELATION
   where target_dbname like 'RDBTA%';
 
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
-  where target_dbname like 'BOSON';
+  where target_dbname like 'RDBTA%';
 
 -- EXPORT/IMPORT
 ```
