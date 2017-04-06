@@ -4,12 +4,12 @@ CREATE OR REPLACE PROCEDURE SYS.CRM_ADD_MONTHLY_TABLESPACE(
 IS
   ------------
   --
-  --  Version: 1.0
+  --  Version: 1.1
   --
   --  OVERVIEW
   --
   --  The procedure add MONTHLY tablespaces for CRM databases
-  --  
+  --
   --   - i_month_range - range of months to add tablespaces
   --   - i_debug - TRUE = only send output to terminal
   --
@@ -19,9 +19,9 @@ IS
   DEBUG                   BOOLEAN := i_debug;
   TYPE t_tablespace_prefix_tab IS TABLE OF VARCHAR2 (20);
   v_tablespace_prefix t_tablespace_prefix_tab := t_tablespace_prefix_tab('SIEBSA_DATA_');
-  v_tablespace_max_size   integer := 65;      -- size in GB
+  v_tablespace_max_size   integer := 1T;      -- max size pro bigfile
   v_sql                   varchar2(500);
---  
+--
 BEGIN
   -- pro vsechny prefixovane TABLESPACES
   FOR i IN v_tablespace_prefix.FIRST .. v_tablespace_prefix.LAST LOOP
@@ -37,7 +37,7 @@ BEGIN
     LOOP
       v_sql := 'CREATE BIGFILE tablespace '||rec.tablespace_name||
         ' datafile size 512M autoextend on next 512M maxsize '||
-        v_tablespace_max_size||'G'||
+        v_tablespace_max_size||
         ' EXTENT MANAGEMENT LOCAL UNIFORM SIZE 2M';
       -- execute SQL
       IF ( DEBUG = TRUE ) THEN
@@ -45,8 +45,8 @@ BEGIN
       ELSE
         execute immediate v_sql;
       END IF;
-    
-      -- SIEBSA quota unlimited  
+
+      -- SIEBSA quota unlimited
       v_sql := 'ALTER USER SIEBSA QUOTA UNLIMITED ON '||rec.tablespace_name;
         IF ( DEBUG = TRUE ) THEN
         dbms_output.put_line (v_sql);
@@ -54,7 +54,7 @@ BEGIN
         execute immediate v_sql;
       END IF;
     END LOOP;
-  END LOOP;  
+  END LOOP;
 --
 END;
 /
@@ -62,8 +62,8 @@ END;
 set serveroutput on
 exec CRM_ADD_MONTHLY_TABLESPACE(14, FALSE);
 
-ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE'; 
-alter session set NLS_TERRITORY = 'CZECH REPUBLIC'; 
+ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
+alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
 -- scheduler job CRM_ADD_MONTHLY_TBS
 -- freq=daily during MAINTENANCE_WINDOW_GROUP
 begin
@@ -81,7 +81,7 @@ END;
 
 select * from dba_scheduler_jobs
  where owner = 'SYS' and job_name like 'CRM_ADD_MONTHLY_TBS';
- 
+
 SELECT cast(to_timestamp_tz(log_date) at local as date) log_date_local,
     owner,
     JOB_NAME,
@@ -90,15 +90,15 @@ SELECT cast(to_timestamp_tz(log_date) at local as date) log_date_local,
   FROM DBA_SCHEDULER_JOB_RUN_DETAILS
   WHERE job_name LIKE 'CRM_ADD_MONTHLY_TBS'
 --    AND status <> 'SUCCEEDED'
-  ORDER BY log_date DESC; 
- 
+  ORDER BY log_date DESC;
+
 select tablespace_name from dba_tablespaces
  where TABLESPACE_NAME like 'SIEBSA_DATA_%'
 order by 1;
 
 -- 6 mìsícù zpìt, 1 navíc
 SELECT 'SIEBSA_DATA_'|| to_char(ADD_MONTHS (sysdate, LEVEL - 7), 'YYYYMM') tablespace_name
-FROM DUAL CONNECT BY LEVEL <=8 --(N+1)
+  FROM DUAL CONNECT BY LEVEL <=8 --(N+1)
 MINUS
 SELECT tablespace_name FROM dba_tablespaces
 ;
