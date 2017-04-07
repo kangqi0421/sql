@@ -1,26 +1,26 @@
 CREATE OR REPLACE PROCEDURE SYS.CRM_ADD_MONTHLY_TABLESPACE(
       i_month_range integer DEFAULT 6,
-      i_debug BOOLEAN DEFAULT FALSE)
+      i_drop_month  integer default -14,
+      i_debug       BOOLEAN DEFAULT FALSE)
 IS
   ------------
   --
   --  Version: 1.1
   --
-  --  OVERVIEW
-  --
   --  The procedure add MONTHLY tablespaces for CRM databases
   --
   --   - i_month_range - range of months to add tablespaces
+  --   - i_drop_month - months do DROP tablespaces
   --   - i_debug - TRUE = only send output to terminal
   --
-  --  jiri.srba@s-itsolutions.cz
+  --  Jiri Srba jsrba@csas.cz
   --
   ------------
   DEBUG                   BOOLEAN := i_debug;
   TYPE t_tablespace_prefix_tab IS TABLE OF VARCHAR2 (20);
   v_tablespace_prefix t_tablespace_prefix_tab := t_tablespace_prefix_tab('SIEBSA_DATA_');
-  v_tablespace_max_size   integer := 1T;      -- max size pro bigfile
-  v_sql                   varchar2(500);
+  v_tablespace_max_size   varchar2(10) := '1T';      -- max size pro bigfile
+  v_sql                   varchar2(4000);
 --
 BEGIN
   -- pro vsechny prefixovane TABLESPACES
@@ -40,27 +40,49 @@ BEGIN
         v_tablespace_max_size||
         ' EXTENT MANAGEMENT LOCAL UNIFORM SIZE 2M';
       -- execute SQL
-      IF ( DEBUG = TRUE ) THEN
+      IF (DEBUG = TRUE) THEN
         dbms_output.put_line (v_sql);
       ELSE
         execute immediate v_sql;
       END IF;
-
+      --
       -- SIEBSA quota unlimited
       v_sql := 'ALTER USER SIEBSA QUOTA UNLIMITED ON '||rec.tablespace_name;
-        IF ( DEBUG = TRUE ) THEN
+      IF (DEBUG = TRUE) THEN
         dbms_output.put_line (v_sql);
       ELSE
         execute immediate v_sql;
       END IF;
     END LOOP;
   END LOOP;
+  -- DROP prazdnych tablespaces
+  FOR rec IN (
+    SELECT t.tablespace_name
+      from dba_tablespaces t JOIN (
+        SELECT tablespace_name, count(*) cnt
+          from dba_segments
+        GROUP BY tablespace_name) s ON t.tablespace_name = s.tablespace_name
+    WHERE t.tablespace_name like 'SIEBSA_DATA_%'
+      AND t.tablespace_name   <= 'SIEBSA_DATA_'
+               || to_char(ADD_MONTHS(CURRENT_DATE, i_drop_month), 'YYYYMM')
+      -- pouze prazdne tablespaces
+      AND s.cnt = 0
+             )
+  LOOP
+    v_sql := 'DROP TABLESPACE ' || rec.tablespace_name;
+    -- execute SQL
+    IF (DEBUG = TRUE) THEN
+      dbms_output.put_line (v_sql);
+    ELSE
+      execute immediate v_sql;
+    END IF;
+  END LOOP;
 --
 END;
 /
 
 set serveroutput on
-exec CRM_ADD_MONTHLY_TABLESPACE(14, FALSE);
+exec CRM_ADD_MONTHLY_TABLESPACE(14, -6, TRUE);
 
 ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
 alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
