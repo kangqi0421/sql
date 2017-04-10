@@ -1,6 +1,6 @@
 CREATE OR REPLACE PROCEDURE SYS.CRM_ADD_MONTHLY_TABLESPACE(
       i_month_range integer DEFAULT 6,
-      i_drop_month  integer default -14,
+      i_drop_month  integer default -15,
       i_debug       BOOLEAN DEFAULT FALSE)
 IS
   ------------
@@ -57,32 +57,32 @@ BEGIN
   END LOOP;
   -- DROP prazdnych tablespaces
   FOR rec IN (
-    SELECT t.tablespace_name
-      from dba_tablespaces t JOIN (
-        SELECT tablespace_name, count(*) cnt
-          from dba_segments
-        GROUP BY tablespace_name) s ON t.tablespace_name = s.tablespace_name
-    WHERE t.tablespace_name like 'SIEBSA_DATA_%'
-      AND t.tablespace_name   <= 'SIEBSA_DATA_'
-               || to_char(ADD_MONTHS(CURRENT_DATE, i_drop_month), 'YYYYMM')
-      -- pouze prazdne tablespaces
-      AND s.cnt = 0
-             )
+        SELECT t.tablespace_name, sum(blocks) blocks
+          FROM dba_tablespaces t
+           LEFT JOIN dba_segments s ON t.tablespace_name = s.tablespace_name
+        WHERE t.tablespace_name LIKE 'SIEBSA_DATA_%'
+          AND t.tablespace_name <= 'SIEBSA_DATA_'
+                     || to_char(ADD_MONTHS(CURRENT_DATE, i_drop_month), 'YYYYMM')
+        GROUP BY t.tablespace_name)
   LOOP
-    v_sql := 'DROP TABLESPACE ' || rec.tablespace_name;
-    -- execute SQL
-    IF (DEBUG = TRUE) THEN
-      dbms_output.put_line (v_sql);
-    ELSE
-      execute immediate v_sql;
+    -- pouze prazdne tablespaces
+    IF rec.blocks IS NULL THEN
+      v_sql := 'DROP TABLESPACE ' || rec.tablespace_name;
+      -- execute SQL
+      IF (DEBUG = TRUE) THEN
+        dbms_output.put_line (v_sql);
+      ELSE
+        execute immediate v_sql;
+      END IF;
     END IF;
   END LOOP;
---
+  --
 END;
 /
 
 set serveroutput on
-exec CRM_ADD_MONTHLY_TABLESPACE(14, -6, TRUE);
+--exec CRM_ADD_MONTHLY_TABLESPACE(6, -15, TRUE);
+exec CRM_ADD_MONTHLY_TABLESPACE();
 
 ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
 alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
@@ -114,11 +114,23 @@ SELECT cast(to_timestamp_tz(log_date) at local as date) log_date_local,
 --    AND status <> 'SUCCEEDED'
   ORDER BY log_date DESC;
 
+-- list mesicnich tablespaces
 select tablespace_name from dba_tablespaces
  where TABLESPACE_NAME like 'SIEBSA_DATA_%'
 order by 1;
 
--- 6 mìsícù zpìt, 1 navíc
+-- mesicni tablespaces vcetne poctu blokÅ¯
+SELECT t.tablespace_name, sum(blocks) blocks
+  FROM dba_tablespaces t
+   LEFT JOIN dba_segments s ON t.tablespace_name = s.tablespace_name
+WHERE t.tablespace_name LIKE 'SIEBSA_DATA_%'
+--  AND t.tablespace_name <= 'SIEBSA_DATA_'
+--             || to_char(ADD_MONTHS(CURRENT_DATE, -7), 'YYYYMM')
+GROUP BY t.tablespace_name
+;
+
+
+-- 6 mÃ¬sÃ­cÃ¹ zpÃ¬t, 1 navÃ­c
 SELECT 'SIEBSA_DATA_'|| to_char(ADD_MONTHS (sysdate, LEVEL - 7), 'YYYYMM') tablespace_name
   FROM DUAL CONNECT BY LEVEL <=8 --(N+1)
 MINUS
