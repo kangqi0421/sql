@@ -1,10 +1,10 @@
 /* ASH */
 
 select 
- * 
+-- * 
 --event, count(*) cnt
 --sample_time, count(*)
---  SQL_ID, COUNT(*) cnt
+  SQL_ID, COUNT(*) cnt
 -- parse time
 -- count(*) as dbtime,   count(nullif(A.IN_PARSE,'N')) as parse_time,  count(nullif(A.IN_HARD_PARSE,'N')) as hard_parse_time
 --  event, sum(time_waited)
@@ -30,9 +30,9 @@ select
   1=1                
 --       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-01-09 09:25:50'
 --                           AND TIMESTAMP'2017-01-09 09:26:34'
-                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
---                         and SQL_ID = '3z1z9w9h7hmzq'
---                         and event in ('db file sequential read')
+                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
+--                         and SQL_ID = '5mnnju3u896b1'
+                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
@@ -40,7 +40,7 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
-                         and SESSION_ID in (2857)  and SESSION_SERIAL# in (35323)
+--                         and SESSION_ID in (2857)  and SESSION_SERIAL# in (35323)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
@@ -56,7 +56,7 @@ select
 --                         and user_id = (select user_id from dba_users where USERNAME in ('SYMPROXY'))
 --                           and program like '%tux%' 
 --  XID having count(*) > 1
---group by   sql_id ORDER by count(*) DESC 
+group by   sql_id ORDER by count(*) DESC 
 --    sql_exec_id
 --group by sample_time
 --group by  event order by  count(*) DESC
@@ -74,7 +74,7 @@ select
   --blocking_session
 --ORDER by count(*) DESC  
 --ORDER by session_id
-ORDER BY sample_time -- desc  --, inst_id
+--ORDER BY sample_time -- desc  --, inst_id
 ;
 
 -- min snapshot time

@@ -103,6 +103,7 @@ AND metric_name = 'Load' AND metric_column = 'memUsedPct'
 metric_column = usedLogicalMemoryPct
 
 -- SGA a PGA Total Memory [MB]
+-- pohybuje se v čase
 AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
 
 -- SGA
@@ -207,8 +208,8 @@ FROM
 --  MGMT$METRIC_DAILY m
   MGMT$METRIC_DETAILS m
 WHERE  1 = 1
---  AND m.target_name in ('IPCTA')
-  AND m.target_name like 'pasbo%'
+  AND m.target_name like 'IPCTA%'
+  -- AND m.target_name like 'pasbo%'
  -- and m.target_name not like '%.cc.%'  -- nechci Viden
    AND metric_name = 'Filesystems' AND metric_column = 'available'
      and key_value = '/u021'

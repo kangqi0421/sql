@@ -41,22 +41,34 @@ ORDER BY d.database_name
 -- CPU MEM SIZE
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_INSTANCE_CPU_MEM_SIZE"
 AS
+WITH MEM AS
+(SELECT
+     m.target_guid,
+     -- avg mem size za poslednich 31 dni
+     round(avg(m.average)) db_mem_size_mb
+FROM
+  MGMT$METRIC_HOURLY m
+WHERE
+      m.metric_name     = 'memory_usage'
+  AND m.metric_column   = 'total_memory'
+GROUP BY m.target_guid
+)
 SELECT
     d.target_guid em_guid,
     d.database_name dbname,
     d.instance_name,
     cpu_count cpu,
-    round(m.value) as db_mem_size_mb
+    m.db_mem_size_mb
 FROM
     MGMT$DB_CPU_USAGE c
-    JOIN mgmt$metric_current m ON (c.target_guid = m.target_guid)
+    JOIN MEM m ON (c.target_guid = m.target_guid)
     JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
-WHERE m.metric_name     = 'memory_usage'
-  AND m.metric_column   = 'total_memory'
 ORDER BY d.database_name
 ;
 
--- EM_DATABASE_INFO, vcetne DSN
+-- EM_DATABASE_INFO
+-- - vcetne DSN
+-- - již zahrnuje EM_DATABASE_FRA_SIZE
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_INFO"
 AS
 select t.target_guid em_guid,
