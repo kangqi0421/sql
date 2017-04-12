@@ -23,13 +23,10 @@ update OLI_OWNER.DATABASES
 select licdb_id, dbname, rac,
     CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID, CLONING_TEMPLATE_ID
   FROM OLI_OWNER.DATABASES
-  where dbname like 'RDBTA%'
+  where 1=1
+    and dbname like 'RTO%'
+    and cloning_method_id = 3
   order by DBNAME;
-
-
--- zrusit CLONING_RELATION a nahradit za CLONING_TARGET_DATABASE
-select * FROM CLONING_OWNER.CLONING_RELATION
-  where target_dbname like 'RDBTA%';
 
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
   where target_dbname like 'RDBTA%';
@@ -68,6 +65,8 @@ grant SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
 grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
 grant SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
 ```
+
+GRANT execute on OLI_OWNER.UTILS to CLONING_OWNER;
 
 select
   --*

@@ -8,26 +8,6 @@ CREATE OR REPLACE SYNONYM "CLONING_OWNER"."MGMT$DB_INIT_PARAMS"
 CREATE OR REPLACE SYNONYM "CLONING_OWNER"."CM$MGMT_ASM_CLIENT_ECM"
   FOR "DASHBOARD"."CM$MGMT_ASM_CLIENT_ECM";
 
---
--- VIEW
--- zrušit a nahradit za cloning_target_database
-create or replace view cloning_owner.cloning_relation
-AS
-      SELECT
-        s.dbname source_dbname,
-        s.rac source_is_rac,
-        t.dbname target_dbname,
-        t.licdb_id target_id,
-        t.rac target_is_rac,
-        t.env_status target_env,
-        m.method_name method
-      FROM oli_owner.databases t
-           -- poze db s definovanou vazbou
-           JOIN oli_owner.databases s ON t.clone_source_licdb_id= s.licdb_id
-           -- pouze db s definovanou cloning method
-           JOIN cloning_owner.cloning_method m ON t.cloning_method_id    = m.cloning_method_id
-      WHERE 1=1
-;
 
 -- granty zatím moc nefungují ...
 grant select on oli_owner.databases to cloning_py with grant option;
@@ -43,7 +23,7 @@ SET DEFINE OFF;
 Insert into CLONING_METHOD values ('1','RMAN_DUPLICATE','Duplikace RMAN - do GUI','vykecavaci');
 Insert into CLONING_METHOD values ('2','HITACHI','Pole HITACHI HUS VM metoda','vykecavaci');
 Insert into CLONING_METHOD values ('3','SNAPVX','Pole VMAX3 přes SnapVX snapshoty','vykecavaci');
-Insert into CLONING_METHOD values ('-999','COMMON','Obecna metoda pro obecne parametry','vykecavaci');
+
 
 
 REM INSERTING into CLONING_METHOD_STEP
@@ -99,23 +79,55 @@ Insert into CLONING_METHOD_STEP values ('2','STEP410_send_email.sh','410','Desc'
 
 
 
--- upravy od Rasti ...
-ALTER TABLE CLONING_OWNER.CLONING_METHOD_STEP  ADD (LOCAL VARCHAR2(1) DEFAULT 'N' NOT NULL);
-
-
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_PARAMETER values ('-999','app_supp_email','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','asm_source_dg','Y','0',null,'$\{source_db}_D01');
-Insert into CLONING_PARAMETER values ('-999','clone_opts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','cpu_count','N','0',null,'4');
-Insert into CLONING_PARAMETER values ('-999','memory_target','N','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','pga_aggregate_target','N','0',null,'8G');
-Insert into CLONING_PARAMETER values ('-999','post_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','pre_sql_scripts','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','recover_opts','Y','0',null,'--noarchivelog');
-Insert into CLONING_PARAMETER values ('-999','sga_target','N','0',null,'16G');
-Insert into CLONING_PARAMETER values ('-999','snapshot_name','Y','0',null,null);
-Insert into CLONING_PARAMETER values ('-999','source_spfile','Y','0',null,'+\${asm_source_dg}/\${source_db}/spfile$\{source_db}.ora');
+Insert into CLONING_PARAMETER values ('C','app_supp_email','Y','0',null,'jsrba@csas.cz','N');
+Insert into CLONING_PARAMETER values ('I','db_block_checksum','N','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('C','pre_sql_scripts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('C','post_sql_scripts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('C','clone_opts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('C','recover_opts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('C','asm_source_dg','Y','0',null,'${source_db}_D01','N');
+Insert into CLONING_PARAMETER values ('C','source_spfile','Y','0',null,'+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
+Insert into CLONING_PARAMETER values ('C','snapshot_name','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER values ('I','memory_target','N','0',null,null,'Y');
+Insert into CLONING_PARAMETER values ('I','cpu_count','N','0',null,'4','N');
+Insert into CLONING_PARAMETER values ('I','pga_aggregate_target','N','0',null,'8G','N');
+Insert into CLONING_PARAMETER values ('I','sga_target','N','0',null,'16G','N');
 
+REM INSERTING into CLONING_TEMPLATE
+Insert into CLONING_TEMPLATE values ('1','MALA_DB');
+Insert into CLONING_TEMPLATE values ('2','RTODS');
+Insert into CLONING_TEMPLATE values ('3','RDBT');
+
+REM INSERTING into TEMPLATE_PARAM_VALUE
+SET DEFINE OFF;
+Insert into TEMPLATE_PARAM_VALUE values ('1','I','memory_target',null,'Y');
+Insert into TEMPLATE_PARAM_VALUE values ('1','I','cpu_count','4','N');
+Insert into TEMPLATE_PARAM_VALUE values ('1','I','pga_aggregate_target','8G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('1','I','sga_target','16G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('3','I','memory_target',null,'Y');
+Insert into TEMPLATE_PARAM_VALUE values ('3','I','cpu_count','4','N');
+Insert into TEMPLATE_PARAM_VALUE values ('3','I','pga_aggregate_target','8G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('3','I','sga_target','16G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('3','C','app_supp_email','jsrba@csas.cz,zelis@csas.cz','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','I','sga_target','50G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','I','memory_target',null,'Y');
+Insert into TEMPLATE_PARAM_VALUE values ('2','I','pga_aggregate_target','24G','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','I','cpu_count','8','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','C','pre_sql_scripts','${CLONE_DIR}/sql/uloz_app_hesla.sql','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','C','post_sql_scripts','${TODAY_FMT}/${target_db}_nastav_hesla.sql','N');
+Insert into TEMPLATE_PARAM_VALUE values ('2','C','app_supp_email','jsrba@csas.cz,rtods@csas.cz,fas-alfa@csas.cz','N');
+
+
+REM INSERTING into METHOD_PARAM_VALUE
+SET DEFINE OFF;
+Insert into METHOD_PARAM_VALUE values ('3','I','db_block_checksum','FULL','N');
+Insert into METHOD_PARAM_VALUE values ('3','C','recover_opts','--noarchivelog','N');
+Insert into METHOD_PARAM_VALUE values ('2','I','db_block_checksum','FULL','N');
+Insert into METHOD_PARAM_VALUE values ('2','C','recover_opts','--noarchivelog','N');
+Insert into METHOD_PARAM_VALUE values ('2','C','asm_source_dg','${source_db}_D01','N');
+Insert into METHOD_PARAM_VALUE values ('2','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
+Insert into METHOD_PARAM_VALUE values ('3','C','asm_source_dg','${source_db}_D01','N');
+Insert into METHOD_PARAM_VALUE values ('3','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
