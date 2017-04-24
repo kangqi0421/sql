@@ -7,8 +7,9 @@ SELECT table_name,
        num_buckets,
        histogram
   FROM dba_tab_columns
- WHERE table_name = '&table_name';
- 
+ WHERE table_name = '&table_name'
+   AND histogram <> 'NONE';
+
 --/* zjištìní nastavení default hodnot instance */--
 
 col spare4 for a40
