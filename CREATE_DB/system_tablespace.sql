@@ -44,8 +44,8 @@ BEGIN
    -- datafile UNDOTBS1, UNDOTBS2
    FOR rec IN c_datafile
    LOOP
---      EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  resize &undo_size';
-      EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  autoextend on next 256M maxsize &undo_size';
+      EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  resize &undo_size';
+--      EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  autoextend on next 256M maxsize &undo_size';
    END LOOP;
 END;
 /
@@ -72,4 +72,44 @@ BEGIN
   END IF;
 END;
 /
+
+--
+-- vypisy
+--
+
+-- UNDO
+set lines 200;
+col tablespace_name for a10;
+col file_name for a60;
+col GB for 999;
+col autoextensible for a15;
+SELECT tablespace_name,file_name,round(bytes/1024/1024/1024) GB,autoextensible
+        FROM dba_data_files
+       WHERE tablespace_name in (
+                select tablespace_name from dba_tablespaces where contents = 'UNDO'
+);
+
+-- system tbs
+set lines 200;
+col tablespace_name for a10;
+col file_name for a60;
+col size_GB for 999;
+col maxsize_GB for 999;
+col autoextensible for a15;
+SELECT tablespace_name,file_name,round(bytes/1024/1024/1024) size_GB,round(maxbytes/1024/1024/1024) maxsize_GB,autoextensible
+        FROM dba_data_files
+       WHERE tablespace_name in (
+                select tablespace_name from dba_tablespaces where tablespace_name in ('SYSTEM', 'SYSAUX', 'USERS','ARM_DATA')
+);
+
+-- temp
+set lines 200;
+col tablespace_name for a10;
+col file_name for a60;
+col size_GB for 999;
+col maxsize_GB for 999;
+col autoextensible for a15;
+SELECT tablespace_name,file_name,round(bytes/1024/1024/1024) size_GB,round(maxbytes/1024/1024/1024) maxsize_GB,autoextensible
+        FROM dba_temp_files
+;
 
