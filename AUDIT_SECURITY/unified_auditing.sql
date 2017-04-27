@@ -13,6 +13,12 @@ select round(o.space_usage_kbytes / 1048576) as space_usage_GB from v$sysaux_occ
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
 truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 
+-- pokud se nedaří odmazat online
+sqlplus  / as sysdba
+startup restrict
+exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
+shutdown immediate
+
 -- kdy došlo k nárůstu auditních dat
 select *
   from ARM_CLIENT.ARM_AUDIT_HISTOGRAM
@@ -142,3 +148,31 @@ select
  group by trunc(event_timestamp,'HH24'), client_program_name
  ORDER BY 3 desc
 ;
+
+
+-- Known Issues
+*** 2017-04-26 09:12:21.480
+ORA-12012: error on auto execute of job "SYS"."ARM_CLIENT_JOB"
+ORA-01476: divisor is equal to zero
+ORA-06512: at "SYS.DBMS_STATS", line 34830
+ORA-06512: at "SYS.ARM_MOVE_C", line 503
+ORA-06512: at "SYS.ARM_MOVE_C", line 883
+ORA-06512: at line 1
+
+
+"ORA-01476: divisor is equal to zero
+ORA-06512: at "SYS.DBMS_STATS", line 34830
+ORA-06512: at "SYS.ARM_MOVE_C", line 503
+ORA-06512: at "SYS.ARM_MOVE_C", line 883
+ORA-06512: at line 1
+"
+
+
+exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL');
+
+
+exec dbms_stats.set_table_prefs('SYS','X$UNIFIED_AUDIT_TRAIL','CONCURRENT','OFF');
+
+exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL', method_opt=> 'for all columns size auto');
+
+-- p. Fiala, dát vědět, dočasně vypnout audit

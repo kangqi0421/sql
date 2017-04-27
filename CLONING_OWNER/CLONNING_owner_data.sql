@@ -77,6 +77,21 @@ Insert into CLONING_METHOD_STEP values ('2','STEP320_autoextend_on.sh','320','De
 Insert into CLONING_METHOD_STEP values ('2','STEP400_arm_audit.sh','400','Desc','Y','Y');
 Insert into CLONING_METHOD_STEP values ('2','STEP410_send_email.sh','410','Desc','Y','Y');
 
+-- DWH
+Insert into CLONING_METHOD_STEP values ('4','STEP001_prepare.sh','1','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP140_password_file.sh','140','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP210_rman_reset_config.sh','210','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP220_rman_resync.sh','220','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP230_rman_backup_validate.sh','230','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP300_app_sql_scripts.sh','300','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP310_grant_dba.sh','310','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP320_autoextend_on.sh','320','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP400_arm_audit.sh','400','Desc','Y','Y');
+Insert into CLONING_METHOD_STEP values ('4','STEP410_send_email.sh','410','Desc','Y','Y');
 
 
 -- CLONING_PARAMETER

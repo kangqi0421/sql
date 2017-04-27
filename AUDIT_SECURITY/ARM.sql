@@ -3,7 +3,7 @@
 DEFINE db=RTO%
 
 
-SELECT *  FROM ARM_ADMIN.ARM_DATABASES 
+SELECT *  FROM ARM_ADMIN.ARM_DATABASES
   WHERE ARM_DB_NAME LIKE '%&db%'
 order by ARM_DB_NAME;
 
@@ -153,7 +153,7 @@ select * from dba_db_links where db_link like 'RTOP%';
 drop database link RTOP;
 create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
 
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'RTOP_AIX', ARM_DB_NAME = 'RTOP_AIX' 
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'RTOP_AIX', ARM_DB_NAME = 'RTOP_AIX'
   WHERE ARM_FULLID LIKE 'RTOP1246254454';
 commit;
 
@@ -225,3 +225,35 @@ set sqltext = substr(ltrim(sqltext),1,1024)
 where length(sqltext) > 1024;
 
 commit;
+
+-- Known Issues
+*** 2017-04-26 09:12:21.480
+ORA-12012: error on auto execute of job "SYS"."ARM_CLIENT_JOB"
+ORA-01476: divisor is equal to zero
+ORA-06512: at "SYS.DBMS_STATS", line 34830
+ORA-06512: at "SYS.ARM_MOVE_C", line 503
+ORA-06512: at "SYS.ARM_MOVE_C", line 883
+ORA-06512: at line 1
+
+
+"ORA-01476: divisor is equal to zero
+ORA-06512: at "SYS.DBMS_STATS", line 34830
+ORA-06512: at "SYS.ARM_MOVE_C", line 503
+ORA-06512: at "SYS.ARM_MOVE_C", line 883
+ORA-06512: at line 1
+"
+
+
+exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL');
+
+
+exec dbms_stats.set_table_prefs('SYS','X$UNIFIED_AUDIT_TRAIL','CONCURRENT','OFF');
+
+exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL', method_opt=> 'for all columns size auto');
+
+-- návod od Tomáše alias od Aleše
+exec dbms_stats.set_table_prefs('SYS','X$UNIFIED_AUDIT_TRAIL','CONCURRENT','OFF');
+exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL');
+
+
+-- p. Fiala, dát vědět, dočasně vypnout audit
