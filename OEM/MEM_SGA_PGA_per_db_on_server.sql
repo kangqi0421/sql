@@ -2,7 +2,7 @@
 -- Memory
 --
 
--- MEM utilization per server
+-- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
 select
    m.rollup_timestamp,
@@ -26,7 +26,7 @@ ORDER by m.rollup_timestamp, target_name
 ;
 
 
--- SGA a PGA - Total Memory MB
+-- SGA a PGA - real allocated size MB
 AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
 
 

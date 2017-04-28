@@ -1,4 +1,21 @@
-/* dropni pouze prazdne tablespace ze seznamu */
+--
+-- dropni pouze prazdne tablespace ze seznamu
+--
+
+-- CPS%, PSP%
+WITH extents as (
+SELECT t.tablespace_name, sum(blocks) blocks
+  FROM dba_tablespaces t
+   LEFT JOIN dba_segments s ON t.tablespace_name = s.tablespace_name
+WHERE
+  (t.tablespace_name like 'CPS%' or t.tablespace_name like 'PSP%')
+GROUP BY t.tablespace_name
+)
+select 'DROP TABLESPACE '||tablespace_name||';'
+  from extents
+  where blocks is NULL
+;
+
 
 set serveroutput on
 
@@ -10,7 +27,7 @@ BEGIN
 	         )
    LOOP
       select count(*) into cntExtents from dba_segments where tablespace_name = c.name;
-      IF cntExtents = 0 
+      IF cntExtents = 0
         then
           execute immediate 'drop tablespace '||c.name;
       ELSE

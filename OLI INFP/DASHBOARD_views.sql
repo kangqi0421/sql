@@ -41,11 +41,11 @@ ORDER BY d.database_name
 -- CPU MEM SIZE
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_INSTANCE_CPU_MEM_SIZE"
 AS
-WITH MEM AS
-(SELECT
+WITH MEM_ALLOC AS
+(SELECT /*+ RESULT_CACHE */
      m.target_guid,
-     -- avg mem size za poslednich 31 dni
-     round(avg(m.average)) db_mem_size_mb
+     -- avg used mem size za poslednich 31 dni
+     round(avg(m.average)) mem_alloc_size_mb
 FROM
   MGMT$METRIC_HOURLY m
 WHERE
@@ -58,20 +58,22 @@ SELECT
     d.database_name dbname,
     d.instance_name,
     cpu_count cpu,
-    m.db_mem_size_mb
+    m.MEM_ALLOC_SIZE_MB   -- skutecne alokovana pamet dle total_memory
 FROM
     MGMT$DB_CPU_USAGE c
-    JOIN MEM m ON (c.target_guid = m.target_guid)
+    JOIN MEM_ALLOC m ON (c.target_guid = m.target_guid)
     JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
-ORDER BY d.database_name
+-- ORDER BY d.database_name
 ;
+
 
 -- EM_DATABASE_INFO
 -- - vcetne DSN
 -- - již zahrnuje EM_DATABASE_FRA_SIZE
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_INFO"
 AS
-select t.target_guid em_guid,
+select /*+ RESULT_CACHE */
+       t.target_guid em_guid,
        t.target_name,
        database_name dbname,
        log_mode,
@@ -93,7 +95,8 @@ select t.target_guid em_guid,
        -- pokud je db v clsteru, vrat scanName, jinak server name
        NVL2(cluster_name, scanName, server_name) server_name,
        port,
-       db_size_mb, db_log_size_mb
+       db_size_mb,
+       db_log_size_mb
   FROM
     MGMT$DB_DBNINSTANCEINFO d
     JOIN MGMT$TARGET_PROPERTIES
@@ -127,7 +130,7 @@ select t.target_guid em_guid,
     ON p.cluster_name = s.target_name
   -- pouze DB bez RAC instance
 WHERE t.TYPE_QUALIFIER3 = 'DB'
-ORDER BY dbname
+--ORDER BY dbname
 ;
 
 
@@ -164,7 +167,10 @@ from MGMT$DB_DBNINSTANCEINFO@oem_prod
 ;
 
 CREATE OR REPLACE FORCE VIEW "CM$MGMT_ASM_CLIENT_ECM" AS
-SELECT
-  *
-FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
+SELECT * FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
+;
+
+
+CREATE OR REPLACE FORCE VIEW "MGMT$DB_SGA" AS
+SELECT * FROM MGMT$DB_SGA@OEM_PROD
 ;

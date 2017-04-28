@@ -23,6 +23,16 @@ select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG
   WHERE domain not like 'ack-prg%'
 order by inst_name;
 
+select
+    inst_name, dbname,
+    db_size_mb, db_log_size_mb , mem_alloc_size_mb
+  from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG
+  -- mimo kartak
+  WHERE domain not like 'ack-prg%'
+  and db_size_mb is NULL
+  and mem_alloc_size_mb is NULL
+order by inst_name;
+
 
 -- ostatné view
 select * from OLI_OWNER.OLAPI_DATABASES;
@@ -39,6 +49,7 @@ GRANT SELECT ON DASHBOARD.MGMT$TARGET_PROPERTIES TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.MGMT$TARGET TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.MGMT$METRIC_CURRENT TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.MGMT$METRIC_HOURLY TO OLI_OWNER with GRANT option;
+GRANT SELECT ON DASHBOARD.MGMT$DB_INIT_PARAMS TO OLI_OWNER with GRANT option;
 
 GRANT SELECT ON DASHBOARD.EM_DATABASE_INFO TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.EM_INSTANCE_CPU_MEM_SIZE TO OLI_OWNER with GRANT option;
@@ -85,7 +96,7 @@ SELECT DISTINCT    a.app_name,
                    em.db_size_mb,
                    em.db_log_size_mb,
                    emi.cpu,
-                   emi.db_mem_size_mb
+                   emi.MEM_ALLOC_SIZE_MB
      FROM oli_owner.APPLICATIONS A,
           oli_owner.APP_DB AD,
           oli_owner.databases d,
