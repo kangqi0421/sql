@@ -82,6 +82,10 @@ Insert into CLONING_METHOD_STEP values ('2','STEP410_send_email.sh','410','Desc'
 -- DWH - pouze RECOVER a RENAME
 Insert into CLONING_METHOD_STEP values ('4','STEP001_prepare.sh','1','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP109_mount_asm_dg.sh','109','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP110_recover_clone_db.sh','110','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP120_rename_clone_db.sh','120','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP130_rename_clone_asmdg.sh','130','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP140_password_file.sh','140','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');

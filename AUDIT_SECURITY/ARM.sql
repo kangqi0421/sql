@@ -47,7 +47,7 @@ select * from dba_scheduler_running_jobs
 --// scheduler job logy //--
 select * from DBA_SCHEDULER_JOB_RUN_DETAILS
   where owner = 'ARM_ADMIN'
-  and job_name like '%&db'
+  --and job_name like '%&db'
   order by log_date desc;
 
 --// re-run prenosoveho jobu //--
@@ -166,8 +166,8 @@ select * from arm_client.ARM_DATABASE;
 -- logy
 select *
   from ARM_CLIENT.ARM_LOG
- where sub_date > sysdate - interval '3' DAY
-order by sub_date ;
+ where sub_date > sysdate - interval '1' DAY
+order by sub_date DESC ;
 
 select count(*) from UNIFIED_AUDIT_TRAIL;
 select count(*) from ARM_CLIENT.ARM_AUD$12TMP;

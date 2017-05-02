@@ -8,11 +8,15 @@ SELECT   owner, job_name,  enabled,
 
 -- status jobu
 SELECT *
---    owner, job_name, job_action, start_date, state, LAST_RUN_DURATION   
+--    owner, job_name, job_action, start_date, state, LAST_RUN_DURATION
   FROM dba_scheduler_jobs
 where job_name like 'ORA$AT_OS_OPT_SY_46195';
 
-	
+SELECT *
+  from dba_scheduler_running_jobs
+;
+
+
 -- chyby z logu pro FAILED
 SET SQLFORMAT ANSICONSOLE
 
@@ -26,7 +30,7 @@ SELECT *
   WHERE job_name LIKE 'CS_JOB%'
 --    AND status <> 'SUCCEEDED'
   ORDER BY log_date DESC;
-  
+
 -- autotask history
 SELECT *
 FROM dba_autotask_job_history

@@ -13,12 +13,6 @@ select round(o.space_usage_kbytes / 1048576) as space_usage_GB from v$sysaux_occ
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
 truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 
--- pokud se nedaří odmazat online
-sqlplus  / as sysdba
-startup restrict
-exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
-shutdown immediate
-
 -- kdy došlo k nárůstu auditních dat
 select *
   from ARM_CLIENT.ARM_AUDIT_HISTOGRAM
@@ -36,7 +30,7 @@ select dbusername,action_name,unified_audit_policies,return_code, count(*)
   from unified_audit_trail
 -- from ARM_CLIENT.ARM_AUD$12TMP
  group by dbusername,action_name,unified_audit_policies,return_code
-order by count(*) desc;
+order by count(*) ;
 
 
 --
@@ -59,7 +53,7 @@ order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
 select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
  -- where policy_name like '%DWH'
-  and policy_name like 'CS_ACTIONS_FREQUENT'
+  and policy_name like 'CS%'
   and AUDIT_OPTION like 'INSERT%'
 --order by policy_name
  ;
@@ -91,6 +85,15 @@ BEGIN
 end LOOP;
 END;
 /
+
+-- NOAUDIT ALTER SESSION
+SELECT * FROM auditable_system_actions
+  WHERE component='Standard'
+   AND name like 'ALTER SES%'
+  ;
+--
+ALTER AUDIT POLICY CS_ACTIONS_GENERAL
+  DROP ACTIONS ALTER SESSION;
 
 -- INFO - audit SELECT  per username INFO
 -- INFO na testovacích DB 'TS0', 'TS0I', 'TS1', 'TS1I'
