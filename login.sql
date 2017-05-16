@@ -19,7 +19,7 @@ from v$session where sid = (select sid from v$mystat where rownum = 1);
 
 --define all='"select /*+ no_merge */ sid from v$session"'
 
--- you should change linesize to match terminal width - 1 only 
+-- you should change linesize to match terminal width - 1 only
 -- if you don't have a terminal with horizontal scrolling
 -- capability (cmd.exe and Terminator terminal do have horizontal scrolling)
 set linesize 180
@@ -39,7 +39,7 @@ set pagesize 5000
 -- note that arraysize can affect outcome of experiments
 -- like buffer gets for select statements etc.
 set arraysize 500
-	
+
 -- normally I keep this commented out, otherwise
 -- a DBMS_OUTPUT.GET_LINES call is made after all
 -- PL/SQL executions from sqlplus. this may distort
@@ -66,10 +66,10 @@ SET sqlformat ansiconsole
 
 -- this makes describe command better to read and more
 -- informative in case of complex datatypes in columns
-	-- set describe depth 1 linenum on indent on  
+	-- set describe depth 1 linenum on indent on
 
 -- you can make sqlplus run any command as your editor
--- I could use "start notepad" on windows if you want to 
+-- I could use "start notepad" on windows if you want to
 -- return control back to sqlplus immediately after launching
 -- notepad (so that you can continue typing in sqlplus
 
@@ -93,25 +93,25 @@ set termout off
 	                                               )
 	                                    )
 	       ) || '.trc' tracefile
-	from v$parameter where name = 'user_dump_dest';	
-*/	
+	from v$parameter where name = 'user_dump_dest';
+*/
 
 	-- NLS date format
 ALTER SESSION SET NLS_DATE_FORMAT = 'DD.MM.RRRR HH24:MI:SS';
-	
+
 	-- format some more columns for common DBA queries
 col file_name for a60
 col owner heading owner for a20
 col member for a60
-col first_change# for 99999999999999999
-col next_change# for 99999999999999999
-col checkpoint_change# for 99999999999999999
-col resetlogs_change# for 99999999999999999
+col "first_change#" for 99999999999999999
+col "next_change#" for 99999999999999999
+col "checkpoint_change#" for 99999999999999999
+col "resetlogs_change#" for 99999999999999999
 col plan_plus_exp for a100
-col value_col_plus_show_param ON HEADING  'VALUE'  FORMAT a100 
+col value_col_plus_show_param ON HEADING  'VALUE'  FORMAT a100
 
 -- set html format
---@@Tanel\htmlset nowrap 
+--@@Tanel\htmlset nowrap
 
 -- nefunguje se SQLcl
 -- set editfile afiedit.sql
@@ -119,6 +119,6 @@ col value_col_plus_show_param ON HEADING  'VALUE'  FORMAT a100
 -- reset termout back to normal
 set termout on
 
--- i.sql is the "who am i" script which shows your session/instance info and 
+-- i.sql is the "who am i" script which shows your session/instance info and
 -- also sets command prompt window/xterm title
 @@i.sql

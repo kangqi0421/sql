@@ -12,7 +12,7 @@ def _i_user="NA"
 
 col i_username head USERNAME for a20
 col i_sid head SID for a5 new_value mysid
-col i_serial head SERIAL# for a8 new_value _i_serial
+col i_serial head "SERIAL#" for a8 new_value _i_serial
 col i_cpid head CPID for a15 new_value _i_cpid
 col i_spid head SPID for a15 new_value _i_spid
 col i_opid head OPID for a5 new_value _i_opid
@@ -24,33 +24,33 @@ col _i_user noprint new_value _i_user
 col _i_conn noprint new_value _i_conn
 col i_myoraver noprint new_value myoraver
 
-select 
-	s.username			i_username, 
-	i.instance_name	i_instance_name, 
-	i.host_name			i_host_name, 
-	to_char(s.sid) 			i_sid, 
-	to_char(s.serial#)		i_serial, 
+select
+	s.username			i_username,
+	i.instance_name	i_instance_name,
+	i.host_name			i_host_name,
+	to_char(s.sid) 			i_sid,
+	to_char(s.serial#)		i_serial,
 	(select substr(banner, instr(banner, 'Release ')+8,10) from v$version where rownum = 1) i_ver,
 	(select  substr(substr(banner, instr(banner, 'Release ')+8),
 	 		1,
 			instr(substr(banner, instr(banner, 'Release ')+8),'.')-1)
-	 from v$version 
+	 from v$version
 	 where rownum = 1) i_myoraver,
-	to_char(startup_time, 'YYYYMMDD') i_startup_day, 
-	p.spid				i_spid, 
-	--trim(to_char(p.pid))		i_opid, 
-	--s.process			i_cpid, 
-	s.saddr				saddr, 
+	to_char(startup_time, 'YYYYMMDD') i_startup_day,
+	p.spid				i_spid,
+	--trim(to_char(p.pid))		i_opid,
+	--s.process			i_cpid,
+	s.saddr				saddr,
 	p.addr				paddr,
 	lower(s.username) "_i_user"
 	--upper('&_connect_identifier') "_i_conn"
-from 
-	v$session s, 
-	v$instance i, 
+from
+	v$session s,
+	v$instance i,
 	v$process p
-where 
+where
 	s.paddr = p.addr
-and 
+and
 	sid = (select sid from v$mystat where rownum = 1);
 
 -- Windows CMD.exe specific stuff

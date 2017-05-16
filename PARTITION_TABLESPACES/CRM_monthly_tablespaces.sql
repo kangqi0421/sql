@@ -80,10 +80,12 @@ BEGIN
 END;
 /
 
+-- Unit Tests
 set serveroutput on
 --exec CRM_ADD_MONTHLY_TABLESPACE(6, -15, TRUE);
 exec CRM_ADD_MONTHLY_TABLESPACE();
 
+-- submit scheduler jobu
 ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
 alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
 -- scheduler job CRM_ADD_MONTHLY_TBS
