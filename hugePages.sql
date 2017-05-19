@@ -15,8 +15,8 @@ SELECT
  order by host_name, target_name;
 
 -- Linux
-define sga=13G
-define pga=3G
+define sga=8G
+define pga=4G
 
 alter system reset sga_max_size;
 alter system reset memory_target;

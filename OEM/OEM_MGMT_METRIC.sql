@@ -98,9 +98,10 @@ AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
 
 -- Memory util server
-AND metric_name = 'Load' AND metric_column = 'memUsedPct'
+AND metric_name = 'Load'
+ -- neukazuje spravne s HugePages AND metric_column = 'memUsedPct'
 -- pro AIX: Used Logical Memory (%)
-metric_column = usedLogicalMemoryPct
+metric_column = 'usedLogicalMemoryPct'
 
 -- SGA a PGA Total Memory [MB]
 -- pohybuje se v čase
