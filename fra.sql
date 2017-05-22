@@ -31,7 +31,7 @@ SELECT TRUNC (AVG (mb)/1024) as redo_avg, TRUNC (MAX (mb)/1024) redo_max
 SELECT
     a.name,
     round(total_mb/1024) ASM_total_GB,
-    round(total_mb*0.95) ASM_5pct_MB,
+    round(total_mb*0.98) ASM_2pct_MB,
     ROUND(space_limit/power(1024,3)) FRA_limit_GB,
     round(USABLE_FILE_MB/1024) ASM_Free_GB,
     --ROUND(space_used       /power(1024,3)) FRA_used,
