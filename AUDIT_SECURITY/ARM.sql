@@ -71,7 +71,7 @@ END;
 
 --// reinstalace - doplnit lokï¿½lnï¿½ zaznam //--
 --// spustit na SEAPT pod ARM_ADMIN
-insert into arm_client.ARM_DATABASE@&db
+insert into ARM_CLIENT.ARM_DATABASE@&db
   select * from ARM_ADMIN.ARM_DATABASES  WHERE arm_db_name = upper('&db');
 
 --// data ve stage tabulce //--

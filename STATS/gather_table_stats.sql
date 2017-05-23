@@ -1,3 +1,6 @@
+-- GTS pouze jedne partitions
+exec dbms_stats.gather_table_stats('TELEB', 'SB_T_DEPOSITAQUERY_RESP', GRANULARITY => 'PARTITION', PARTNAME => 'P1M20170501');
+
 -- unlock, gather, lock
 BEGIN
   FOR rec IN (  SELECT b.owner, b.table_name
@@ -12,7 +15,7 @@ BEGIN
                      || ''', tabname => '''
                      || rec.table_name
                      || ''', granularity => ''ALL'', no_invalidate => FALSE, cascade => TRUE, force=>TRUE); END;';
-     --execute immediate 'begin dbms_stats.lock_table_stats(ownname => '''||rec.owner ||''', tabname => '''||rec.table_name||'''); end;';                     
+     --execute immediate 'begin dbms_stats.lock_table_stats(ownname => '''||rec.owner ||''', tabname => '''||rec.table_name||'''); end;';
   END LOOP;
 END;
 /
