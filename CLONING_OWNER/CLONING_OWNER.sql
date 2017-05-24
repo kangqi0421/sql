@@ -102,3 +102,5 @@ clone_opts=
 -- init params - default RESET ponechán ve skriptu
 init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
 
+-- rozděleno na ARCHIVELOG a NOARCHIVELOG
+

@@ -12,7 +12,8 @@ select name ||'_'||to_char(sysdate, 'yyyyddmm_hh24miss') spoolname from v$databa
 prompt DB instance info
 col name for a10
 col force_logging for a5
-select name,log_mode,flashback_on,supplemental_log_data_min,force_logging,database_role
+select name,log_mode,flashback_on,supplemental_log_data_min SLMIN,
+       force_logging,database_role
 from v$database;
 
 prompt dba registry:

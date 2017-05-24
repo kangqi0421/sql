@@ -24,7 +24,10 @@ Insert into CLONING_METHOD values ('1','RMAN_DUPLICATE','Duplikace RMAN - do GUI
 Insert into CLONING_METHOD values ('2','HITACHI','Pole HITACHI HUS VM metoda','vykecavaci');
 Insert into CLONING_METHOD values ('3','SNAPVX','Pole VMAX3 přes SnapVX snapshoty','vykecavaci');
 
-
+-- pridani restartu DB
+Insert into CLONING_METHOD_STEP values ('2','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
+Insert into CLONING_METHOD_STEP values ('3','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
+Insert into CLONING_METHOD_STEP values ('4','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
 
 REM INSERTING into CLONING_METHOD_STEP
 SET DEFINE OFF;
