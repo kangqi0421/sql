@@ -101,12 +101,10 @@ ALTER SESSION SET NLS_DATE_FORMAT = 'DD.MM.RRRR HH24:MI:SS';
 
 	-- format some more columns for common DBA queries
 col file_name for a60
+col file_name for a60
+col TABLESPACE_NAME for a30
 col owner heading owner for a20
 col member for a60
-col "first_change#" for 99999999999999999
-col "next_change#" for 99999999999999999
-col "checkpoint_change#" for 99999999999999999
-col "resetlogs_change#" for 99999999999999999
 col plan_plus_exp for a100
 col value_col_plus_show_param ON HEADING  'VALUE'  FORMAT a100
 
