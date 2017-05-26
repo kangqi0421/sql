@@ -13,7 +13,7 @@ configure default device type to 'SBT_TAPE';
 configure controlfile autobackup on;
 configure device type 'SBT_TAPE' parallelism 2 backup type to backupset;
 configure channel device type 'sbt_tape'
-  parms 'SBT_LIBRARY=/opt/tivoli/tsm/client/oracle/bin64/libobk.so,ENV=(TDPO_OPTFILE=/dba/rman/tdpo/${ORACLE_SID%%[12]}_tdpo.opt)'
+  parms 'ENV=(TDPO_OPTFILE=/dba/rman/tdpo/${ORACLE_SID%%[12]}_tdpo.opt)'
   maxpiecesize 64g format '%d-%I-%T-%U';
 
 show all;
