@@ -20,6 +20,7 @@ define pga=4G
 
 alter system reset sga_max_size;
 alter system reset memory_target;
+alter system reset pga_aggregate_limit;
 alter system set sga_target = &sga comment='HugePages enabled' scope=spfile;
 alter system set pga_aggregate_target = &pga scope=spfile;
 
