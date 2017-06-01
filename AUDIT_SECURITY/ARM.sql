@@ -193,6 +193,13 @@ select * from ARM_CLIENT.ARM_AUDIT_HISTOGRAM order by log_id desc, bucket_id;
 -- rerun do meziskladištì
 exec SYS.ARM_MOVE_C.MOVE_TO_STAGE;
 
+-- cleanup a remove spustenych zaseknutych jobu
+
+-- DROP JOB
+exec dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_JOB', force=>True);
+exec dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_CLEANUP_JOB', force=>True);
+
+
 
 --//kill SQL*Net jobu //--
 select 'alter system kill '''||sid||','||serial#||''';'

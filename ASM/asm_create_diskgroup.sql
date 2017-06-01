@@ -4,7 +4,7 @@
 sqlplus / as sysasm <<ESQL
 select unique
         regexp_replace(path,
-          '^/dev/mapper/asm.*_([A-Z]+)_(D01|FRA)p1',
+          '^/dev/mapper/asm.*_([A-Z]+)_(D01|DATA|FRA)(p1|\d+)?',
           '\1_\2',
           1,0,'i') AS dg
   from v\$asm_disk
@@ -13,11 +13,49 @@ order by 1;
 exit
 ESQL
 
-## create
+## vyzkouset vytvoreni ASM diskgroupy pres asmca -silent
+asmcmd lsdsk --suppressheader --candidate
+
+asmcmd lsdsk --suppressheader --candidate | \
+  grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
+
+DG=COLD_DATA
+AU_SIZE=4
+COMPATIBLE="12.1"
+asmca -silent -createDiskGroup \
+  -diskGroupName COLD_DATA \
+    -diskList '/dev/mapper/asm_*COLD_DATA' \
+  -redundancy EXTERNAL -au_size ${AU_SIZE} \
+  -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
+
+## asmcmd mkdg
 AU_SIZE=4M
+COMPATIBLE="12.1"
+
+cat >
+<dg name="data" redundancy="normal">
+     <fg name="fg1">
+          <dsk string="/dev/disk1"/>
+          <dsk string="/dev/disk2"/>
+     </fg>
+     <fg name="fg2">
+          <dsk string="/dev/disk3"/>
+          <dsk string="/dev/disk4"/>
+     </fg>
+
+     <a name="compatible.asm" value="11.2" />
+     <a name="compatible.rdbms" value="11.2" />
+     <a name="compatible.advm" value="11.2" />
+</dg>
+
+
+## create ASM diskgroup
+AU_SIZE=4M
+COMPATIBLE="12.1"
 sqlplus -s / as sysasm <<ESQL
 SET heading off verify off feed off trims on pages 0 lines 32767
-define au_size=$AU_SIZE
+define au_size=${AU_SIZE}
+define compatible=${COMPATIBLE}
 spool asm_create_dg.sql
 -- nazev DG je vytvoøen pøes regexp
 -- '^/dev/(mapper/(\w+_){3}|rlvo)([a-zA-Z]+)[_]?(D01|d01|DATA|data|FRA|fra)(p1|\d+)','\3_\4'
@@ -28,13 +66,13 @@ SELECT
   'CREATE DISKGROUP ' || dg
     ||' EXTERNAL REDUNDANCY '||chr(10)|| 'DISK'||CHR(10)
     || disk||chr(10)
-    || 'ATTRIBUTE ''AU_SIZE''=''&au_size'', ''compatible.asm''=''12.1'',''compatible.rdbms''=''12.1'';'
+    || 'ATTRIBUTE ''AU_SIZE''=''&au_size'', ''compatible.asm''=''&compatible'',''compatible.rdbms''=''&compatible'';'
   as cmd
 FROM
    (
     SELECT
       regexp_replace(path,
-        '^/dev/mapper/asm.*_([A-Z]+)_(D01|DATA|FRA)p1',
+        '^/dev/mapper/asm.*_([A-Z]+)_(D0\d|DATA|FRA)(p1|\d)?',
         '\1_\2',
         1,0,'i') AS dg,
       LISTAGG(''''||path||'''', ','||chr(10)) WITHIN GROUP (ORDER BY path) disk
@@ -44,7 +82,7 @@ FROM
       --and path like '%CLMT%'
     GROUP BY
        regexp_replace(path,
-        '^/dev/mapper/asm.*_([A-Z]+)_(D01|DATA|FRA)p1',
+        '^/dev/mapper/asm.*_([A-Z]+)_(D0\d|DATA|FRA)(p1|\d)?',
         '\1_\2',
         1,0,'i')
   )

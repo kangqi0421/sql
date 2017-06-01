@@ -1,6 +1,7 @@
 --
 -- Unified Auditing
 --
+How To Enable The New Unified Auditing In 12c ? (Doc ID 1567006.1)
 
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
@@ -92,8 +93,7 @@ SELECT * FROM auditable_system_actions
    AND name like 'ALTER SES%'
   ;
 --
-ALTER AUDIT POLICY CS_ACTIONS_GENERAL
-  DROP ACTIONS ALTER SESSION;
+ALTER AUDIT POLICY CS_ACTIONS_GENERAL DROP ACTIONS ALTER SESSION;
 
 -- INFO - audit SELECT  per username INFO
 -- INFO na testovacích DB 'TS0', 'TS0I', 'TS1', 'TS1I'
@@ -179,3 +179,11 @@ exec dbms_stats.set_table_prefs('SYS','X$UNIFIED_AUDIT_TRAIL','CONCURRENT','OFF'
 exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL', method_opt=> 'for all columns size auto');
 
 -- p. Fiala, dát vědět, dočasně vypnout audit
+
+-- change tablespace
+BEGIN
+   dbms_audit_mgmt.set_audit_trail_location(
+   audit_trail_type => dbms_audit_mgmt.audit_trail_unified,
+   audit_trail_location_value => 'SYSAUX');
+END;
+/

@@ -1,9 +1,14 @@
-ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE'; 
-alter session set NLS_TERRITORY = 'CZECH REPUBLIC'; 
+ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
+alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
 
-/* sleep job + auto drop po jeho skonèení */ 
+-- DROP JOB
 begin
-  dbms_scheduler.drop_job(job_name => 'TEST');
+  dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_JOB', force=>True);
+end;
+/
+
+begin
+  dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_CLEANUP_JOB', force=>True);
 end;
 /
 
@@ -35,11 +40,11 @@ END;
 
 
 -- instance_stickiness on INST 2 - nahraženo za DB service MCI_JOBS
-begin  
-  dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'INSTANCE_ID', value=> 2);  
-  dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'instance_stickiness', value=> TRUE); 
-end;  
-/  
+begin
+  dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'INSTANCE_ID', value=> 2);
+  dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'instance_stickiness', value=> TRUE);
+end;
+/
 
 exec dbms_scheduler.run_job('TEST');
 
@@ -57,7 +62,7 @@ end;
 /
 
 
--- repeat job 
+-- repeat job
 begin
 dbms_scheduler.create_job(
    job_name => 'TEST',
