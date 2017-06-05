@@ -39,9 +39,10 @@ SELECT
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
---    AND target_name like 'CLM%'
+    AND target_name like 'CLM%'
     AND host_name like '&server%'
---  AND REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
+    AND REGEXP_LIKE(host_name, 'z(p|b)ordb03.vs.csin.cz')
+    -- AND REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
     and value > 0
 order by target_name, name;
 

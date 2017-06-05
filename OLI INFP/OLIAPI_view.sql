@@ -5,15 +5,15 @@
 select * from all_views
 where view_name like 'OLAPI%';
 
--- moje upravné view o další sloupečky
+-- základní data do CMDB
 select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
--- mělo by být nahraženo za moje
-select * from OLI_OWNER.OLAPI2_APPS_DB_SRVS_FARM_FLG;
 
 -- Alešova původní view
 select * from OLI_OWNER.OLAPI_ACQUIRED_LICENSES;
 select * from OLI_OWNER.OLAPI_LICENCE_USAGE_DETAIL;
+-- již se nepoužívá, mělo by být nahraženo za moje
+select * from OLI_OWNER.OLAPI2_APPS_DB_SRVS_FARM_FLG;
 
 
 -- kontroly:

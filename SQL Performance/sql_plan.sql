@@ -5,20 +5,26 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 4apkwcq8un8rz
+DEFINE SQLID = 6dcz98qa1sg4n
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
 
--- hledání jednoho sql id za poslední X hodin z ASH
+-- hledï¿½nï¿½ jednoho sql id za poslednï¿½ X hodin z ASH
 SELECT  SQL_ID, COUNT(*) cnt
-    FROM dba_hist_active_sess_history ash 
+    FROM 
+--      dba_hist_active_sess_history ash 
+       GV$ACTIVE_SESSION_HISTORY ASH
   WHERE 1=1
---    AND SAMPLE_TIME > sysdate - interval '4' hour
-    AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-10 01:00:00' 
-                        AND TIMESTAMP'2016-11-10 03:00:00'
+    AND SAMPLE_TIME > sysdate - interval '4' hour
+--    AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-10 01:00:00' 
+--                        AND TIMESTAMP'2016-11-10 03:00:00'
   group by SQL_ID
   order by 2 desc;
+  
+select * 
+  from GV$ACTIVE_SESSION_HISTORY where sql_id = '&SQLID'
+order by sample_time desc;
 
 
 @sqlid &SQLID %
@@ -69,7 +75,7 @@ SELECT   sql_id, sql_exec_start,
     MAX(sample_time) end_sql,
     MAX(sample_time)-sql_exec_start AS duration
   FROM 
-      DBA_HIST_ACTIVE_SESS_HISTORY
+--      DBA_HIST_ACTIVE_SESS_HISTORY
         GV$ACTIVE_SESSION_HISTORY
   WHERE 1   =1
 --      AND SAMPLE_TIME = sysdate - interval '1' hour
@@ -115,8 +121,8 @@ SELECT   a.SQL_ID,
               and a.sql_plan_line_id(+) = p.id)
         WHERE 1     =1
         AND a.SQL_ID IN ('&sqlid')
-        and sql_plan_hash_value = '&PLAN_HASH'
-        --AND a.sample_time > sysdate - interval '1' day
+        --and sql_plan_hash_value = '&PLAN_HASH'
+        AND a.sample_time > sysdate - interval '1' day
 --        AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-02-15 23:30:00'
 --                            AND TIMESTAMP'2015-02-16 09:00:00'
           --        AND SQL_PLAN_OPERATION = 'HASH JOIN'
@@ -126,7 +132,7 @@ SELECT   a.SQL_ID,
   ORDER BY COUNT(*) DESC	
   ;  
 
--- porovnání z DBA_HIST_SQLSTAT pro shodné SQL s literály (dle force_matching_signature)
+-- porovnï¿½nï¿½ z DBA_HIST_SQLSTAT pro shodnï¿½ SQL s literï¿½ly (dle force_matching_signature)
 select sql_id, force_matching_signature  ,
 ROUND(SUM(elapsed_time_delta/1000000)/NULLIF(SUM(executions_delta),0),0)  "elapsed time",
       ROUND(SUM(cpu_time_delta /1000000)/NULLIF(SUM(executions_delta),0),0)     "cpu time",
@@ -156,7 +162,7 @@ SELECT  distinct object_owner,
 ORDER BY LAST_ANALYZED;  
   
 -- histogramy
--- ovìøení na histogramy, zda nemìní plány
+-- ovï¿½ï¿½enï¿½ na histogramy, zda nemï¿½nï¿½ plï¿½ny
 select table_name,
        column_name,
        num_distinct,
@@ -174,7 +180,7 @@ SELECT  distinct object_owner,
   )
 ORDER by 1,2;
 
--- kontrola na poèet øádek
+-- kontrola na poï¿½et ï¿½ï¿½dek
 select count(*) from GCALLBACK.OB_CAMPAIGN;
 
 -- SQL report --
