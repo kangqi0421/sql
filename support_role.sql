@@ -26,7 +26,6 @@ GRANT SELECT ON SYS.DBA_HIST_SNAPSHOT TO &&role;
 GRANT ADVISOR TO &&role;
 
 -- SQLDeveloper Manage Database
--- namísto
 GRANT select on dba_tablespaces to &&role;
 GRANT select on dba_free_space to &&role;
 GRANT select on dba_data_files to &&role;

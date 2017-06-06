@@ -1,4 +1,8 @@
 --
+
+Enterprise Edition - používat pouze volbu "Enterprise Edition"
+
+
 Diagnostics Pack  PP  8 8 -
 Enterprise Edition  PP  8 8 -
 Partitioning  PP  8 8 -
@@ -10,8 +14,9 @@ CSI: 18314601
 Active: Y
 Licence count: 8
 
-193
-
+-- zmeny v OLI
+PG702_CRM_POOL - zrušeno 13xPP
+PO702_CRM_POOL - zrušeno 13xPP
 
 -- PRODUCTS
 select * from OLI_OWNER.PRODUCTS
