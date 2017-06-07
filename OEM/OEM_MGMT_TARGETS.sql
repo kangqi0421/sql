@@ -27,13 +27,38 @@ ORDER BY t.target_name;
 
 -- DB targets - pouze single DB a RAC DB
 -- MGMT$DB_DBNINSTANCEINFO
+-- vyber target_name dle database_name
 select
 --   *
     database_name, dbversion
   FROM MGMT$DB_DBNINSTANCEINFO d
     JOIN MGMT$TARGET t ON d.target_guid = t.target_guid
   WHERE t.TYPE_QUALIFIER3 = 'DB'
-    and database_name like 'CPS%'
+    and (
+           database_name like 'TS0O%'
+        OR database_name like 'TS1O%'
+        OR database_name like 'SK2O%'
+        OR database_name like 'TS3O%'
+        OR database_name like 'BRATB%'
+        OR database_name like 'BRATC%'
+        OR database_name like 'BRAEA%'
+        OR database_name like 'CRMTB%'
+        OR database_name like 'CRMTC%'
+        OR database_name like 'CRMRA%'
+        OR database_name like 'MCITINT%'
+        OR database_name like 'MCITPRS%'
+        OR database_name like 'PWTESTA%'
+        OR database_name like 'PWTESTB%'
+        OR database_name like 'CATEST1%'
+        OR database_name like 'CATEST2%'
+        OR database_name like 'CPSTINT%'
+        OR database_name like 'CPSTPRS%'
+        OR database_name like 'CPSEA%'
+        OR database_name like 'SYMPK%'
+        OR database_name like 'SYMTA%'
+        OR database_name like 'WBLINT%'
+        OR database_name like 'WBLPRS%'
+     )
 ORDER by d.target_name;
 
 -- RAC targets

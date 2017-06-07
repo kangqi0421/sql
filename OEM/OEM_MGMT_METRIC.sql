@@ -61,6 +61,7 @@ CM$MGMT_CLUSTER_CONFIG
 
 select * from dba_views
   where view_name like 'CM$%ASM%'
+  where view_name like 'MGMT$%ASM%'
 order by view_name
 ;
 
@@ -156,6 +157,7 @@ AND m.metric_column = 'commits_ps'
 -- Redo generated
 AND metric_name = 'instance_throughput'
 AND metric_column = 'redosize_pt' --Redo Generated (per transaction)
+-- This metric represents the amount of redo, in bytes, generated per second during this sample period.
 AND metric_column = 'redosize_ps' --Redo Generated (per second)
 
 -- Average Active Sessions
@@ -197,14 +199,13 @@ AND metric_name = 'Filesystems' AND metric_column = 'available'
 --
 --
 
-SELECT /* OEM metric daily */
+SELECT
    m.*
 --   m.target_name,
 --   to_char(m.rollup_timestamp,'dd.mm.yyyy hh24:mi:ss') "timestamp",
 --   m.metric_column, m.column_label,
 --   round(m.average,1) average_value
    --round(m.maximum)/1024  maximum_value_gb
-   round(m.maximum/1024)  maximum_value_gb
 FROM
 --  MGMT$METRIC_DAILY m
   MGMT$METRIC_DETAILS m

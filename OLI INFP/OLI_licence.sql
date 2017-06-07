@@ -1,6 +1,6 @@
 --
 
-Enterprise Edition - používat pouze volbu "Enterprise Edition"
+Enterprise Edition - pouÅ¾Ã­vat pouze volbu "Enterprise Edition"
 
 
 Diagnostics Pack  PP  8 8 -
@@ -15,8 +15,15 @@ Active: Y
 Licence count: 8
 
 -- zmeny v OLI
-PG702_CRM_POOL - zrušeno 13xPP
-PO702_CRM_POOL - zrušeno 13xPP
+PG702_CRM_POOL - zruÅ¡eno 13xPP
+PO702_CRM_POOL - zruÅ¡eno 13xPP
+
+- zruÅ¡it
+coldbd1.vs.csint.cz  1 PP
+coldb2t.vs.csint.cz  1 PP
+
+- nÃ¡rÅ¯st
+
 
 -- PRODUCTS
 select * from OLI_OWNER.PRODUCTS
@@ -29,7 +36,7 @@ order by PROD_ID;
 --> INSERT do LICENSE_ALLOCATIONS
 
 --
--- fyzický server
+-- fyzickÃ½ server
 --
 select lic_env_id from servers
   where hostname like 'bordb08%';
@@ -90,7 +97,7 @@ fetch first 5 rows only
 -- where hostname like 'tgsymdb1%'
  ;
 
--- oprava Active na Y v Oracle licencích
+-- oprava Active na Y v Oracle licencÃ­ch
 select a.*
   from OLI_OWNER.LICENSE_ALLOCATIONS a
   join OLI_OWNER.LICENSED_ENVIRONMENTS e on (a.lic_env_id = e.lic_env_id)
@@ -106,7 +113,7 @@ where lic_env_id in (1187,1188) ;
 
 
 --
--- pridani licencí
+-- pridani licencÃ­
 --
 select * from OLI_OWNER.LICENSED_ENVIRONMENTS
   where lic_env_name like 'pordb06%'

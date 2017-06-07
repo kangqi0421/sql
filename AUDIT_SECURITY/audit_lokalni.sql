@@ -10,7 +10,7 @@ col terminal for a15
 col "OS username" for a15
 col IP for a15
 
--- poèty pøihlášení za minutu, pøevedené na sec
+-- poï¿½ty pï¿½ihlï¿½enï¿½ za minutu, pï¿½evedenï¿½ na sec
 select trunc(timestamp, 'MI'), round(count(*)/60)
 from (
 ;
@@ -54,8 +54,9 @@ order by 1
 select * from AUDIT_ACTIONS;
 
 select
-   *
+--   *
    --dbusername, count(*)
+   event_timestamp, action_name, return_code
   from UNIFIED_AUDIT_TRAIL
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
@@ -64,10 +65,10 @@ select
 -- AND UNIFIED_AUDIT_POLICIES is null
   and ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-    and upper(dbusername)='C4ADMIN'
-   and return_code > 0
+   and upper(dbusername)='DBSNMP'
+--   and return_code > 0
 -- group by dbusername
---ORDER by event_timestamp
+ORDER by event_timestamp desc
 --FETCH FIRST 5 ROWS ONLY
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;

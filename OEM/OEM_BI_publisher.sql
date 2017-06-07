@@ -5,7 +5,7 @@
 
 -- server metrics
  where metric_name in ('Load','DiskActivitySummary')
-   AND metric_column in ('cpuUtil', 'memUsedPct','totiosmade')
+   AND metric_column in ('cpuUtil', 'usedLogicalMemoryPct','totiosmade')
 
 
 -- DB metrics
@@ -38,7 +38,10 @@ from (
 group by  target_name, db_metric
 order by  target_name, db_metric
 
--- CPU, MEM utilization
+--
+-- Data Model
+--
+-- CPU_MEM_server_daily
 select
    to_char(m.rollup_timestamp,'yyyy-mm-dd') timestamp,
    substr(m.target_name, 1, instr(m.target_name, '.')-1) target_name,
@@ -48,33 +51,48 @@ select
    mgmt$metric_daily m
      join MGMT$OS_HW_SUMMARY h
     on (m.target_name = h.host_name)
- where metric_name = 'Load'
-   AND metric_column in ('cpuUtil', 'memUsedPct')
+ where metric_name in ('Load')
+   AND metric_column in ('cpuUtil', 'usedLogicalMemoryPct')
    AND m.target_name in (:hostname)
    AND m.rollup_timestamp > systimestamp - NUMTOYMINTERVAL( :MONTHS, 'MONTH' )
 ORDER by m.rollup_timestamp, target_name
 
--- CPU/MEM/db size db daily
+-- db_daily
 select
    to_char(m.rollup_timestamp,'yyyy-mm-dd') timestamp,
    m.target_name,
    metric_column db_metric,
-   case metric_column
-     when 'cpuusage_ps' then ROUND(m.maximum/100,2)
-     when 'total_memory' then ROUND(m.maximum/1024)
-   else
-     ROUND(m.maximum)
-   end value
+   ROUND(m.maximum) value
  FROM
    mgmt$metric_daily m JOIN MGMT$DB_DBNINSTANCEINFO d
      ON (m.target_guid = d.target_guid)
- where metric_name in
-     ('instance_efficiency', 'memory_usage', 'DATABASE_SIZE','instance_throughput')
-   AND metric_column in
-     ('cpuusage_ps', 'total_memory','ALLOCATED_GB','iorequests_ps','iombs_ps')
-   and d.target_name in (:db_name)
+ where metric_name in ( 'memory_usage', 'instance_efficiency')
+   AND metric_column in ('cpuusage_ps', 'total_memory')
+   AND d.host_name in (:hostname)
    AND m.rollup_timestamp > systimestamp - NUMTOYMINTERVAL( :MONTHS, 'MONTH' )
-ORDER by m.rollup_timestamp, target_name
+ORDER by m.rollup_timestamp, m.maximum
+
+-- server_daily_agg
+select
+  target_name,
+  server_metric,
+  round(avg(value),1) Average,
+  round(max(value),1) Maximum
+from (
+select
+   to_char(m.rollup_timestamp,'yyyy-mm-dd') timestamp,
+   substr(m.target_name, 1, instr(m.target_name, '.')-1) target_name,
+   metric_column server_metric,
+   ROUND(m.maximum) value
+ FROM
+   mgmt$metric_daily m
+where metric_name in ('Load')
+   AND metric_column in ('cpuUtil', 'usedLogicalMemoryPct')
+   AND m.target_name in (:hostname)
+   AND m.rollup_timestamp > systimestamp - NUMTOYMINTERVAL( :MONTHS, 'MONTH' )
+)
+group by  target_name, server_metric
+order by  target_name, server_metric
 
 -- IO per DB
 SELECT
