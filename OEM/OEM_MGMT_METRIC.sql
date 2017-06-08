@@ -209,6 +209,8 @@ SELECT
 FROM
 --  MGMT$METRIC_DAILY m
   MGMT$METRIC_DETAILS m
+    -- JOIN pro databázové targety
+    -- JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE  1 = 1
   AND m.target_name like 'IPCTA%'
   -- AND m.target_name like 'pasbo%'

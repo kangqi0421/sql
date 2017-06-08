@@ -14,6 +14,12 @@ select round(o.space_usage_kbytes / 1048576) as space_usage_GB from v$sysaux_occ
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
 truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 
+--
+exec DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, last_archive_time => sysdate -1/1440) ;
+exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, use_last_arch_timestamp => true);
+DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
+
+
 -- kdy došlo k nárůstu auditních dat
 select *
   from ARM_CLIENT.ARM_AUDIT_HISTOGRAM

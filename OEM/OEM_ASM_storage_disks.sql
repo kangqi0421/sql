@@ -35,7 +35,7 @@ select disk_group,
   where disk_group like 'INEP_%'
 order by disk_group;
 
---
+-- CM view
 CM$MGMT_ASM_CLUSTER_ECM
 CM$MGMT_ASM_DISKGROUP_ECM
 CM$MGMT_ASM_INIT_PARAMS_ECM

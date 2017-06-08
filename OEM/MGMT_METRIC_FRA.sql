@@ -4,27 +4,28 @@
 
 -- AVG, MAX
 SELECT
-   target_name,
-   target_guid,
+   database_name,
    round(avg(redo_value_gb)) avg_redo_gb,
    round(max(redo_value_gb)) max_redo_gb
 from (
 SELECT
-   m.target_name,
-   m.target_guid,
-   --to_char(m.rollup_timestamp,'dd.mm.yyyy hh24:mi:ss') "timestamp",
-   --m.column_label,
-   -- redo size per second násobím 24/3600 za celý den
-   round(m.average*24*3600/power(1024,3)) redo_value_gb
+   m.rollup_timestamp,
+   d.database_name,
+   -- sum per instance per day
+   round(sum(m.average)*24*3600/power(1024,3)) redo_value_gb
 FROM
   MGMT$METRIC_DAILY m
-WHERE  1 = 1
+   JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+WHERE
+  m.rollup_timestamp > sysdate - interval '1' month
   AND metric_name = 'instance_throughput'
   AND metric_column = 'redosize_ps' --Redo Generated (per second)
-  AND m.target_name like 'SYMPK%'
-  AND m.target_name in ('BRAEA_dordb04.vs.csin.cz', 'BRATB', 'BRATB_BRATB2', 'BRATB_BRATB1', 'BRATC', 'BRATC_BRATC2', 'BRATC_BRATC1', 'CPSEA_dordb04.vs.csin.cz', 'CPSTINT_CPSTINT2', 'CPSTINT_CPSTINT1', 'CPSTINT', 'CPSTPRS_CPSTPRS2', 'CPSTPRS', 'CPSTPRS_CPSTPRS1', 'CRMRA', 'CRMTB', 'CRMTB_tordb01', 'CRMTC', 'CRMTC_tordb02', 'MCITINT', 'MCITINT_MCITINT2', 'MCITINT_MCITINT1', 'MCITPRS', 'MCITPRS_MCITPRS2', 'MCITPRS_MCITPRS1', 'SYMPK', 'SYMTA_tordb02.vs.csin.cz', 'TS0O', 'WBLINT', 'WBLINT_WBLINT1', 'WBLINT_WBLINT2', 'WBLPRS', 'WBLPRS_WBLPRS2', 'WBLPRS_WBLPRS1')
+  --AND m.target_name like 'BRATB%'
+  AND d.database_name like 'TS%O'
+group by m.rollup_timestamp, d.database_name
 )
-group by    target_name, target_guid
+group by database_name
+order by 1
 ;
 
 -- redo size za den z metriky redosize_ps
@@ -44,17 +45,21 @@ ORDER BY  m.rollup_timestamp
 ;
 
 
--- FRA size
+-- FRA size: flash_recovery_area_size
 SELECT
-    f.target_guid,
-    f.target_name,
-    round(f.value/power(1024,3)) as fra_size_gb
+    d.database_name, d.instance_name,
+    m.target_guid,
+    m.target_name,
+    round(m.value/power(1024,3)) as fra_size_gb
 FROM
-    mgmt$metric_current f
+    mgmt$metric_current m
+      JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE
-      f.metric_name     = 'ha_flashrecovery'
-  AND f.metric_column   = 'flash_recovery_area_size'
-  AND f.target_name like 'SYMPK%'
+      m.metric_name     = 'ha_flashrecovery'
+  AND m.metric_column   = 'flash_recovery_area_size'
+  AND d.database_name in ('BRAEA', 'BRATB', 'BRATC', 'CATEST1', 'CATEST2', 'CPSEA', 'CPSTINT', 'CPSTPRS', 'CRMRA', 'CRMTB', 'CRMTC', 'MCITINT', 'MCITPRS', 'PWTESTA', 'PWTESTB', 'SK2O', 'SYMPK', 'SYMTA', 'TS0O', 'TS1O', 'TS3O', 'WBLINT', 'WBLPRS')
+--  AND m.target_name like 'SK2%'
+order by 1
 ;
 
 
