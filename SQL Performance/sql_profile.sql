@@ -7,13 +7,17 @@
 select * from dba_sql_profiles;
 
 -- COE script
-@coe_xfr_sql_profile
+@/dba/sql/coe_xfr_sql_profile
+
+-- a pak pustit vygenerovaný SQL skript
+@coe_xfr_sql_profile_5htf3c7z5fka1_1333230131.sql
+
 
 -- hint list
 SELECT extractValue(value(h),'.') AS hint
 FROM sys.sqlobj$data od, sys.sqlobj$ so,
 table(xmlsequence(extract(xmltype(od.comp_data),'/outline_data/hint'))) h
-WHERE so.name = 'coe_3crh81fz1h5fd_3658155826'
+WHERE so.name = 'coe_5htf3c7z5fka1_1333230131'
 AND so.signature = od.signature
 AND so.category = od.category
 AND so.obj_type = od.obj_type
@@ -28,6 +32,28 @@ where
     tsk.name = 'SQL_TUNING_2r4y22hyn58hw'
 and	rat.task_id   = tsk.id
 ;
+
+
+-- drop SQL profile
+BEGIN
+  DBMS_SQLTUNE.DROP_SQL_PROFILE (
+    name => 'coe_5htf3c7z5fka1_1333230131'
+);
+END;
+/
+
+-- import SQL profile from STAGE
+imp system full=y file=VASEK_PROFILE_STGTAB.dmp
+
+BEGIN
+DBMS_SQLTUNE.UNPACK_STGTAB_SQLPROF (
+  REPLACE => TRUE,
+  staging_table_name => 'VASEK_PROFILE_STGTAB',
+  staging_schema_owner => 'SYSTEM');
+END;
+/
+
+DBMS_SQLTUNE.UNPACK_STGTAB_SQLPROF(REPLACE => TRUE,staging_table_name => 'SQL_PROFILES_TT');
 
 select * from DBA_SQLTUNE_STATISTICS
 

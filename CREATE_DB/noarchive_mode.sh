@@ -13,4 +13,3 @@ ESQL
 
 srvctl start db -d ${ORACLE_SID%%[1-9]}
 echo "delete noprompt archivelog all;" | rman target=/
-

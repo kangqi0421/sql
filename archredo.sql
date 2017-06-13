@@ -1,4 +1,4 @@
---// denn� velikost redologu a FRA --//
+--// denní velikost redologu a FRA --//
 set lin 180 pages 100
 col db format a8
 col FRA_DG format A15
@@ -104,6 +104,9 @@ FROM
 */
 
 /*
+
+-- redo po jedné hodině
+
 
 --// :n 	... definuje interval po n minutach  //--
 SELECT   TRUNC (first_time, 'hh24') + (TRUNC (TO_CHAR (first_time, 'mi') / :n) * :n) / 24 / 60,

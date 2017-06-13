@@ -22,4 +22,4 @@ sql "alter database enable block change tracking";
 
 backup current controlfile;
 ERMAN
-} 2>&1 | tee configure.rman.$ORACLE_SID.log
+} 2>&1 | tee ${ORACLE_SID}_rman_configure.log

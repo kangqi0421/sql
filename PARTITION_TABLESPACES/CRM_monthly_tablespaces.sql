@@ -80,7 +80,7 @@ BEGIN
 END;
 /
 
--- Unit Tests
+-- Unit Test
 set serveroutput on
 --exec CRM_ADD_MONTHLY_TABLESPACE(6, -15, TRUE);
 exec CRM_ADD_MONTHLY_TABLESPACE();
@@ -103,8 +103,15 @@ begin
 END;
 /
 
-select * from dba_scheduler_jobs
+col JOB_NAME for a20
+select JOB_NAME, STATE from dba_scheduler_jobs
  where owner = 'SYS' and job_name like 'CRM_ADD_MONTHLY_TBS';
+
+--
+-- End Installation
+--
+
+
 
 SELECT cast(to_timestamp_tz(log_date) at local as date) log_date_local,
     owner,
