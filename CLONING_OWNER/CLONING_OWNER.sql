@@ -79,7 +79,9 @@ order by position  ;
 asm_source_dg=${source_db}_D01
 source_spfile=+JIRKA_DATA/JIRKA/spfilejirka.ora
 
-source_spfile==+${asm_source_dg}/${source_db}/spfile${source_db}.ora
+source_spfile = +${asm_source_dg}/${source_db}/spfile${source_db}.ora
+
+control_files = '+CRMPKTST_D01/CRMPKTST/CONTROLFILE/current.257.942405711'
 
 
 -- CLMZA > CLMDD
@@ -87,20 +89,7 @@ source_spfile==+${asm_source_dg}/${source_db}/spfile${source_db}.ora
 source_spfile=+CLMZA_D01/CLMZA/spfile
 asm_source_dg=CLMZA_D01
 
-CLMD
-295 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
-399 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
-321 init_params=cpu_count=4,memory_target=16G,pga_aggregate_target,sga_target
-
-CLMT
-init_params cpu_count=4,memory_target=17179869184,pga_aggregate_target,sga_target
-
-init_params cpu_count=8,sga_target=10G,pga_aggregate_target=8G,memory_target
-
 clone_opts=
-
--- init params - default RESET ponechán ve skriptu
-init_params=large_pool_size,shared_pool_size,db_cache_size,sga_max_size,local_listener,remote_listener,db_recovery_file_dest,log_archive_dest_1
 
 -- rozděleno na ARCHIVELOG a NOARCHIVELOG
 

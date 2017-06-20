@@ -1,29 +1,32 @@
-define db=CMTTB
+define db=MCIP
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
 
 -- DB
-select ARM_DB_NAME, ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME like '&db%';
+select ARM_DB_NAME, ARM_FULLID, TRANSFER_ENABLED from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME like '&db%';
 
 -- 12c Unified auditing
 
 -- kdo zamknul účet
 -- kdo co komu grantoval pres REDIM
 select --/*+ parallel full  (a) */
---    a.*
+    a.*
 --      object_schema, object_name, SQL_TEXT_VARCHAR2
-    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
+--    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
     -- ARM_ACTION_NAME,DBUSERNAME, OS_USERNAME, USERHOST,
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
- where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db')
-  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '8' HOUR
-  and ARM_ACTION_NAME='LOGON'
+ where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
+--  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '8' HOUR
+     and ARM_TIMESTAMP between date'2017-05-29' and DATE'2017-05-30'
+  --and ARM_ACTION_NAME='LOGON'
+   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-    and upper(dbusername)='JOB_APP'
-    and return_code > 0
-    and return_code  in (1017)
+     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
+--    and upper(dbusername)='GCALLBACK'
+--    and return_code > 0
+--    and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role

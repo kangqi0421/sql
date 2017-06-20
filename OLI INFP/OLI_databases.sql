@@ -77,3 +77,33 @@ ORDER BY APP_NAME
 update OLI_OWNER.DATABASES d
   set d.env_status = 'Test'
   where dbname like 'RDBT%';
+
+--
+-- INSERT db
+--
+
+MERGE
+ into OLI_OWNER.DATABASES oli
+USING
+  (select dbname, em_guid, is_rac
+     from  DASHBOARD.EM_DATABASE_INFO
+    where dbname like 'COLT%'
+  ) em
+ON (oli.dbname = em.dbname)
+  when matched then
+    update set oli.em_guid = em.em_guid
+  WHEN NOT MATCHED THEN
+    INSERT (oli.DBNAME, oli.EM_GUID, oli.RAC)
+    VALUES (em.dbname, em.em_guid, em.is_rac);
+;
+
+-- run job OEM_RESYNC_TO_OLI - syncne verze, status atd.
+exec OLI_OWNER.SYNCHRO_OEM.RESYNC_TO_OLI;
+
+-- originál dotaz
+INSERT INTO "OLI_OWNER". "DATABASES" ( "LICDB_ID", "DBNAME", "DBID", "ADMINISTRATOR", "DBVERSION", "RAC", "ENV_STATUS", "CA_ID", "EM_GUID", "EM_LAST_SYNC_DATE") VALUES (:B1 ,:B2 ,:B3 ,:B4 ,:B5 ,:B6 ,:B7 ,:B8 ,:B9 ,TO_DATE(:B10 , :B11 )) RETURNING ROWID, "LICDB_ID" INTO :O0 ,:O1
+
+select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
+  where instance_name like 'COLD%';
+
+INSERT INTO DBINSTANCES(LICDB_ID,SERVER_ID,INST_NAME,INST_ROLE) SELECT :B1 ,MATCHED_SERVER_ID, SID,ROLE FROM OMS_DBINSTANCES_MATCHING WHERE INSTANCE_TARGET_GUID=:B4 AND DB_TARGET_GUID=:B3 AND MATCH_STATUS='U' AND (:B2 ,MATCHED_SERVER_ID,SID) NOT IN (SELECT LICDB_ID,SERVER_ID,INST_NAME FROM DBINSTANCES)
