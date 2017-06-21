@@ -98,7 +98,7 @@ ON (oli.dbname = em.dbname)
 ;
 
 -- run job OEM_RESYNC_TO_OLI - syncne verze, status atd.
-exec OLI_OWNER.SYNCHRO_OEM.RESYNC_TO_OLI;
+    dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session => TRUE);
 
 -- originál dotaz
 INSERT INTO "OLI_OWNER". "DATABASES" ( "LICDB_ID", "DBNAME", "DBID", "ADMINISTRATOR", "DBVERSION", "RAC", "ENV_STATUS", "CA_ID", "EM_GUID", "EM_LAST_SYNC_DATE") VALUES (:B1 ,:B2 ,:B3 ,:B4 ,:B5 ,:B6 ,:B7 ,:B8 ,:B9 ,TO_DATE(:B10 , :B11 )) RETURNING ROWID, "LICDB_ID" INTO :O0 ,:O1
