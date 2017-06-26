@@ -31,7 +31,6 @@ GRANT select on dba_free_space to &&role;
 GRANT select on dba_data_files to &&role;
 -- volá SQL developer při kontrole select 'YES'
 GRANT select on dba_tables to &&role;
-
 GRANT select on sys.v_$parameter to &&role;
 GRANT select on sys.v_$sga to &&role;
 GRANT select on sys.v_$pgastat to &&role;
