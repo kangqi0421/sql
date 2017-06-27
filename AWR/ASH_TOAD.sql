@@ -1,10 +1,10 @@
 /* ASH */
 
 select 
--- * 
+ * 
 --event, count(*) cnt
 --sample_time, count(*)
-  SQL_ID, COUNT(*) cnt
+--  SQL_ID, COUNT(*) cnt
 -- parse time
 -- count(*) as dbtime,   count(nullif(A.IN_PARSE,'N')) as parse_time,  count(nullif(A.IN_HARD_PARSE,'N')) as hard_parse_time
 --  event, sum(time_waited)
@@ -24,15 +24,15 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
-    FROM GV$ACTIVE_SESSION_HISTORY a
---    FROM dba_hist_active_sess_history a
+--    FROM GV$ACTIVE_SESSION_HISTORY a
+    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-01-09 09:25:50'
---                           AND TIMESTAMP'2017-01-09 09:26:34'
-                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
---                         and SQL_ID = '5mnnju3u896b1'
-                         and event in ('gc current block 2-way')
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-06-21 17:20:00'
+                           AND TIMESTAMP'2017-06-21 18:00:00'
+--                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
+                         and SQL_ID = '3rnz9qrx3a5tu'
+--                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
@@ -56,7 +56,7 @@ select
 --                         and user_id = (select user_id from dba_users where USERNAME in ('SYMPROXY'))
 --                           and program like '%tux%' 
 --  XID having count(*) > 1
-group by   sql_id ORDER by count(*) DESC 
+--group by   sql_id ORDER by count(*) DESC 
 --    sql_exec_id
 --group by sample_time
 --group by  event order by  count(*) DESC
@@ -74,7 +74,7 @@ group by   sql_id ORDER by count(*) DESC
   --blocking_session
 --ORDER by count(*) DESC  
 --ORDER by session_id
---ORDER BY sample_time -- desc  --, inst_id
+ORDER BY sample_time -- desc  --, inst_id
 ;
 
 -- min snapshot time
@@ -156,7 +156,7 @@ SELECT cast(sample_time as date), count(*)
     group by sample_time
     order by 1;
     
--- CPU active sessions pøes obì DB instance
+-- CPU active sessions pï¿½es obï¿½ DB instance
 WITH cpu AS
     (
       SELECT   inst_id,
