@@ -42,6 +42,23 @@ BEGIN
 END;
 /
 
+--
+-- BIGFILE na autoextend maxsize
+--
+BEGIN
+   FOR rec IN (
+      select d.file_id
+       from dba_data_files d join dba_tablespaces t
+          on d.tablespace_name = t.tablespace_name
+         where bigfile = 'YES'
+    )
+   LOOP
+      execute immediate 'alter database datafile '|| rec.file_id
+        ||'  autoextend on next 512M maxsize UNLIMITED';
+   END LOOP;
+END;
+/
+
 
 /* nastav MAXBYTES na 2GB, kde MAXBYTES = UNLIMITED */
 DECLARE
