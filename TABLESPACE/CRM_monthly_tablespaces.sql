@@ -83,6 +83,8 @@ END;
 -- Unit Test
 set serveroutput on
 --exec CRM_ADD_MONTHLY_TABLESPACE(6, -15, TRUE);
+
+-- spusteni procky
 exec CRM_ADD_MONTHLY_TABLESPACE();
 
 -- submit scheduler jobu
@@ -128,6 +130,14 @@ select tablespace_name from dba_tablespaces
  where TABLESPACE_NAME like 'SIEBSA_DATA_%'
 order by 1;
 
+-- list generovanych tablespaces
+-- 6 měsíců zpět, 1 navíc
+SELECT 'SIEBSA_DATA_'||
+  to_char(ADD_MONTHS (sysdate, LEVEL - 6 - 1), 'YYYYMM') tablespace_name
+FROM DUAL CONNECT BY LEVEL <= 6 + 2 --(N+1)
+;
+
+
 -- mesicni tablespaces vcetne poctu bloků
 SELECT t.tablespace_name, sum(blocks) blocks
   FROM dba_tablespaces t
@@ -136,10 +146,11 @@ WHERE t.tablespace_name LIKE 'SIEBSA_DATA_%'
 --  AND t.tablespace_name <= 'SIEBSA_DATA_'
 --             || to_char(ADD_MONTHS(CURRENT_DATE, -7), 'YYYYMM')
 GROUP BY t.tablespace_name
+order by 1
 ;
 
 
--- 6 mìsícù zpìt, 1 navíc
+
 SELECT 'SIEBSA_DATA_'|| to_char(ADD_MONTHS (sysdate, LEVEL - 7), 'YYYYMM') tablespace_name
   FROM DUAL CONNECT BY LEVEL <=8 --(N+1)
 MINUS

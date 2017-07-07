@@ -60,6 +60,11 @@ END;
 /
 
 
+select d.file_id, d.maxbytes/1048576/102
+  from dba_data_files d join dba_tablespaces t on d.tablespace_name = t.tablespace_name
+ where bigfile = 'YES'
+   ;
+
 /* nastav MAXBYTES na 2GB, kde MAXBYTES = UNLIMITED */
 DECLARE
    CURSOR c_datafile
