@@ -1,7 +1,9 @@
 --
 -- mgmt_targets
 -- mgmt_target_properties
---
+
+DB target: MGMT$DB_DBNINSTANCEINFO
+HOST target: MGMT$OS_HW_SUMMARY, MGMT_ECM_HW;
 
 -- ALL targets
 SELECT
@@ -117,23 +119,29 @@ WHERE 1=1
 
 
 
--- OEM Groups and members
-SELECT
-    AGGREGATE_TARGET_NAME "GROUP",
-    member_target_name "SERVER"
-    --member_target_type
-  FROM
-    MGMT$TARGET_FLAT_MEMBERS
-  WHERE
-    MEMBER_TARGET_TYPE  IN ('host')
-    --AND AGGREGATE_TARGET_NAME IN ('PRODUKCE')
-    AND MEMBER_TARGET_NAME like 'dordb04%'
+--
+-- OS info/HW info short AIX/Linux/Win ..
+--
+
+select * from MGMT$OS_HW_SUMMARY;
+select * from sysman.MGMT_ECM_HW;
+
+
+-- VMWare DEV/TEST
+  SELECT
+--    *
+         host_name "hostname",
+         os_vendor,
+         CPU_COUNT "CPUs",
+         mem
+    FROM MGMT$OS_HW_SUMMARY
+   WHERE    -- host_name like 'dp%db%'
+     REGEXP_LIKE(host_name, '^[dt][pb][a-z]{3}db\d{2}.vs.csin.cz')
+         and VIRTUAL like 'Yes'
+         AND system_config = 'x86_64'
+ORDER BY host_name
 ;
 
-
--- OS info/HW info short AIX/Linux/Win ..
-select * from MGMT$OS_HW_SUMMARY  ;
-select * from sysman.MGMT_ECM_HW;
 
 -- OS info - replacement for short info version
 select target_name,
@@ -218,3 +226,17 @@ SELECT count(*)
   AND MEMBER_TARGET_TYPE  IN ('oracle_database','rac_database')
   --ORDER BY  member_target_name
   ;
+
+
+-- OEM Groups and members
+SELECT
+    AGGREGATE_TARGET_NAME "GROUP",
+    member_target_name "SERVER"
+    --member_target_type
+  FROM
+    MGMT$TARGET_FLAT_MEMBERS
+  WHERE
+    MEMBER_TARGET_TYPE  IN ('host')
+    --AND AGGREGATE_TARGET_NAME IN ('PRODUKCE')
+    AND MEMBER_TARGET_NAME like 'dordb04%'
+;
