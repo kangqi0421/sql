@@ -1,4 +1,4 @@
-define db=MCIP
+define db=RTOP
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -19,11 +19,12 @@ select --/*+ parallel full  (a) */
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
 --  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '8' HOUR
-     and ARM_TIMESTAMP between date'2017-05-29' and DATE'2017-05-30'
+     and ARM_TIMESTAMP between TIMESTAMP'2017-07-10 08:45:00' 
+                           and TIMESTAMP'2017-07-10 08:50:00'
   --and ARM_ACTION_NAME='LOGON'
-   and ARM_ACTION_NAME = 'EXECUTE'
+--   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
+--     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
 --    and upper(dbusername)='GCALLBACK'
 --    and return_code > 0
 --    and return_code  in (1017)
@@ -31,7 +32,7 @@ select --/*+ parallel full  (a) */
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role
 --        and a.target_user = 'EXT95838'
---  and object_name = 'DBMS_RLS'
+  and object_name = 'MONITORING'
 --  and upper(sql_text_varchar2) like '%DBMS_RLS%'
 --  Starbank
 --    and dbusername = 'INFO'
@@ -40,16 +41,6 @@ order by event_timestamp DESC
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;
 
-
--- group by HOUR
-select
-    trunc(event_timestamp, 'HH24'), count(*)
-  from ARM12.ARM_UNIAUD12
- where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '7' DAY
- group by trunc(event_timestamp,'HH24')
-order by   trunc(event_timestamp,'HH24')
-;
 
 -- object schema, name
 select
@@ -80,6 +71,17 @@ group by object_schema, object_name, return_code
 --order by event_timestamp desc
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;
+
+-- group by HOUR
+select
+    trunc(event_timestamp, 'HH24'), count(*)
+  from ARM12.ARM_UNIAUD12
+ where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
+  AND event_timestamp > SYSTIMESTAMP - INTERVAL '7' DAY
+ group by trunc(event_timestamp,'HH24')
+order by   trunc(event_timestamp,'HH24')
+;
+
 
 -- standardní AUDIT
 
