@@ -14,7 +14,29 @@ col IP for a15
 select trunc(timestamp, 'MI'), round(count(*)/60)
 from (
 ;
--- AUD$ lokalni
+
+-- Audit 12c UNIFIED_AUDIT_TRAIL
+select
+   *
+   --dbusername, count(*)
+--   event_timestamp, action_name, return_code
+  from UNIFIED_AUDIT_TRAIL
+ where 1=1
+--    AND event_timestamp between timestamp'2015-07-08 22:00:00'
+--                            and timestamp'2015-07-08 22:05:00'
+  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' HOUR
+-- AND UNIFIED_AUDIT_POLICIES is null
+  and ACTION_NAME='LOGON'
+--    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
+--   and upper(dbusername)='DBSNMP'
+   and return_code > 0
+-- group by dbusername
+ORDER by event_timestamp desc
+--FETCH FIRST 5 ROWS ONLY
+--FETCH FIRST 5 PERCENT ROWS ONLY
+;
+
+-- Audit 11.2 AUD$ lokalni
 --
 
 SELECT
@@ -30,18 +52,18 @@ SELECT
   RETURNCODE
 FROM
   -- primo AUD$
-  SYS.AUD$
-  -- mezisklad ARM
-  -- ARM_CLIENT.ARM_AUD$11TMP
+--  SYS.AUD$
+--   mezisklad ARM
+   ARM_CLIENT.ARM_AUD$11TMP
 WHERE 1=1
-  AND USERID         in ('INTRAS')
+  AND USERID         in ('TALLYMAN')
   -- za posledni hodinu
   --and CAST ( (FROM_TZ (ntimestamp#, '00:00') AT LOCAL) AS DATE) > sysdate - 1/24
   AND RETURNCODE   > 0      -- pouze neuspesne prihlaseni
   --AND ACTION#      IN (100)
-  AND ACTION#      IN (100,101) -- ACTION = LOGON/LOGOFF  --AUDIT_ACTIONS
+--  AND ACTION#      IN (100,101) -- ACTION = LOGON/LOGOFF  --AUDIT_ACTIONS
 --AND CAST ( (FROM_TZ (ntimestamp#, '00:00') AT LOCAL) AS DATE) > sysdate - 1
-ORDER BY NTIMESTAMP# -- DESC
+ORDER BY NTIMESTAMP# DESC
 ;
 
 --
@@ -53,22 +75,3 @@ order by 1
 
 select * from AUDIT_ACTIONS;
 
-select
---   *
-   --dbusername, count(*)
-   event_timestamp, action_name, return_code
-  from UNIFIED_AUDIT_TRAIL
- where 1=1
---    AND event_timestamp between timestamp'2015-07-08 22:00:00'
---                            and timestamp'2015-07-08 22:05:00'
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' HOUR
--- AND UNIFIED_AUDIT_POLICIES is null
-  and ACTION_NAME='LOGON'
---    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-   and upper(dbusername)='DBSNMP'
---   and return_code > 0
--- group by dbusername
-ORDER by event_timestamp desc
---FETCH FIRST 5 ROWS ONLY
---FETCH FIRST 5 PERCENT ROWS ONLY
-;

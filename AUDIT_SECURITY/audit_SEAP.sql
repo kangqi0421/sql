@@ -1,4 +1,4 @@
-define db=RTOP
+define db=COLP
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -18,21 +18,21 @@ select --/*+ parallel full  (a) */
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
---  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '8' HOUR
-     and ARM_TIMESTAMP between TIMESTAMP'2017-07-10 08:45:00' 
-                           and TIMESTAMP'2017-07-10 08:50:00'
-  --and ARM_ACTION_NAME='LOGON'
+  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '2' HOUR
+--     and ARM_TIMESTAMP between TIMESTAMP'2017-07-10 08:45:00' 
+--                           and TIMESTAMP'2017-07-10 08:50:00'
+  and ARM_ACTION_NAME='LOGON'
 --   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
 --     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
---    and upper(dbusername)='GCALLBACK'
+--    and upper(dbusername)='TALLYMAN'
 --    and return_code > 0
 --    and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role
 --        and a.target_user = 'EXT95838'
-  and object_name = 'MONITORING'
+--  and object_name = 'MONITORING'
 --  and upper(sql_text_varchar2) like '%DBMS_RLS%'
 --  Starbank
 --    and dbusername = 'INFO'
@@ -116,13 +116,13 @@ select /*+ parallel full  (a) */
   from ARM11.ARM_AUD$11 a
  where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
 --    and spare1 = 'felix'
-	and userid = 'CIMBIZZ'
+	and userid = 'TALLYMAN'
 --    and AUTH$GRANTEE = 'CEN29290'
---    and returncode > 0
-    and returncode = 1017
+    and returncode > 0
+--    and returncode = 1017
 --  and a.arm_audid = 35841237886
 --  and a.sessionid = 221963673
-  and ARM_TIMESTAMP > sysdate - 3
+--  and ARM_TIMESTAMP > sysdate - interval '4' hour
 --  	and ARM_TIMESTAMP between date'2013-10-25' and DATE'2013-10-26'
 --  and ARM_TIMESTAMP > date'2014-12-10'
 --        and ACTION# in (100)      -- ACTION = LOGON only
@@ -138,7 +138,7 @@ select /*+ parallel full  (a) */
 --group by userid
 --group by trunc(CAST ( (FROM_TZ (ntimestamp#, '00:00') AT LOCAL) AS DATE)) order by 1
 --group by trunc(CAST ( (FROM_TZ (ntimestamp#, '00:00') AT LOCAL) AS DATE), 'HH24') order by 1
-order by ntimestamp#
+order by ntimestamp# DESC
 ;
 
 
