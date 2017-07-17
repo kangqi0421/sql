@@ -4,6 +4,8 @@
 
 -- nahradit za OEM_MONITOR ?
 
+grant OEM_MONITOR to &user;
+
 define role=AWR_SUPPORT_ROLE
 --define role=EXT90032
 

@@ -1,8 +1,17 @@
 -- Oracle Linux farma z OEM
  where REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb[[:digit:]]+.vs.csin.cz')
 
+-- VM dev hosts
+REGEXP_LIKE(host_name, '^[dt][pb][a-z]{3}db\d{2}.vs.csin.cz')
+
 -- filtr na personální účty
 REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
+
+-- hostname, domain
+SELECT
+    regexp_replace(hostname, '^(\w+)(\.\w+)*$', '\1') hostname,
+    regexp_replace(hostname, '^\w+\.(.+?\.)', '\1')     domain,
+
 
 set lin 180
 col username for a15

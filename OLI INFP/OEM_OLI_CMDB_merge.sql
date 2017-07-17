@@ -61,6 +61,26 @@ ON (oem.hostname = oli.hostname)
 when matched then
 update set oli.em_guid = oem.target_guid;
 
+-- CMDB update SERVERS
+merge
+ into OLI_OWNER.SERVERS o
+USING
+  (SELECT
+       hostname, domain, CMDB_CI_ID, HW_MODEL, logical_cpu, os
+    FROM OLI_OWNER.ca_servers
+   WHERE status = 'Alive'
+     AND REGEXP_LIKE(hostname, '^[dt][pb][a-z]{3}db\d{2}')
+   ) c
+  ON (o.hostname = c.hostname
+  AND o.domain = c.domain)
+when matched then
+  update set
+    o.ca_id = c.cmdb_ci_id,
+    o.HW_MODEL = c.HW_MODEL,
+    o.logical_cpu = c.logical_cpu,
+    o.os = c.os
+;
+
 
 -- CMDB update DATABASES
 merge
