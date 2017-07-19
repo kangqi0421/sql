@@ -14,16 +14,6 @@ CSI: 18314601
 Active: Y
 Licence count: 8
 
--- zmeny v OLI
-PG702_CRM_POOL - zrušeno 13xPP
-PO702_CRM_POOL - zrušeno 13xPP
-
-- zrušit
-coldbd1.vs.csint.cz  1 PP
-coldb2t.vs.csint.cz  1 PP
-
-- nárůst
-
 
 -- PRODUCTS
 select * from OLI_OWNER.PRODUCTS

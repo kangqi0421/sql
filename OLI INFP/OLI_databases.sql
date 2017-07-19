@@ -79,7 +79,21 @@ update OLI_OWNER.DATABASES d
   where dbname like 'RDBT%';
 
 --
--- INSERT db
+-- INSERT do DATABASES
+--
+
+-- nahradit MERGE za OMS_DATABASES_MATCHING s match status na U
+--
+INSERT INTO OLI_OWNER.DATABASES (DBNAME, RAC, ENV_STATUS, DBVERSION, EM_GUID)
+select DB_NAME,
+       decode(dbracopt, 'YES', 'Y', 'N'),
+       envstatus,
+       dbversion,
+       db_target_guid
+  from OLI_OWNER.OMS_DATABASES_MATCHING
+ WHERE match_status in ('U')
+   and db_name like 'CRMED'
+;
 --
 
 MERGE
@@ -100,10 +114,42 @@ ON (oli.dbname = em.dbname)
 -- run job OEM_RESYNC_TO_OLI - syncne verze, status atd.
     dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session => TRUE);
 
--- originál dotaz
-INSERT INTO "OLI_OWNER". "DATABASES" ( "LICDB_ID", "DBNAME", "DBID", "ADMINISTRATOR", "DBVERSION", "RAC", "ENV_STATUS", "CA_ID", "EM_GUID", "EM_LAST_SYNC_DATE") VALUES (:B1 ,:B2 ,:B3 ,:B4 ,:B5 ,:B6 ,:B7 ,:B8 ,:B9 ,TO_DATE(:B10 , :B11 )) RETURNING ROWID, "LICDB_ID" INTO :O0 ,:O1
-
+-- INSERT do DBINSTANCES
 select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
-  where instance_name like 'COLD%';
+  where instance_name like 'CPT%';
 
-INSERT INTO DBINSTANCES(LICDB_ID,SERVER_ID,INST_NAME,INST_ROLE) SELECT :B1 ,MATCHED_SERVER_ID, SID,ROLE FROM OMS_DBINSTANCES_MATCHING WHERE INSTANCE_TARGET_GUID=:B4 AND DB_TARGET_GUID=:B3 AND MATCH_STATUS='U' AND (:B2 ,MATCHED_SERVER_ID,SID) NOT IN (SELECT LICDB_ID,SERVER_ID,INST_NAME FROM DBINSTANCES)
+INSERT INTO OLI_OWNER.DBINSTANCES (LICDB_ID, SERVER_ID, INST_NAME, EM_GUID)
+SELECT
+  matched_licdb_id,
+  matched_server_id,
+  instance_name,
+  INSTANCE_TARGET_GUID
+  from OLI_OWNER.OMS_DBINSTANCES_MATCHING
+  where match_status in ('U')
+    AND instance_name like 'CPTD%';
+
+-- chybí ještě insert do OLI_OWNER.APP_DB
+select *
+FROM
+  OLI_OWNER.DATABASES d
+    join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
+    JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
+    JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
+  where d.dbname like 'CPTDA'
+--  licdb_id = 6367
+;
+
+MERGE
+ into OLI_OWNER.APP_DB d
+USING
+   (select d.licdb_id, a.app_id
+    FROM
+      OLI_OWNER.DATABASES d, OLI_OWNER.APPLICATIONS a
+        where d.dbname   like 'CPTDA'
+          and a.app_name like 'CPT'
+    ) s
+ON (s.licdb_id = d.licdb_id AND s.app_id = d.app_id)
+  WHEN NOT MATCHED THEN
+    INSERT (d.licdb_id, d.app_id)
+    VALUES (s.licdb_id, s.app_id);
+;

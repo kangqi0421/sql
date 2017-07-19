@@ -2,6 +2,9 @@
 -- support role
 --
 
+-- otázky na Oracle
+
+
 -- nahradit za OEM_MONITOR ?
 
 grant OEM_MONITOR to &user;
