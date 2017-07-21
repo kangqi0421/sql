@@ -7,11 +7,11 @@
 set lines 180
 select 'alter system kill session '''||sid||','||serial#||',@'||inst_id||''' -- '
        ||username||'@'||machine||' ('||program||');'
-from gv$session       
+from gv$session
   where 1=1
   --  AND EVENT like 'row cache lock'
-  --and username = 'CPSLDATA_APP'
-  AND sql_id = '0rwjdcrv0y77j'
+  and username = 'RMDB_ODI_USER'
+  -- AND sql_id = 'azu104ujtd6yp'
   -- vsechny blokovane session
   --and sid in (
   --select blocking_session from v$session
