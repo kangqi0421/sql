@@ -16,6 +16,7 @@ select *
 -- Insert do OLI_OWNER.SERVERS
 --
 
+1788: ORACLE-01 (HUSVM)
 3292: ORACLE-02-ANT (VMAX3)
 
 define lic_env_id = 3292

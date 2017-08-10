@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=COGEA%
+DEFINE db=ODSP%
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -153,8 +153,9 @@ select * from dba_db_links where db_link like 'RTOP%';
 drop database link RTOP;
 create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
 
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'RTOP_AIX', ARM_DB_NAME = 'RTOP_AIX'
-  WHERE ARM_FULLID LIKE 'RTOP1246254454';
+-- update dblink
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHP_OLD', ARM_DB_NAME = 'DWHPOLD'
+  WHERE ARM_FULLID LIKE 'DWHP1517715351';
 commit;
 
 --
