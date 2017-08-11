@@ -7,6 +7,8 @@
 
 -- nahradit za OEM_MONITOR ?
 
+define user = CEN32763
+
 grant OEM_MONITOR to &user;
 
 define role=AWR_SUPPORT_ROLE
