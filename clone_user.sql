@@ -3,54 +3,63 @@
 
 def export_users="'&1'"
 -- def export_users="'PMWDT1','WCRT2','WCRT2WORK'"
+def export_users="'CPT','CPTPK','LOG','JOB','CONSOLE'"
 
 set long 200000 pages 0 lin 32767 trims on head off feed off verify off
 col cmd for a32767
 
-/*
--- export tablespaces
-prompt -- list of tablespaces
-prompt
-select unique tablespace_name
+-- tablespaces
+define maxsize = 32767
+define max_pocet_datafiles = 4
+
+WITH tbs AS (
+  SELECT tablespace_name,
+         SUM(bytes)/1048576 size_mb
+    FROM dba_data_files
+      WHERE
+         tablespace_name in (
+    select unique tablespace_name
       from dba_segments
         where owner in (&export_users)
     union
     select default_tablespace
       from dba_users
        where username in (&export_users)
-ORDER BY tablespace_name
-;
-*/
+                            )
+  GROUP BY tablespace_name ORDER BY tablespace_name
+  )
+SELECT 'CREATE '||
+  CASE
+    WHEN size_mb > &maxsize * &max_pocet_datafiles THEN 'BIGFILE '
+    ELSE ''
+  END ||
+    'TABLESPACE '||tablespace_name||
+    ' datafile size 512M autoextend on next 512M maxsize '||
+  CASE
+    WHEN size_mb > &maxsize * &max_pocet_datafiles THEN 'UNLIMITED'
+    ELSE '&maxsize.M'
+  END  || ';'
+  -- ROUND(GREATEST(size_mb, &maxsize)) ||'M;'
+  END
+FROM TBS;
 
-/*
-create tablespace PMWD_DATA3 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace PMWD_IDX3 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_DATAT2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_IDXT2 datafile size 128M autoextend on next 128M maxsize 1G;
 
-create tablespace WCR_LOBT2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_AUDITT2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_CONFIGT2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_DATAD2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_IDXD2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_LOBD2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_AUDITD2 datafile size 128M autoextend on next 128M maxsize 1G;
-create tablespace WCR_CONFIGD2 datafile size 128M autoextend on next 128M maxsize 1G;
-
-*/
-
-/*
 -- create roles
-create ROLE PMWD_DATAD2;
-create ROLE PMWD_USERT1;
-create ROLE PMWD_APLD2;
-create ROLE PMWD_APLT1;
-create ROLE PMWD_APLT2;
-create ROLE PMWD_USERD1;
-create ROLE PMWD_DATAT2;
-create ROLE PMWD_USERD2;
-create ROLE PMWD_USERT2;
-*/
+select
+   'create role '||ROLE||';'
+  from dba_roles
+    where oracle_maintained = 'N'
+     AND ( role like 'CPT%'
+or role like 'CPTPK%'
+or role like 'CPTPKMASTER%'
+or role like 'CPTTOOL%'
+or role like 'LOG%'
+or role like 'JOB%'
+or role like 'CONSOLE%'
+or role like 'FAKEDWH%')
+order by 1
+;
+
 
 
 spool Clone_User_&export_users..sql
@@ -62,22 +71,24 @@ execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTE
 
 select dbms_metadata.get_ddl('USER', username) cmd
   from dba_users
- where upper(username) in upper(&export_users)
+ where username in (&export_users)
+order by 1
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('TABLESPACE_QUOTA', USERNAME) cmd
   FROM DBA_USERS
- where username in (select username from dba_ts_quotas where upper(username) in (&export_users))
+ where username in (select username from dba_ts_quotas where username in (&export_users))
+order by 1
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('ROLE_GRANT', USERNAME) cmd
   FROM DBA_USERS
- where username in (select grantee from dba_role_privs where upper(grantee) in (&export_users))
+ where username in (select grantee from dba_role_privs where grantee in (&export_users))
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('SYSTEM_GRANT', USERNAME) cmd
   FROM DBA_USERS
- where username in (select grantee from dba_sys_privs where upper(grantee) in (&export_users))
+ where username in (select grantee from dba_sys_privs where grantee in (&export_users))
 /
 
 SELECT DBMS_METADATA.GET_GRANTED_DDL('OBJECT_GRANT', USERNAME) cmd
