@@ -28,6 +28,18 @@ asmca -silent -createDiskGroup \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 
+## asmcmd compatible
+
+compatible.asm
+compatible.rdbms
+
+for each in SEAD_D01 SEAD_FRA
+do
+  asmcmd lsattr -l -G $each
+  asmcmd setattr -G $each compatible.asm 12.1
+  asmcmd setattr -G $each compatible.rdbms 12.1
+done
+
 ## asmcmd mkdg
 AU_SIZE=4M
 COMPATIBLE="12.1"
