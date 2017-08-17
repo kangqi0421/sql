@@ -10,7 +10,7 @@ select asm.db_name,
        member_disk_count
   from CM$MGMT_ASM_CLIENT_ECM asm join CM$MGMT_ASM_DISKGROUP_ECM dg
          on (asm.diskgroup = dg.disk_group)
-  where asm.db_name like ('%MDWP%')
+  where asm.db_name like ('%DLKD%')
 order by db_name, disk_group
 ;
 
