@@ -28,9 +28,11 @@ em_metric_values_daily
 sysman.gc$metric_values_hourly
 
 -- MGMT / CM metriky
+select * from dba_objects
   where object_name like 'CM$MGMT%'
   like 'MGMT$DB_%'
 and owner = 'SYSMAN'
+;
 
 
 -- HW metriky

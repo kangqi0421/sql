@@ -39,30 +39,22 @@ ORDER BY d.database_name
 ;
 
 -- CPU MEM SIZE
+--
+-- jeste si pohrat s SGA a PGA, aby to byly fixné hodnoty
+-- nakonec posilam pouze statickou SGA size
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_INSTANCE_CPU_MEM_SIZE"
 AS
-WITH MEM_ALLOC AS
-(SELECT /*+ RESULT_CACHE */
-     m.target_guid,
-     -- avg used mem size za poslednich 31 dni
-     round(avg(m.average)) mem_alloc_size_mb
-FROM
-  MGMT$METRIC_HOURLY m
-WHERE
-      m.metric_name     = 'memory_usage'
-  AND m.metric_column   = 'total_memory'
-GROUP BY m.target_guid
-)
 SELECT
     d.target_guid em_guid,
     d.database_name dbname,
     d.instance_name,
     cpu_count cpu,
-    m.MEM_ALLOC_SIZE_MB   -- skutecne alokovana pamet dle total_memory
+    m.sgasize MEM_ALLOC_SIZE_MB   -- SGA size
 FROM
     MGMT$DB_CPU_USAGE c
-    JOIN MEM_ALLOC m ON (c.target_guid = m.target_guid)
-    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+    JOIN CM$MGMT_DB_SGA_ECM m ON (c.target_guid = m.cm_target_guid)
+    JOIN mgmt$db_dbninstanceinfo d ON (m.cm_target_guid = d.target_guid)
+WHERE m.sganame = 'Total SGA (MB)'
 -- ORDER BY d.database_name
 ;
 
@@ -168,6 +160,10 @@ from MGMT$DB_DBNINSTANCEINFO@oem_prod
 
 CREATE OR REPLACE FORCE VIEW "CM$MGMT_ASM_CLIENT_ECM" AS
 SELECT * FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
+;
+
+CREATE OR REPLACE FORCE VIEW "CM$MGMT_DB_SGA_ECM" AS
+SELECT * FROM CM$MGMT_DB_SGA_ECM@oem_prod
 ;
 
 CREATE OR REPLACE FORCE VIEW MGMT_ASM_DISKGROUP_ECM AS

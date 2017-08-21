@@ -34,6 +34,9 @@ ORDER by m.rollup_timestamp, target_name
 -- SGA a PGA - real allocated size MB
 AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
 
+-- SGA
+CM$MGMT_DB_SGA_ECM
+
 
 -- Memory init params
 SELECT
@@ -45,9 +48,9 @@ SELECT
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
-    AND (target_name like 'FATAL%' 
-      or target_name like 'CR'
-      or target_name like 'MASTER%'
+    AND (target_name like 'MCIDAT%'
+      or target_name like 'WCMEA%'
+      or target_name like 'WBLAT%' or target_name like 'INEDAT%'
       )
 --    AND host_name like '&server%'
 --    AND REGEXP_LIKE(host_name, 'z(p|b)ordb03.vs.csin.cz')
