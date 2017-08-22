@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=ODSP%
+DEFINE db=DWHTA2%
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -153,9 +153,14 @@ select * from dba_db_links where db_link like 'RTOP%';
 drop database link RTOP;
 create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
 
--- update dblink
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHP_OLD', ARM_DB_NAME = 'DWHPOLD'
-  WHERE ARM_FULLID LIKE 'DWHP1517715351';
+-- rušená DB - update dblink
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA2_OLD', ARM_DB_NAME = 'DWHTA2OLD'
+  WHERE ARM_FULLID LIKE 'DWHTA2146195176';
+commit;
+
+-- nová DWH přejmenovaná z ODS
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA2', ARM_DB_NAME = 'DWHTA2'
+  WHERE ARM_FULLID LIKE 'ODSTA21169507832';
 commit;
 
 --

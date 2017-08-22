@@ -48,9 +48,9 @@ SELECT
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
-    AND (target_name like 'MCIDAT%'
-      or target_name like 'WCMEA%'
-      or target_name like 'WBLAT%' or target_name like 'INEDAT%'
+    AND (target_name like 'CASEP%'
+      or target_name like 'CMTP%'
+      or target_name like 'SMARTP%' or target_name like 'WCMP%'
       )
 --    AND host_name like '&server%'
 --    AND REGEXP_LIKE(host_name, 'z(p|b)ordb03.vs.csin.cz')
