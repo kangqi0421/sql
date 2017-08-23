@@ -3,7 +3,7 @@
 
 def export_users="'&1'"
 -- def export_users="'PMWDT1','WCRT2','WCRT2WORK'"
-def export_users="'CPT','CPTPK','LOG','JOB','CONSOLE'"
+def export_users="'CPT_APP','CPTPK_APP','CONSOLE_APP','JOB_APP','LOG_APP'"
 
 set long 200000 pages 0 lin 32767 trims on head off feed off verify off
 col cmd for a32767
@@ -49,7 +49,8 @@ select
    'create role '||ROLE||';'
   from dba_roles
     where oracle_maintained = 'N'
-     AND ( role like 'CPT%'
+     AND (
+   role like 'CPT%'
 or role like 'CPTPK%'
 or role like 'CPTPKMASTER%'
 or role like 'CPTTOOL%'
@@ -70,6 +71,18 @@ execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTE
 
 
 select dbms_metadata.get_ddl('USER', username) cmd
+  from dba_users
+ where username in (&export_users)
+order by 1
+/
+
+-- bulk create user
+select 'CREATE USER '|| DBMS_ASSERT.enquote_name(username) ||
+         ' identified by ' || DBMS_ASSERT.enquote_name(username || 'ABCD1234') ||
+         ' profile PROF_APPL ' ||
+         ' default tablespace ' || default_tablespace ||
+         ' quota unlimited on ' || default_tablespace ||
+         ';'
   from dba_users
  where username in (&export_users)
 order by 1
@@ -103,6 +116,37 @@ spool off
 --
 --
 
+
+-- bulk roles
+## grant roles
+
+select 'GRANT '||priv|| ' to '|| grantee ||';'
+from (
+select granted_role priv, grantee
+  from dba_role_privs
+ where grantee in (&export_users)
+UNION
+select privilege priv, grantee
+  from dba_sys_privs
+ where grantee in (&export_users)
+order by 2, 1
+);
+
+## system granty
+
+select 'GRANT '||privilege||' to '||grantee||
+        decode(admin_option,'YES',' WITH Grant option')||';' CMD
+  from dba_sys_privs
+ where (grantee like 'CPT%'
+or grantee like 'CPTPK%'
+or grantee like 'CPTPKMASTER%'
+or grantee like 'CPTTOOL%'
+or grantee like 'LOG%'
+or grantee like 'JOB%'
+or grantee like 'CONSOLE%'
+or grantee like 'FAKEDWH%')
+ order by grantee, privilege
+;
 
 -- PASSWORDS
 /*
