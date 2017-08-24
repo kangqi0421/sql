@@ -1,6 +1,8 @@
 --
 -- FRA settings
 --
+-- Master Note: Troubleshooting Redo Logs and Archiving (Doc ID 1507157.1)
+--
 
 set numwidth 20
 set lin 250

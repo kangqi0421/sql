@@ -1,4 +1,4 @@
-define db=COLP
+define db=CLMP
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -18,14 +18,14 @@ select --/*+ parallel full  (a) */
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
-  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '2' HOUR
---     and ARM_TIMESTAMP between TIMESTAMP'2017-07-10 08:45:00' 
---                           and TIMESTAMP'2017-07-10 08:50:00'
-  and ARM_ACTION_NAME='LOGON'
+--  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '2' HOUR
+     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00' 
+                           and TIMESTAMP'2017-08-22 18:10:00'
+--  and ARM_ACTION_NAME='LOGON'
 --   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
 --     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
---    and upper(dbusername)='TALLYMAN'
+    and upper(dbusername)='COLMANWORK'
 --    and return_code > 0
 --    and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')

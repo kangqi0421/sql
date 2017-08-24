@@ -28,10 +28,10 @@ select
     FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-06-21 17:20:00'
-                           AND TIMESTAMP'2017-06-21 18:00:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-08-22 19:00:00'
+                           AND TIMESTAMP'2017-08-22 20:00:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
-                         and SQL_ID = '3rnz9qrx3a5tu'
+--                         and SQL_ID = '3rnz9qrx3a5tu'
 --                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
@@ -104,7 +104,7 @@ select * from dba_indexes
 
 select * from dba_users 
 -- where username like 'ARM%'
- where user_id = 98
+ where user_id = 102
  ;
 
 --
