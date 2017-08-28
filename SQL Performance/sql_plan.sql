@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 6dcz98qa1sg4n
+DEFINE SQLID = 6fb01jyjdq269
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -108,8 +108,8 @@ order by 3 desc
 SELECT   a.SQL_ID,
     --a.SQL_EXEC_START,
     a.sql_plan_line_id,
-    p.object_name,
     SQL_PLAN_OPERATION,
+    p.object_name,
     COUNT(*),
     --PARTITION BY a.sql_id, a.sql_plan_hash_value
     ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY a.sql_id) * 100, 1) "pct"
@@ -140,8 +140,8 @@ ROUND(SUM(elapsed_time_delta/1000000)/NULLIF(SUM(executions_delta),0),0)  "elaps
       SUM(executions_delta)                                                     "executions"
 from SYS.DBA_HIST_SQLSTAT 
   where 1=1
---    AND sql_id='&SQLID'
-    AND force_matching_signature = '13869317806829603650'
+    AND sql_id='&SQLID'
+--    AND force_matching_signature = '13869317806829603650'
 group by sql_id, force_matching_signature
 order by 2, 3;  
 
