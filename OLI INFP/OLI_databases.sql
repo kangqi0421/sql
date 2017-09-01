@@ -126,7 +126,7 @@ SELECT
   INSTANCE_TARGET_GUID
   from OLI_OWNER.OMS_DBINSTANCES_MATCHING
   where match_status in ('U')
-    AND instance_name like 'CPTD%';
+    AND instance_name like 'CLMD%';
 
 -- chybí ještě insert do OLI_OWNER.APP_DB
 select *

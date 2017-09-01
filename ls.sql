@@ -9,7 +9,7 @@
 --------------------------------------------------------------------------------
 
 --set define off  -- pro SQLdeveloper, at se nezasekne
-set pages 999 verify off feedback off
+set lines 180 pages 999 verify off feedback off
 
 /* SQLDeveloper does not handle noprint very nice */
 define noprint=""
