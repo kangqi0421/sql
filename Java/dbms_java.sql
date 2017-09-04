@@ -25,7 +25,6 @@ where 1=1
    and grantee = 'INT_OWNER'
    and type_name = 'java.io.FilePermission'
 --   and name like '/srv/data/pred/ccd/cont/remote/fint/import/ctlp/int_owner'
-
 ;
 
 
@@ -37,10 +36,10 @@ where 1=1
 -- zmenit cestu prod, pred, test .. atd.
 BEGIN
   dbms_java.grant_permission('INT_OWNER', 'SYS:java.io.FilePermission',
-    '/srv/data/pred/ccd/cont/remote/fint/import/ctlp/int_owner',
+    '/srv/data/prod/ccd/cont/remote/fint/import/ctlp/int_owner',
     'read');
   dbms_java.grant_permission('INT_OWNER', 'SYS:java.io.FilePermission',
-    '/srv/data/pred/ccd/cont/remote/fint/import/ctlp/int_owner',
+    '/srv/data/prod/ccd/cont/remote/fint/import/ctlp/int_owner',
     'write');
 END;
 /
