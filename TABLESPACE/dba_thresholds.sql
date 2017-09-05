@@ -16,7 +16,10 @@ SELECT m.tablespace_name,
  WHERE T.OBJECT_TYPE = 'TABLESPACE'
  --    AND t.metrics_name LIKE 'Tablespace Bytes Space Usage'
        AND t.object_name = M.TABLESPACE_NAME
-ORDER by m.tablespace_name, t.metrics_name ;     
+       AND m.tablespace_name = 'SIEB_INDEX_SML'
+ORDER by m.tablespace_name, t.metrics_name ;
+
+@ls SIEB_INDEX_SML
 
 -- vypis datafiles, pouze platnych
 select * from v$filespace_usage where flag = 2;
@@ -39,7 +42,7 @@ FROM
       dba_data_files
   )
 WHERE
-  tablespace_name = 'SODS_DATA' 
+  tablespace_name = 'SIEB_INDEX_SML' 
 GROUP BY tablespace_name;
 
 
