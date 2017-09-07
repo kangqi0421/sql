@@ -93,7 +93,9 @@ SELECT t.tablespace_name, d.file_name, d.bytes/1048576 MB,
        INNER JOIN
           dba_data_files d
        ON (t.tablespace_name = d.tablespace_name)
- WHERE t.contents = 'UNDO';
+ WHERE t.contents = 'UNDO'
+ORDER by t.tablespace_name
+;
 
 prompt tempfiles:
 SELECT d.file_name, d.bytes/1048576 MB, d.autoextensible EXT,

@@ -1,7 +1,7 @@
 --
 -- monitoring indexu
 
-define owner = PDB
+define owner = DATA_OWNER
 
 spool index_monitoring_on.sql
 set pages 0 lines 32767 trims on feed off head off
@@ -12,7 +12,7 @@ select 'alter index '||owner||'.'||index_name||
     ' MONITORING USAGE;'
   from dba_indexes
  where owner = '&owner'
-   -- and table_name = 'ACCOUNTCHARGE'
+   and index_type not in ('LOB')
 ;
 
 spool off

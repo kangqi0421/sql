@@ -46,7 +46,7 @@ SELECT (
           WHERE (a.sequence# + 1) = b.sequence#
             AND a.dest_id = b.dest_id
             AND a.thread# = b.thread#
-            AND a.first_time > SYSDATE - interval '14' DAY
+            AND a.first_time > SYSDATE - interval '7' DAY
             AND a.dest_id = (
               SELECT MIN(dest_id) FROM gv$archive_dest WHERE target = 'PRIMARY' AND destination IS NOT NULL)) b
     GROUP BY bucket ORDER BY bucket)

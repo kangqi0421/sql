@@ -143,7 +143,11 @@ Insert into CLONING_METHOD_STEP values ('3','STEP120_rename_clone_db.sh','120','
 Insert into CLONING_METHOD_STEP values ('3','STEP130_rename_clone_asmdg.sh','130','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP140_password_file.sh','140','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
+
+Insert into CLONING_METHOD_STEP values ('3','STEP160_archivelog_db.sh','160','Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
+
 Insert into CLONING_METHOD_STEP values ('3','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
+
 Insert into CLONING_METHOD_STEP values ('3','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP210_rman_reset_config.sh','210','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP220_rman_resync.sh','220','Desc','Y','N');
@@ -207,19 +211,25 @@ Insert into CLONING_METHOD_STEP values ('4','STEP410_send_email.sh','410','Desc'
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_PARAMETER values ('C','app_supp_email','Y','0',null,'jsrba@csas.cz','N');
-Insert into CLONING_PARAMETER values ('I','db_block_checksum','N','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('C','pre_sql_scripts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('C','post_sql_scripts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('C','clone_opts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('C','recover_opts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('C','asm_source_dg','Y','0',null,'${source_db}_D01','N');
-Insert into CLONING_PARAMETER values ('C','source_spfile','Y','0',null,'+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
-Insert into CLONING_PARAMETER values ('C','snapshot_name','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER values ('I','memory_target','N','0',null,null,'Y');
-Insert into CLONING_PARAMETER values ('I','cpu_count','N','0',null,'4','N');
-Insert into CLONING_PARAMETER values ('I','pga_aggregate_target','N','0',null,'8G','N');
-Insert into CLONING_PARAMETER values ('I','sga_target','N','0',null,'16G','N');
+Insert into CLONING_PARAMETER  values ('I','control_files','N',null,'Parametr slouží pro změnu umístění controlfile při diskovém klonu, kdy jeden ze zdrojových controlfile je umístěn ve FRA (klonuje se pouze D01).',null,'N');
+Insert into CLONING_PARAMETER  values ('I','db_block_checksum','N','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('C','clone_opts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('C','recover_opts','Y','0','Ponechat --noarchivelog pro vytvoření klonu. Pro změnu LOG_MODE se používá parametr ARCHIVELOG','--noarchivelog','N');
+Insert into CLONING_PARAMETER  values ('I','memory_target','N','0',null,null,'Y');
+Insert into CLONING_PARAMETER  values ('C','snapshot_name','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('C','pre_sql_scripts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('C','post_sql_scripts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('I','SHARED_POOL_SIZE','N',null,'minimalni hodnota pro shared pool',null,'N');
+Insert into CLONING_PARAMETER  values ('C','ARCHIVELOG','Y','0','Vynucené přepnutí databáze do archivního režimu.','false','N');
+Insert into CLONING_PARAMETER  values ('C','asm_source_dg','Y','0',null,'${source_db}_D01','N');
+Insert into CLONING_PARAMETER  values ('C','source_spfile','Y','0','Umístění zdrojového spfile.','+${source_db}_D01/${source_db}/spfile${source_db}.ora','N');
+Insert into CLONING_PARAMETER  values ('I','db_recovery_file_dest','N','0','Při ARCHIVELOG = true, default je <DBNAME>_FRA','${source_db}_FRA','N');
+Insert into CLONING_PARAMETER  values ('I','db_recovery_file_dest_size','N','0','Při ARCHIVELOG = true, default je velikost FRA ASM diskgroupy',null,'N');
+Insert into CLONING_PARAMETER  values ('C','app_supp_email','Y','0',null,'jsrba@csas.cz,jbohuslav@csas.cz','N');
+Insert into CLONING_PARAMETER  values ('I','cpu_count','N','0',null,'4','N');
+Insert into CLONING_PARAMETER  values ('I','pga_aggregate_target','N','0',null,'8G','N');
+Insert into CLONING_PARAMETER  values ('I','sga_target','N','0',null,'16G','N');
+
 
 REM INSERTING into CLONING_TEMPLATE
 Insert into CLONING_TEMPLATE values ('1','MALA_DB');

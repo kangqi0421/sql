@@ -48,13 +48,14 @@ select decode(value, 8192, 32767, 65535) dfSize from v$parameter where name = 'd
 set termout on
 
 --// aktualni velikosti datafiles //--
-SELECT    tablespace_name
+SELECT
+    tablespace_name
 	, file_id
 	, file_name
-	, BYTES / 1048576 "MB"
+	, round(bytes/1048576, 2) "MB"
 	, autoextensible
-        ,(INCREMENT_BY * (select value from v$parameter where name = 'db_block_size'))/1048576 "inc MB"
-        , maxbytes/1048576 "max MB"
+  , (INCREMENT_BY * (select value from v$parameter where name = 'db_block_size'))/1048576 "inc MB"
+  , round(maxbytes/1048576, 2) "max MB"
  FROM (select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by from dba_data_files
        union all
        select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by from dba_temp_files
