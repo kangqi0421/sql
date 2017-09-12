@@ -112,7 +112,7 @@ ON (oli.dbname = em.dbname)
 ;
 
 -- run job OEM_RESYNC_TO_OLI - syncne verze, status atd.
-    dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session => TRUE);
+exec  dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session => TRUE);
 
 -- INSERT do DBINSTANCES
 select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
@@ -126,7 +126,26 @@ SELECT
   INSTANCE_TARGET_GUID
   from OLI_OWNER.OMS_DBINSTANCES_MATCHING
   where match_status in ('U')
-    AND instance_name like 'CLMD%';
+    AND instance_name like 'CLMD%'
+;
+
+--
+-- SAS_APP
+--
+
+-- vložení záznamů z CA_APPLICATIONS do APPLICATIONS
+MERGE
+ into OLI_OWNER.APPLICATIONS d
+USING
+   (select cmdb_ci_id, APP_NAME, APP_LONG_NAME from OLI_OWNER.CA_APPLICATIONS
+      where APP_NAME = 'ORDBF'
+        and status = 'Alive'
+    ) s
+ON (s.app_name = d.app_name)
+  WHEN NOT MATCHED THEN
+    INSERT (d.ca_id, d.app_name, d.app_long_name)
+    VALUES (s.cmdb_ci_id, s.APP_NAME, s.APP_LONG_NAME);
+;
 
 -- chybí ještě insert do OLI_OWNER.APP_DB
 select *
@@ -153,3 +172,17 @@ ON (s.licdb_id = d.licdb_id AND s.app_id = d.app_id)
     INSERT (d.licdb_id, d.app_id)
     VALUES (s.licdb_id, s.app_id);
 ;
+
+
+--
+-- API delete při migraci
+-- změna umístění serveru
+--
+DELETE from OLI_OWNER.DBINSTANCES
+  WHERE licdb_id IN (
+    SELECT distinct(i.licdb_id)
+    FROM
+      OLI_OWNER.DATABASES d
+      JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
+    WHERE dbname = 'ESPPA'
+);
