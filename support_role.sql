@@ -5,7 +5,7 @@
 -- otázky na Oracle
 
 
--- nahradit za OEM_MONITOR ?
+-- nahradit za OEM_MONITOR - ANO
 
 define user = CEN32763
 

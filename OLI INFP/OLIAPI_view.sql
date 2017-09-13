@@ -2,6 +2,12 @@
 -- OLIAPI view
 --
 
+-- nově
+-- založit ownera OLI_API
+--
+-- zprovoznit nad ním ORDS
+-- https://www.thatjeffsmith.com/archive/2017/09/swagger-doc-for-ords-restful-services/
+
 select * from all_views
 where view_name like 'OLAPI%';
 
