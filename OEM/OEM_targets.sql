@@ -16,6 +16,7 @@ FROM
   MGMT_TARGETS t
  WHERE
    t.target_type IN ('oracle_database','rac_database')
+   -- t.TYPE_QUALIFIER3 = 'DB'
 --   t.target_type IN ('host')
    AND t.target_name like 'APS%'
 --   AND category_prop_1 in ('HP-UX','AIX')

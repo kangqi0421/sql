@@ -6,6 +6,13 @@ SELECT   metrics_name, object_name, warning_value, critical_value
 ORDER BY metrics_name, object_name;
 
 
+-- tablespace zaplněna na více než 30
+select TABLESPACE_NAME, tablespace_size*8/1024, used_space*8/1024, 
+     round(USED_PERCENT )
+  from   DBA_TABLESPACE_USAGE_METRICS
+  where USED_PERCENT > 30
+;
+
 -- free space vcetne autoextendu - pouziva OEM pro monitoring
 SELECT m.tablespace_name,
        round((m.tablespace_size - m.used_space) * 8 / 1024) "actual free space",
@@ -16,10 +23,13 @@ SELECT m.tablespace_name,
  WHERE T.OBJECT_TYPE = 'TABLESPACE'
  --    AND t.metrics_name LIKE 'Tablespace Bytes Space Usage'
        AND t.object_name = M.TABLESPACE_NAME
-       AND m.tablespace_name = 'SIEB_INDEX_SML'
+--       AND m.tablespace_name = 'SIEB_INDEX_SML'
 ORDER by m.tablespace_name, t.metrics_name ;
 
-@ls SIEB_INDEX_SML
+@ls RTPE_BOOKING
+
+alter tablespace RTPE_BOOKING add datafile  size 512m autoextend on next 512m maxsize  32767m;
+
 
 -- vypis datafiles, pouze platnych
 select * from v$filespace_usage where flag = 2;
