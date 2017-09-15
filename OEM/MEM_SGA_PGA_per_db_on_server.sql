@@ -44,17 +44,17 @@ SELECT
    host_name,
    target_name,  name, --value,
    round(value/1048576/1024) "GB",
-   sum(value/1048576/1024) over ()
+   ROUND(sum(value/1048576/1024) over (PARTITION BY target_name)) "SUM GB"
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
-    AND (target_name like 'CASEP%'
-      or target_name like 'CMTP%'
-      or target_name like 'SMARTP%' or target_name like 'WCMP%'
-      )
---    AND host_name like '&server%'
---    AND REGEXP_LIKE(host_name, 'z(p|b)ordb03.vs.csin.cz')
-    -- AND REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
+--    AND (target_name like 'CASEP%'
+--      or target_name like 'CMTP%'
+--      )
+--    and host_name like 'bordb06.vs.csin.cz'
+--    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
+     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
+     and target_name not like '%2'
     and value > 0
 order by target_name, name;
 
