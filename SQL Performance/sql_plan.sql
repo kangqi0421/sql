@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 6fb01jyjdq269
+DEFINE SQLID = bm646ktq979sx
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -75,8 +75,8 @@ SELECT   sql_id, sql_exec_start,
     MAX(sample_time) end_sql,
     MAX(sample_time)-sql_exec_start AS duration
   FROM 
---      DBA_HIST_ACTIVE_SESS_HISTORY
-        GV$ACTIVE_SESSION_HISTORY
+      DBA_HIST_ACTIVE_SESS_HISTORY
+--        GV$ACTIVE_SESSION_HISTORY
   WHERE 1   =1
 --      AND SAMPLE_TIME = sysdate - interval '1' hour
 --    AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-09-29 15:30:00'

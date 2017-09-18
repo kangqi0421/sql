@@ -4,6 +4,9 @@
 -- VM dev hosts
 REGEXP_LIKE(host_name, '^[dt][pb][a-z]{3}db\d{2}.vs.csin.cz')
 
+-- DWH server s DNS aliasem
+where REGEXP_LIKE(hostname, '^t.dw\S{3}$')
+
 -- filtr na personální účty
 REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
 
