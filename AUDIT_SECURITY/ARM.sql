@@ -1,10 +1,13 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DWHTA2%
+DEFINE db=DWHTA%
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
-  WHERE ARM_DB_NAME LIKE '%&db%'
+  WHERE 1=1
+--    AND ARM_DB_NAME LIKE '%&db%'
+    AND ARM_FULLID LIKE 'DWHTA%'
+    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
 -- ARM status ERROR
@@ -154,13 +157,13 @@ drop database link RTOP;
 create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
 
 -- rušená DB - update dblink
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA2_OLD', ARM_DB_NAME = 'DWHTA2OLD'
-  WHERE ARM_FULLID LIKE 'DWHTA2146195176';
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA3_OLD', ARM_DB_NAME = 'DWHTA3OLD'
+  WHERE ARM_FULLID LIKE 'DWHTA3158718224';
 commit;
 
 -- nová DWH přejmenovaná z ODS
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA2', ARM_DB_NAME = 'DWHTA2'
-  WHERE ARM_FULLID LIKE 'ODSTA21169507832';
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA3', ARM_DB_NAME = 'DWHTA3'
+  WHERE ARM_FULLID LIKE 'ODSTA31259388806';
 commit;
 
 --
