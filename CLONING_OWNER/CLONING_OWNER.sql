@@ -134,6 +134,9 @@ REM INSERTING into CLONING_METHOD_STEP
 SET DEFINE OFF;
 Insert into CLONING_METHOD_STEP values ('3','STEP001_prepare.sh','1','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
+
+Insert into CLONING_METHOD_STEP values ('3','STEP007_rman_delete_backup.sh','7','RMAN: delete force noprompt backup','Y','N');
+
 Insert into CLONING_METHOD_STEP values ('3','STEP010_shutdown_db.sh','10','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP020_umount_asm_dg.sh','20','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP100_create_disk_snapshot.sh','100','Desc','N','Y');
