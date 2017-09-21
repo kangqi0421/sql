@@ -19,12 +19,12 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=COLD_DATA
-AU_SIZE=4
+DG=ODIDA_FRA
+AU_SIZE=1
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
-  -diskGroupName COLD_DATA \
-    -diskList '/dev/mapper/asm_*COLD_DATA' \
+  -diskGroupName $DG \
+    -diskList '/dev/mapper/asm_*ODID_FRA' \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 
