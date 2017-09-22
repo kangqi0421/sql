@@ -33,11 +33,12 @@ asmca -silent -createDiskGroup \
 compatible.asm
 compatible.rdbms
 
-for each in SEAD_D01 SEAD_FRA
+for each in REVT_D01 REVT_FRA
 do
   asmcmd lsattr -l -G $each
   asmcmd setattr -G $each compatible.asm 12.1
   asmcmd setattr -G $each compatible.rdbms 12.1
+  asmcmd lsattr -l -G $each
 done
 
 ## asmcmd mkdg

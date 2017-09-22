@@ -2,6 +2,7 @@
 -- INFP
 --
 
+-- TEST pro kontrolu parametrů
 create user SVOBODA identified by abcd1234 profile prof_dba;
 grant dba to SVOBODA;
 grant dba to DKRCH;
@@ -15,41 +16,23 @@ CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 US
 
 connect DASHBOARD/abcd1234
 
--- Database / FRA SIZE
--- je rovnou soucasti DASHBOARD.EM_DATABASE_INFO
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_FRA_SIZE"
-AS
-SELECT
-    d.target_guid em_guid,
-    d.database_name dbname,
-    round(s.value*1024) as db_size_mb,
-    round(f.value/power(1024,2)) as db_log_size_mb
-FROM
-    mgmt$metric_current s
-    JOIN mgmt$metric_current f ON (s.target_guid = f.target_guid)
-    JOIN mgmt$db_dbninstanceinfo d ON (f.target_guid = d.target_guid)
-    JOIN MGMT$TARGET t ON (d.target_guid = t.target_guid)
-WHERE s.metric_name     = 'DATABASE_SIZE'
-  AND s.metric_column   = 'ALLOCATED_GB'
-  AND f.metric_name     = 'ha_flashrecovery'
-  AND f.metric_column   = 'flash_recovery_area_size'
-  -- pouze DB bez RAC instancí
-  AND t.TYPE_QUALIFIER3 = 'DB'
-ORDER BY d.database_name
-;
 
--- CPU MEM SIZE
+-- nové verze view, zatím nenasazeny
+-- přehodit na VM ?
+
+-- CPU MEM SIZE per db instance
 --
 -- jeste si pohrat s SGA a PGA, aby to byly fixné hodnoty
 -- nakonec posilam pouze statickou SGA size
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_INSTANCE_CPU_MEM_SIZE"
+CREATE MATERIALIZED VIEW DASHBOARD.EM_INSTANCE
+REFRESH FORCE START WITH SYSDATE NEXT trunc(sysdate + 1)
 AS
 SELECT
     d.target_guid em_guid,
     d.database_name dbname,
     d.instance_name,
     cpu_count cpu,
-    m.sgasize MEM_ALLOC_SIZE_MB   -- SGA size
+    m.sgasize sga_size_mb   -- SGA size
 FROM
     MGMT$DB_CPU_USAGE c
     JOIN CM$MGMT_DB_SGA_ECM m ON (c.target_guid = m.cm_target_guid)
@@ -58,14 +41,17 @@ WHERE m.sganame = 'Total SGA (MB)'
 -- ORDER BY d.database_name
 ;
 
+COMMENT ON MATERIALIZED VIEW "DASHBOARD"."EM_INSTANCE"  IS
+  'Snapshot EM database instance včetně CPU MEM SIZE';
 
--- EM_DATABASE_INFO
+- pridat indexy ?
+
+-- EM_DATABASE
 -- - vcetne DSN
--- - již zahrnuje EM_DATABASE_FRA_SIZE
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE_INFO"
+CREATE MATERIALIZED VIEW DASHBOARD.EM_DATABASE
+REFRESH FORCE START WITH SYSDATE NEXT trunc(sysdate + 1)
 AS
-select /*+ RESULT_CACHE */
-       t.target_guid em_guid,
+select t.target_guid em_guid,
        t.target_name,
        database_name dbname,
        log_mode,
@@ -125,21 +111,30 @@ WHERE t.TYPE_QUALIFIER3 = 'DB'
 --ORDER BY dbname
 ;
 
+-- OLI data pro REST
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."OLI_DATABASE"
+AS
+SELECT d.EM_GUID DB_EM_GUID,
+       i.EM_GUID INST_EM_GUID,
+       dbname,
+       inst_name instance_name,
+       app_name,
+       NVL2(domain, hostname||'.'||domain, hostname) server_name,
+       env_status
+FROM
+  OLI_OWNER.DATABASES d
+  join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
+  JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
+  JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
+  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
+-- WHERE 1=1
+--   and domain = ''
+        -- AND dbname like 'DWHTA%'
+-- ORDER BY dbname, inst_name
+;
 
 --
--- SLA
-       CASE
-         when (d.rac = 'Y' and env_status = 'Production')
-              then 'Platinum'
-         -- produkce v A/P clusteru
-         when (d.rac = 'N' and env_status = 'Production')
-              then 'Gold'
-         -- others = Bronze
-         else 'Bronze'
-       end SLA,
-
---
--- "DASHBOARD"."MGMT$DB_INIT_PARAMS"
+-- MGMT CM view protažené z EM do OLI dashboard
 --
 
 connect DASHBOARD/abcd1234

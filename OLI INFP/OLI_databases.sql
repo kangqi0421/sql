@@ -13,7 +13,7 @@ FROM
 --  a.app_name in ('SB')
 --  and domain like 'cc.csin.cz'
 --  group by app_name,hostname
-ORDER BY APP_NAME  ;
+ORDER BY APP_NAME;
 
 -- server per APP
 SELECT DBNAME, hostname, app_name

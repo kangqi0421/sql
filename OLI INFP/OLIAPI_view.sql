@@ -15,7 +15,7 @@ where view_name like 'OLAPI%';
 select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
 
---
+-- CMDB
 CMDB generuje synchronizační log (ve kterém jsou vidět chyby)
 http://caservicedesk/reportextracts/SyncLogs/SyncOLI_END.csv
 
@@ -66,8 +66,8 @@ GRANT SELECT ON DASHBOARD.MGMT$METRIC_HOURLY TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.MGMT$DB_INIT_PARAMS TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.CM$MGMT_DB_SGA_ECM TO OLI_OWNER with GRANT option;
 
-GRANT SELECT ON DASHBOARD.EM_DATABASE_INFO TO OLI_OWNER with GRANT option;
-GRANT SELECT ON DASHBOARD.EM_INSTANCE_CPU_MEM_SIZE TO OLI_OWNER with GRANT option;
+GRANT SELECT ON DASHBOARD.EM_DATABASE TO OLI_OWNER with GRANT option;
+GRANT SELECT ON DASHBOARD.EM_INSTANCE TO OLI_OWNER with GRANT option;
 
 -- definice OLAPI2_APPS_DB_SRVS_FARM_FLG;
 -- nahradit za OLAPI_APPS_DB_SERVERS_FARM_FLG
@@ -113,15 +113,15 @@ SELECT DISTINCT    a.app_name,
                    em.db_size_mb,
                    em.db_log_size_mb,
                    emi.cpu,
-                   emi.MEM_ALLOC_SIZE_MB
+                   emi.sga_size_mb MEM_ALLOC_SIZE_MB
      FROM oli_owner.APPLICATIONS A,
           oli_owner.APP_DB AD,
           oli_owner.databases d,
           oli_owner.DBINSTANCES i,
           oli_owner.servers s,
           oli_owner.licensed_environments le,
-          DASHBOARD.EM_DATABASE_INFO em,
-          DASHBOARD.EM_INSTANCE_CPU_MEM_SIZE emi
+          DASHBOARD.EM_DATABASE em,
+          DASHBOARD.EM_INSTANCE emi
     WHERE     A.APP_ID = AD.APP_ID
           AND AD.LICDB_ID = D.LICDB_ID
           AND D.LICDB_ID = I.LICDB_ID
