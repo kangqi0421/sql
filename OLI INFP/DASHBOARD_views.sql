@@ -2,6 +2,10 @@
 -- INFP
 --
 
+- koncepce:
+- rac = Y/N
+- is_rac = true/false pro JSON
+
 -- TEST pro kontrolu parametrů
 create user SVOBODA identified by abcd1234 profile prof_dba;
 grant dba to SVOBODA;
@@ -12,6 +16,10 @@ db linky:
 - INFTA - změněno na PUBLIC
 CREATE PUBLIC DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMSP';
 CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMST';
+
+-- private db linky
+DROP DATABASE LINK "OEM_PROD";
+CREATE DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMSP';
 
 
 connect DASHBOARD/abcd1234
@@ -24,6 +32,8 @@ connect DASHBOARD/abcd1234
 --
 -- jeste si pohrat s SGA a PGA, aby to byly fixné hodnoty
 -- nakonec posilam pouze statickou SGA size
+
+-- pokud používám MView namísto view
 DROP MATERIALIZED VIEW DASHBOARD.EM_INSTANCE;
 
 CREATE OR REPLACE FORCE VIEW DASHBOARD.EM_INSTANCE
@@ -49,7 +59,6 @@ COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
 
 -- EM_DATABASE
 -- - vcetne DSN connect stringu
-DROP MATERIALIZED VIEW DASHBOARD.EM_DATABASE;
 CREATE OR REPLACE FORCE VIEW DASHBOARD.EM_DATABASE
 AS
 select t.target_guid em_guid,
@@ -59,15 +68,16 @@ select t.target_guid em_guid,
        characterset,
        substr(d.supplemental_log_data_min, 1, 1) SL_MIN,
        dbversion, env_status,
-       substr(is_rac, 1,1) is_rac,
+       substr(rac, 1,1) rac,
        -- SLA
        CASE
-         when (is_rac = 'YES' and env_status = 'Production')
+         -- produkce v RAC clusteru = Platinum
+         when (rac = 'YES' and env_status = 'Production')
               then 'Platinum'
-         -- produkce v A/P clusteru
-         when (is_rac = 'NO' and env_status = 'Production')
+         -- produkce v A/P clusteru = Gold
+         when (rac = 'NO' and env_status = 'Production')
               then 'Gold'
-         -- others = Bronze
+         -- vše ostatní = Bronze
          else 'Bronze'
        end SLA,
        -- servername
@@ -81,7 +91,7 @@ select t.target_guid em_guid,
     JOIN MGMT$TARGET_PROPERTIES
       PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN (
         'orcl_gtp_lifecycle_status' as env_status,
-        'RACOption' as is_rac,
+        'RACOption' as rac,
         'ClusterName' as cluster_name,
         'MachineName' as server_name,
         'Port' as port
@@ -109,8 +119,7 @@ select t.target_guid em_guid,
     ON p.cluster_name = s.target_name
   -- pouze DB bez RAC instance
 WHERE t.TYPE_QUALIFIER3 = 'DB'
---ORDER BY dbname
-;
+/
 
 COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
   'OEM data pro target databaze vcetne db size, fra size';
@@ -119,43 +128,49 @@ COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
 -- OLI data pro REST
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."OLI_DATABASE"
 AS
-SELECT d.EM_GUID DB_EM_GUID,
+SELECT d.licdb_id,
+       d.EM_GUID DB_EM_GUID,
+       d.ca_id db_cmdb_ca_id,
        dbname,
+       rac,
        app_name,
        env_status
 FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-;
+/
 
 -- OLI data db instance pro REST
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."OLI_INSTANCE"
 AS
 SELECT d.EM_GUID DB_EM_GUID,
        i.EM_GUID INST_EM_GUID,
+       i.ca_id dbinst_cmdb_ci_id,
        dbname,
        inst_name instance_name,
        app_name,
        NVL2(domain, hostname||'.'||domain, hostname) server_name,
+       le.farm,
+       le.lic_env_name,
        env_status
 FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
+  JOIN OLI_OWNER.SERVERS s ON (i.server_id = s.server_id)
+  JOIN OLI_OWNER.LICENSED_ENVIRONMENTS le ON (le.lic_env_id = s.lic_env_id)
 -- WHERE 1=1
 --   and domain = ''
         -- AND dbname like 'DWHTA%'
 -- ORDER BY dbname, inst_name
-;
-
+/
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."DB"
 AS
 SELECT e.dbname,
-       e.is_rac rac,
+       decode(e.rac, 'Y', 'true', 'false') is_rac,
        o.app_name,
        e.env_status,
        e.server_name,
@@ -178,90 +193,90 @@ CREATE OR REPLACE FORCE VIEW MGMT_TARGETS
 AS select  * from MGMT_TARGETS@OEM_PROD
 ;
 
-drop materialized view MGMT$TARGET;
+drop view MGMT$TARGET;
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET
 AS select  * from MGMT$TARGET@OEM_PROD
 ;
 
-drop materialized view MGMT$TARGET_PROPERTIES;
+drop view MGMT$TARGET_PROPERTIES;
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_PROPERTIES
 AS select  * from MGMT$TARGET_PROPERTIES@OEM_PROD
 ;
 
-drop materialized view MGMT$TARGET_FLAT_MEMBERS;
+drop view MGMT$TARGET_FLAT_MEMBERS;
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_FLAT_MEMBERS
 AS select  * from MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
 ;
 
-drop materialized view MGMT$TARGET_ASSOCIATIONS;
+drop view MGMT$TARGET_ASSOCIATIONS;
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_ASSOCIATIONS
 AS select  * from MGMT$TARGET_ASSOCIATIONS@OEM_PROD
 ;
 
-drop materialized view mgmt$target_type;
+drop view mgmt$target_type;
 CREATE OR REPLACE FORCE VIEW mgmt$target_type
 AS select  * from mgmt$target_type@OEM_PROD
 ;
 
-drop materialized view mgmt$os_hw_summary;
+drop view mgmt$os_hw_summary;
 CREATE OR REPLACE FORCE VIEW mgmt$os_hw_summary
 AS select  * from mgmt$os_hw_summary@OEM_PROD
 ;
 
-drop materialized view mgmt$metric_daily;
+drop view mgmt$metric_daily;
 CREATE OR REPLACE FORCE VIEW mgmt$metric_daily
 AS select  * from mgmt$metric_daily@OEM_PROD
 ;
 
-drop materialized view mgmt$METRIC_HOURLY;
+drop view mgmt$METRIC_HOURLY;
 CREATE OR REPLACE FORCE VIEW mgmt$METRIC_HOURLY
 AS select  * from mgmt$METRIC_HOURLY@OEM_PROD
 ;
 
-drop materialized view MGMT$DB_CPU_USAGE;
+drop view MGMT$DB_CPU_USAGE;
 CREATE OR REPLACE FORCE VIEW MGMT$DB_CPU_USAGE
 AS select  * from MGMT$DB_CPU_USAGE@OEM_PROD
 ;
 
 
 
-DROP materialized VIEW MGMT$DB_DBNINSTANCEINFO ;
+DROP VIEW MGMT$DB_DBNINSTANCEINFO ;
 CREATE OR REPLACE FORCE VIEW "MGMT$DB_DBNINSTANCEINFO"
 AS select  * from MGMT$DB_DBNINSTANCEINFO@oem_prod
 ;
 
-DROP materialized VIEW MGMT$METRIC_CURRENT ;
+DROP VIEW MGMT$METRIC_CURRENT ;
 CREATE OR REPLACE FORCE VIEW MGMT$METRIC_CURRENT
 AS
 select  * from MGMT$METRIC_CURRENT@oem_prod
 ;
 
-DROP materialized VIEW MGMT$DB_INIT_PARAMS ;
+DROP VIEW MGMT$DB_INIT_PARAMS ;
 CREATE OR REPLACE FORCE VIEW "MGMT$DB_INIT_PARAMS"
 AS
 select * from MGMT$DB_INIT_PARAMS@oem_prod
 ;
 
-DROP materialized VIEW CM$MGMT_ASM_CLIENT_ECM ;
+DROP VIEW CM$MGMT_ASM_CLIENT_ECM ;
 CREATE OR REPLACE FORCE VIEW "CM$MGMT_ASM_CLIENT_ECM"
 AS
 SELECT * FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
 ;
 
 
-DROP materialized VIEW CM$MGMT_DB_SGA_ECM ;
+DROP VIEW CM$MGMT_DB_SGA_ECM ;
 CREATE OR REPLACE FORCE VIEW "CM$MGMT_DB_SGA_ECM"
 AS
 SELECT * FROM CM$MGMT_DB_SGA_ECM@oem_prod
 ;
 
-DROP materialized VIEW MGMT_ASM_DISKGROUP_ECM ;
+DROP VIEW MGMT_ASM_DISKGROUP_ECM ;
 CREATE OR REPLACE FORCE VIEW MGMT_ASM_DISKGROUP_ECM
 AS
 SELECT * FROM SYSMAN.MGMT_ASM_DISKGROUP_ECM@oem_prod
 /
 
-DROP materialized VIEW MGMT$DB_SGA ;
+DROP VIEW MGMT$DB_SGA ;
 CREATE OR REPLACE FORCE VIEW "MGMT$DB_SGA"
 AS
 SELECT * FROM MGMT$DB_SGA@OEM_PROD
@@ -275,13 +290,7 @@ SELECT * FROM MGMT$DB_SGA@OEM_PROD
 PROCEDURE           refresh_oli_dbhost_properties
 
 
-FROM DASHBOARD.EM_DATABASES_V;
-DASHBOARD.EM_hosts_V;
-dashboard.em_dbinstances_V;
-
-
-
--- dashboard grants
+-- dashboard grants - verze: 20170925
 select 'GRANT '||privilege||
       ' on '||owner||'.'||table_name||
       ' to '||grantee||

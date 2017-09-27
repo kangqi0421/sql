@@ -2,7 +2,7 @@ CADB\CADB
 
 USE mdb;
 
-SELECT APP_NAME, APP_KIND, CMDB_CI_ID, STATUS, INACTIVE, RESOURCE_NAME, RESOURCE_ALT_NAME, 
+SELECT APP_NAME, APP_KIND, CMDB_CI_ID, STATUS, INACTIVE, RESOURCE_NAME, RESOURCE_ALT_NAME,
        va, va_email, som, som_email, [as], as_email, serv_mode
 FROM     zAPI_Oracle_licence_apps WITH (NOLOCK)  -- bez zamykani radek
 WHERE  (STATUS = 'Alive')
@@ -11,3 +11,4 @@ WHERE  (STATUS = 'Alive')
 ORDER BY RESOURCE_NAME
 
 GO
+
