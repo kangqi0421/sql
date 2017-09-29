@@ -1,4 +1,18 @@
-CADB\CADB
+Description=CA Servicedesk database
+Trace=No
+Server=cadb.csin.cz,1441
+Database=mdb
+
+
+--
+-- definovaná view pro OLI
+--
+
+[dbo].[zAPI_OLI_relations]
+[dbo].[zAPI_OLI_servers]
+[dbo].[zAPI_OLI_virtual_platforms]
+
+-- dotaz na licence WITH NOLOCK
 
 USE mdb;
 
