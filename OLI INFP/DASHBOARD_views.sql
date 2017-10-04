@@ -171,6 +171,8 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."DB"
 AS
 SELECT e.dbname,
        decode(e.rac, 'Y', 'true', 'false') is_rac,
+       e.dbversion,
+       decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
        o.app_name,
        e.env_status,
        e.server_name,

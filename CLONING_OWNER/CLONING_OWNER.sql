@@ -121,29 +121,35 @@ Insert into CLONING_METHOD values ('2','HITACHI','Pole HITACHI HUS VM metoda','v
 Insert into CLONING_METHOD values ('3','SNAPVX','Pole VMAX3 přes SnapVX snapshoty','vykecavaci');
 
 
+update CLONING_METHOD_STEP
+  set step_name = 'STEP070_drop_db.sh',
+      step_description ='Drop database',
+      position = 70
+ where position = 15;
+
+ update CLONING_METHOD_STEP
+  set step_name = 'STEP001_prepare.sh',
+      step_description ='Prepare faze klonovani',
+      position = 10
+ where position = 1;
+
 
 -- pridani restartu DB
 Insert into CLONING_METHOD_STEP values ('2','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
 Insert into CLONING_METHOD_STEP values ('3','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
 
 REM INSERTING into CLONING_METHOD_STEP
 SET DEFINE OFF;
-Insert into CLONING_METHOD_STEP values ('5','STEP001_prepare.sh','1','Prepare faze klonovani','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
 
-Insert into CLONING_METHOD_STEP values ('5','STEP007_rman_delete_backup.sh','7','RMAN: delete force noprompt backup','Y','N');
-
-Insert into CLONING_METHOD_STEP values ('5','STEP010_shutdown_db.sh','10','Shutdown database','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP015_drop_db.sh',15,'Drop database','Y','N');
-
-Insert into CLONING_METHOD_STEP values ('5','STEP100_set_sys_password.sh','100','Set SYS password to s','N','Y');
-Insert into CLONING_METHOD_STEP values ('5','STEP110_rman_duplicate_active.sh','110','RMAN duplicate','N','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP120_reset_sys_password.sh','120','Reset SYS password','N','Y');
+Insert into CLONING_METHOD_STEP values ('1','STEP010_shutdown_db.sh','10','Shutdown database','Y','N');
+Insert into CLONING_METHOD_STEP values ('1','STEP100_create_golden_image.sh','100','Create Golden Image','N','N');
+Insert into CLONING_METHOD_STEP values ('1','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
 
 
 Insert into CLONING_METHOD_STEP values ('5','STEP140_password_file.sh','140','Desc','Y','N');
+
 Insert into CLONING_METHOD_STEP values ('5','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
+
 Insert into CLONING_METHOD_STEP values ('5','STEP160_archivelog_db.sh','160','Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
 Insert into CLONING_METHOD_STEP values ('5','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('5','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
@@ -185,7 +191,7 @@ Insert into CLONING_METHOD_STEP values ('2','STEP400_arm_audit.sh','400','Desc',
 Insert into CLONING_METHOD_STEP values ('2','STEP410_send_email.sh','410','Desc','Y','Y');
 
 -- DWH - pouze RECOVER a RENAME
-Insert into CLONING_METHOD_STEP values ('4','STEP001_prepare.sh','1','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('1','STEP001_prepare.sh','1','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP109_mount_asm_dg.sh','109','Desc','Y','N');
 Insert into CLONING_METHOD_STEP values ('4','STEP110_recover_clone_db.sh','110','Desc','Y','N');

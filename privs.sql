@@ -1,4 +1,6 @@
+set lines 180 pages 9999
 col grantee for a25
+col owner for a25
 col granted_role for a40
 col type_name for a40
 col table_name for a40
