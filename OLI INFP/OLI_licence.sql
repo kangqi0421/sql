@@ -14,6 +14,10 @@ CSI: 18314601
 Active: Y
 Licence count: 8
 
+-- AIX
+-- tabulka s CPU poolem + hodnotu CPU
+https://linux.vs.csin.cz/server_list/?t=aixmspp
+
 
 -- PRODUCTS
 select * from OLI_OWNER.PRODUCTS

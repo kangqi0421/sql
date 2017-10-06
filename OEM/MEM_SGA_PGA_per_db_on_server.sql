@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = dordb01
+define server = pctldb01
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -22,7 +22,7 @@ select
 --       metric_name = 'Load' AND metric_column = 'memUsedPct'
        -- logical used memory - trošku rozumnější hodnoty s hugepages
        metric_name = 'Load' AND metric_column = 'usedLogicalMemoryPct'
-   AND m.target_name like 'dbcoldb01%'
+   AND m.target_name like 'pctldb01%'
 --   AND REGEXP_LIKE(m.target_name, '^(t|d)ordb[0-9][0-9].vs.csin.cz')
 --   AND REGEXP_LIKE(m.target_name, '^(p|b|zp|zb|t|d)ordb0[0-9].vs.csin.cz')
    AND m.rollup_timestamp > sysdate - interval '1' month
@@ -44,17 +44,18 @@ SELECT
    host_name,
    target_name,  name, --value,
    round(value/1048576/1024) "GB",
-   ROUND(sum(value/1048576/1024) over (PARTITION BY target_name)) "SUM GB"
+   ROUND(sum(value/1048576/1024) over ()) "SUM GB"
+--   ROUND(sum(value/1048576/1024) over (PARTITION BY target_name)) "SUM GB"
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
 --    AND (target_name like 'CASEP%'
 --      or target_name like 'CMTP%'
 --      )
---    and host_name like 'bordb06.vs.csin.cz'
+    and host_name like 'pctldb01%'
 --    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
-     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
-     and target_name not like '%2'
+--     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
+--     and target_name not like '%2'
     and value > 0
 order by target_name, name;
 
@@ -80,7 +81,7 @@ order by SGA desc;
 SELECT
     m.rollup_timestamp,
    m.target_name,
-   m.maximum PGA
+   round(m.maximum) PGA
 FROM
   MGMT$METRIC_DAILY m join mgmt$target t on (M.target_GUID = t.TARGET_GUID)
 WHERE  1 = 1

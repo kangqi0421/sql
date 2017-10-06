@@ -29,6 +29,13 @@ INSERT into OLI_OWNER.SERVERS (HOSTNAME, DOMAIN, DR_HW, SPARE, LIC_ENV_ID)
 --
 select * from OLI_OWNER.OMS_HOSTS;
 
+-- update lic env ID pro Starbank
+UPDATE OLI_OWNER.SERVERS
+    set lic_env_id = (select lic_env_id
+  from LICENSED_ENVIRONMENTS
+ WHERE lic_env_name like 'PA802_Oracle')
+  where hostname like 'tasb%';
+
 --
 -- vloz VMWare servery
 INSERT into OLI_OWNER.SERVERS (HOSTNAME, DOMAIN, DR_HW, SPARE,

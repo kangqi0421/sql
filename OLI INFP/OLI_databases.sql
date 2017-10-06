@@ -7,9 +7,12 @@ FROM
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
- WHERE
---    dbname like 'RDBT%'
-  s.domain like 'ack-prg.csin.cz'
+ WHERE 1 = 1
+--    dbname like 'CPT%'
+    -- Pouze VMWare ORACLE-02-ANT
+    and s.lic_env_id = 3292
+--  s.domain like 'ack-prg.csin.cz'
+    and hostname like 'dp%'
 --  a.app_name in ('SB')
 --  and domain like 'cc.csin.cz'
 --  group by app_name,hostname
