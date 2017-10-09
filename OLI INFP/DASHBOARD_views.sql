@@ -167,7 +167,7 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."DB"
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
 AS
 SELECT e.dbname,
        decode(e.rac, 'Y', 'true', 'false') is_rac,

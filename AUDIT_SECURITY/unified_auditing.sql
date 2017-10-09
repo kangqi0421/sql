@@ -39,6 +39,9 @@ select dbusername,action_name,unified_audit_policies,return_code, count(*)
  group by dbusername,action_name,unified_audit_policies,return_code
 order by count(*) ;
 
+-- workaround
+AUDIT_SYS_OPERATIONS = FALSE
+AUDIT_TRAIL=NONE
 
 --
 -- kontrola nataveni
