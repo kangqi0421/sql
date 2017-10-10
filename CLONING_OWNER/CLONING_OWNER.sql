@@ -7,6 +7,9 @@
 
 sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
+
+connect CLONING_OWNER/abcd1234
+
 -- CLONE_SOURCE_LICDB_ID - SnapVX
 -- zmenit method_id
 -- zmenit template_id
