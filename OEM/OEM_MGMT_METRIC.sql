@@ -124,7 +124,7 @@ AND m.metric_name = 'DiskActivitySummary'
   AND m.metric_column = 'totiosmade'
   AND column_label like 'Total Disk I/O made across all disks (per second)'
 --
-AND m.metric_name = 'DiskActivitySummary'
+  AND m.metric_name = 'DiskActivitySummary'
   AND m.metric_column = 'maxavserv'
   AND column_label like 'Max Average Disk I/O Service Time (ms) amongst all disks'
 
@@ -139,6 +139,12 @@ AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iombs_ps'
 -- I/O Requests (per second) - database
 AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
 
+-- Log File Sync
+  AND m.metric_name = 'topWaitEvents'
+  AND m.metric_column = 'averageWaitTime'
+  AND column_label like 'Average Wait Time (millisecond)'
+AND key_value     = 'log file sync'
+-- AND key_value     = 'db file sequential read'
 
 
 -- Current Logons Count
