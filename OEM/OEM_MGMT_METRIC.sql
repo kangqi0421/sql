@@ -83,14 +83,17 @@ where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VAL
 -- hledani metriky
 -- zaměnit za sysman.mgmt_metrics ?
 
+```
 select distinct metric_name, metric_column, metric_label, column_label
   from mgmt$metric_current
  where
    --metric_name like '%pga%'  '%Network%' 'Redo%'
    column_label like '%Filesystem%'
    --metric_column like 'cursors'
-  AND target_name like 'pasbo%'
+  -- AND target_name like 'pasbo%'
+    AND target_name like 'CPTDA
 ;
+```
 
 -- CPU util server
 AND metric_name = 'Load' AND metric_column = 'cpuUtil'
@@ -177,16 +180,27 @@ AND column_label like 'Average Active Sessions'
 AND m.metric_name ='DATABASE_SIZE' AND (m.metric_column ='ALLOCATED_GB' OR m.metric_column ='USED_GB')
 AND m.metric_name ='DATABASE_SIZE' AND m.metric_column ='ALLOCATED_GB'
 
+
 -- Tablespace Allocated Space (MB)
+  AND m.metric_name = 'tbspAllocation'
+  AND m.metric_column = 'spaceAllocated'
+  AND m.column_label = 'Tablespace Allocated Space (MB)'
+
+--  Tablespace Used Space (MB)
+  AND m.metric_name = 'tbspAllocation'
+  AND m.metric_column = 'spaceUsed'
+  AND m.column_label = 'Tablespace Allocated Space (MB)'
+
+
 -- free space in tablespace
 AND metric_name LIKE 'problemTbsp'
 AND metric_column = 'bytesFree'
 AND key_value     = 'MDM'
 
--- Tablespace Allocated Space (MB)
-  AND m.metric_name = 'tbspAllocation'
-  AND m.metric_column = 'spaceAllocated'
-  AND m.metric_label like 'Tablespace Allocation'
+-- ASM diskgroup
+Disk Group Usage
+- Disk Group Usable (MB)
+- Size (MB)
 
 
 -- Network
