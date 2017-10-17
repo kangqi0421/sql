@@ -75,7 +75,7 @@ select metric_item_id
 
 -- retention periods
 select table_name, partitions_retained
-from em_int_partitioned_tables
+from SYSMAN.em_int_partitioned_tables
 where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VALUES_DAILY');
 
 
@@ -83,7 +83,6 @@ where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VAL
 -- hledani metriky
 -- zaměnit za sysman.mgmt_metrics ?
 
-```
 select distinct metric_name, metric_column, metric_label, column_label
   from mgmt$metric_current
  where
@@ -91,15 +90,15 @@ select distinct metric_name, metric_column, metric_label, column_label
    column_label like '%Filesystem%'
    --metric_column like 'cursors'
   -- AND target_name like 'pasbo%'
-    AND target_name like 'CPTDA
+    AND target_name like 'CPTDA'
 ;
-```
+
 
 -- CPU util server
 AND metric_name = 'Load' AND metric_column = 'cpuUtil'
 
 -- CPU util v DB
-AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
+AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
 AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
 
@@ -151,8 +150,7 @@ AND key_value     = 'log file sync'
 
 
 -- Current Logons Count
-AND m.metric_column like 'logons'
-
+AND  m.metric_name = 'Database_Resource_Usage' AND m.metric_column like 'logons'
 -- Current Open Cursors Count
 AND metric_name = 'Database_Resource_Usage' AND metric_column = 'opencursors'
 
@@ -197,11 +195,31 @@ AND metric_name LIKE 'problemTbsp'
 AND metric_column = 'bytesFree'
 AND key_value     = 'MDM'
 
+-- mgmt$db_tablespaces
+SELECT
+         ROUND(SUM(t.tablespace_size/1024/1024/1024), 2) AS ALLOC_GB,
+         ROUND(SUM(t.tablespace_used_size/1024/1024/1024), 2) AS USED_GB,
+         ROUND(SUM((t.tablespace_size - tablespace_used_size)/1024/1024/1024), 2) AS ALLOC_FREE_GB
+       FROM
+         mgmt$db_tablespaces t,
+         (SELECT target_guid
+            FROM mgmt$target
+            WHERE target_guid=HEXTORAW(??EMIP_BIND_TARGET_GUID??) AND
+            (target_type='rac_database' OR
+            (target_type='oracle_database' AND TYPE_QUALIFIER3 != 'RACINST'))) tg
+       WHERE
+         t.target_guid=tg.target_guid
+
 -- ASM diskgroup
 Disk Group Usage
 - Disk Group Usable (MB)
 - Size (MB)
 
+
+-- Disk Group Usable Free (MB)
+AND m.metric_name = 'DiskGroup_Usage'
+AND metric_column in ('usable_file_mb',  -- Disk Group Usable (MB)
+                      'total_mb')        -- Size (MB)
 
 -- Network
 AND m.metric_name = 'NetworkSummary'

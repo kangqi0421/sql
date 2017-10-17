@@ -24,14 +24,14 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
---    FROM GV$ACTIVE_SESSION_HISTORY a
-    FROM dba_hist_active_sess_history a
+    FROM GV$ACTIVE_SESSION_HISTORY a
+--    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-08-22 19:00:00'
-                           AND TIMESTAMP'2017-08-22 20:00:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-10-15 20:55:00'
+                           AND TIMESTAMP'2017-10-15 21:03:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
---                         and SQL_ID = '3rnz9qrx3a5tu'
+                         and SQL_ID = 'gr4r4pmvx1sj7'
 --                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
