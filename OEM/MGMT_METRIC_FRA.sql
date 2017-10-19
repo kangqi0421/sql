@@ -21,7 +21,7 @@ WHERE
   AND metric_name = 'instance_throughput'
   AND metric_column = 'redosize_ps' --Redo Generated (per second)
   --AND m.target_name like 'BRATB%'
-  AND d.database_name like 'TS%O'
+  AND (d.database_name like 'BRAT%' OR d.database_name like 'BRAD%')
 group by m.rollup_timestamp, d.database_name
 )
 group by database_name
@@ -33,7 +33,7 @@ SELECT /* OEM metric daily */
    m.target_name,
    to_char(m.rollup_timestamp,'dd.mm.yyyy hh24:mi:ss') "timestamp",
    m.column_label,
-   -- redo size per second násobím 24/3600 za celý den
+   -- redo size per second nï¿½sobï¿½m 24/3600 za celï¿½ den
    round(m.average*24*3600/power(1024,3)) redo_value_gb
 FROM
   MGMT$METRIC_DAILY m
@@ -47,7 +47,8 @@ ORDER BY  m.rollup_timestamp
 
 -- FRA size: flash_recovery_area_size
 SELECT
-    d.database_name, d.instance_name,
+    d.database_name, 
+--    d.instance_name,
     m.target_guid,
     m.target_name,
     round(m.value/power(1024,3)) as fra_size_gb
@@ -57,7 +58,9 @@ FROM
 WHERE
       m.metric_name     = 'ha_flashrecovery'
   AND m.metric_column   = 'flash_recovery_area_size'
-  AND d.database_name in ('BRAEA', 'BRATB', 'BRATC', 'CATEST1', 'CATEST2', 'CPSEA', 'CPSTINT', 'CPSTPRS', 'CRMRA', 'CRMTB', 'CRMTC', 'MCITINT', 'MCITPRS', 'PWTESTA', 'PWTESTB', 'SK2O', 'SYMPK', 'SYMTA', 'TS0O', 'TS1O', 'TS3O', 'WBLINT', 'WBLPRS')
+  AND d.database_name in (
+    'BRADA', 'BRADB', 'BRADC', 'BRADD', 'BRATA', 'BRATB', 'BRATC'
+  )
 --  AND m.target_name like 'SK2%'
 order by 1
 ;
@@ -65,7 +68,7 @@ order by 1
 
 
 --// FRA disk group space used //--
--- limit pro zaplnìní > 81%
+-- limit pro zaplnï¿½nï¿½ > 81%
 SELECT
     TARGET_NAME,
     column_label,
@@ -74,7 +77,8 @@ SELECT
 --    collection_timestamp,
     AGGREGATE_TARGET_NAME
   FROM
-    SYSMAN.MGMT$METRIC_CURRENT INNER JOIN MGMT$TARGET_FLAT_MEMBERS
+    SYSMAN.MGMT$METRIC_CURRENT
+    INNER JOIN MGMT$TARGET_FLAT_MEMBERS
 		ON  (member_target_guid = target_guid)
   WHERE 1=1
 --  AND AGGREGATE_TARGET_NAME in ('PRODUKCE')
@@ -103,8 +107,8 @@ SELECT
 --  AND METRIC_COLUMN = 'reclaimable_area' and column_label = 'Reclaimable Flash Recovery Area (%)'
   and metric_column = 'usable_area' and column_label = 'Usable Flash Recovery Area (%)'
   --
-  and value < 50  -- limit value
---  AND TARGET_NAME LIKE 'CTLRP'
+--  and value < 50  -- limit value
+  AND TARGET_NAME LIKE 'BRAD%'
   ORDER BY
     to_number(value) DESC nulls last
 ;

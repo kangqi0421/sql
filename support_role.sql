@@ -11,6 +11,10 @@ define user = CEN32763
 
 grant OEM_MONITOR to &user;
 
+-- CRM
+drop role admin_view_role;
+
+
 define role=AWR_SUPPORT_ROLE
 --define role=EXT90032
 
