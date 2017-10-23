@@ -2,6 +2,8 @@
 -- ASM storage
 --
 
+define dbname = SMART
+
 select asm.db_name,
        disk_group,
        round(total_size) "total size GB",
@@ -10,7 +12,7 @@ select asm.db_name,
        member_disk_count
   from CM$MGMT_ASM_CLIENT_ECM asm join CM$MGMT_ASM_DISKGROUP_ECM dg
          on (asm.diskgroup = dg.disk_group)
-  where asm.db_name like ('BMWE%')
+  where asm.db_name like ('&dbname%')
 order by db_name, disk_group
 ;
 

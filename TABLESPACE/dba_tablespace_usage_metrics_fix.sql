@@ -1,29 +1,25 @@
-create or replace view DBA_TABLESPACE_USAGE_METRICS
+--
+-- fix pro OEM monitoring tablespace
+--
+
+create or replace view SYS.DBA_TABLESPACE_USAGE_METRICS
     (TABLESPACE_NAME, USED_SPACE, TABLESPACE_SIZE, USED_PERCENT)
 as
---  SELECT  t.name,
+  SELECT  t.name,
 --        tstat.kttetsused,
 --        tstat.kttetsmsize,
 --        (tstat.kttetsused / tstat.kttetsmsize) * 100
---  FROM  sys.ts$ t, x$kttets tstat
---  WHERE
---        t.online$ != 3 and
---        t.bitmapped <> 0 and
---        t.contents$ = 0 and
---        bitand(t.flags, 16) <> 16 and
---        t.ts# = tstat.kttetstsn
---
--- DATAFILE
-  SELECT  t.name,
        sum(f.allocated_space),
        sum(f.file_maxsize),
        (sum(f.allocated_space)/sum(f.file_maxsize))*100
+--  FROM  sys.ts$ t, x$kttets tstat
   FROM sys.ts$ t, v$filespace_usage f
  WHERE
      t.online$ != 3 and
      t.bitmapped <> 0 and
      t.contents$ = 0 and
      bitand(t.flags, 16) <> 16 and
+--     t.ts# = tstat.kttetstsn
      t.ts# = f.tablespace_id
      GROUP BY t.name, f.tablespace_id, t.ts#
 union

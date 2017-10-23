@@ -11,7 +11,7 @@ col name for a15
 col ASM_total_GB for 9999
 col FRA_limit_GB for 9999
 col ASM_Free_GB for 9999
-col "REDO_MAX/FRA size [%]" for 999
+col "REDO_MAX/FRA size [%]" for 9999
 
 show parameter db_recovery_file_dest
 

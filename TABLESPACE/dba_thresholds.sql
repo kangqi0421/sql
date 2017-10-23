@@ -3,7 +3,22 @@
 Bug 26324206 - DBA_TABLESPACE_USAGE_METRICS.USED_PERCENT IS INCORRECT AFTER UPGRADE TO 12.2
 --
 
-define tablespace = MDM
+define tablespace = CTI_OCA_DATA_TS
+
+-- tablespace_size = sum(max_size) for autoextensible tablespace which corresponds to maxblocks in dba_data_files.
+--
+select
+--    m.*,
+    m.TABLESPACE_NAME,
+    round(tablespace_size * block_size/power(1024,3)) size_GB,
+    round(used_space * block_size /power(1024,3)) used_GB,
+    round(USED_PERCENT)
+  from   DBA_TABLESPACE_USAGE_METRICS m
+         INNER JOIN DBA_TABLESPACES t ON (m.TABLESPACE_NAME = t.TABLESPACE_NAME)
+  where 1 = 1
+--    AND USED_PERCENT > 30
+    AND m.tablespace_name = '&tablespace'
+;
 
 -- dba_thresholds na tablespaces
 SELECT   metrics_name, object_name, warning_value, critical_value
@@ -11,20 +26,6 @@ SELECT   metrics_name, object_name, warning_value, critical_value
    WHERE OBJECT_TYPE = 'TABLESPACE'
 ORDER BY metrics_name, object_name;
 
-
--- tablespace_size = sum(max_size) for autoextensible tablespace which corresponds to maxblocks in dba_data_files.
---
-select 
---    m.*,
-    TABLESPACE_NAME,
-    round(tablespace_size*8/power(1024,2)) size_GB,
-    round(used_space*8/power(1024,2)) used_GB,
-    round(USED_PERCENT)
-  from   DBA_TABLESPACE_USAGE_METRICS m
-  where 1 = 1
---    AND USED_PERCENT > 30
-    AND tablespace_name = '&tablespace'
-;
 
 -- definice DBA_TABLESPACE_USAGE_METRICS
 -- používá strukturu x$kttets
@@ -44,9 +45,9 @@ SELECT  t.name,
 
 -- vypis datafiles, pouze platnych
 -- v$filespace_usage se již nepoužívá
-select sum(file_maxsize*8)/power(1024,2), 
-       sum(allocated_space*8)/power(1024,2) 
- from v$filespace_usage 
+select sum(file_maxsize*8)/power(1024,2),
+       sum(allocated_space*8)/power(1024,2)
+ from v$filespace_usage
   where tablespace_id in (select TS# from sys.ts$
                              where name = '&tablespace')
 -- AND flag = 2
@@ -56,9 +57,9 @@ select * from sys.ts$
   where name = '&tablespace';
 
 
-select tablespace_name,sum(bytes/1024/1024) "MB" 
-     from   dba_data_files 
-   WHERE tablespace_name = '&tablespace'  
+select tablespace_name,sum(bytes/1024/1024) "MB"
+     from   dba_data_files
+   WHERE tablespace_name = '&tablespace'
      group by tablespace_name
 ;
 
@@ -67,7 +68,7 @@ select value from v$parameter where name like 'db_block_size';
 -- free space vcetne autoextendu - pouziva OEM pro monitoring
 SELECT m.tablespace_name,
        round((m.tablespace_size - m.used_space) * 8 / 1024) "actual free space",
-       t.metrics_name, 
+       t.metrics_name,
        t.CRITICAL_VALUE,
        t.warning_value
   FROM DBA_TABLESPACE_USAGE_METRICS m, DBA_THRESHOLDS t
@@ -101,10 +102,10 @@ FROM
       dba_data_files
   )
 WHERE
-  tablespace_name = 'MDM' 
+  tablespace_name = 'MDM'
 GROUP BY tablespace_name;
 
 
 -- free space within datafiles bez autoextendu
-select sum(bytes)/1048576 from dba_free_space 
+select sum(bytes)/1048576 from dba_free_space
   where tablespace_name = 'SODS_DATA';
