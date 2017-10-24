@@ -2,32 +2,25 @@
 -- OEM CPU Usage
 --
 
+define server = tuxdbst.vs.csin.cz
+
+
 -- pocty CPU cores a CPU_COUNT
 CM$MGMT_DB_CPU_USAGE_ECM
 
 -- CPU Usage per database
--- hourly snapshot, sysdate - 3
 SELECT
-   m.rollup_timestamp,
+   m.COLLECTION_TIMESTAMP,
    --m.target_name,
-   CASE
-      -- orezani podtrzitka v target name
-      WHEN instr(m.target_name, '_') > 0
-        THEN substr(m.target_name, 1, instr(m.target_name, '_')-1)
-      -- orezani domeny targetu s teckou
-      WHEN instr(m.target_name, '.') > 0
-        THEN substr(m.target_name, 1, instr(m.target_name, '.')-1)
-      -- vrat puvodni nazev
-      ELSE m.target_name
-   END DB,
-   round(m.average/100,2) "CPU"
+   d.DATABASE_NAME db_name,
+   m.value "CPU"
 FROM
-  MGMT$METRIC_HOURLY m join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
+       MGMT$METRIC_DETAILS m 
+  join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
+  JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE  1 = 1
   AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
-  AND m.rollup_timestamp > sysdate - interval '3' day
-  --AND REGEXP_LIKE(t.host_name, '^z?[pbtd]ordb0[0-9].vs.csin.cz')
-  AND t.host_name like 'dordb04.vs.csin.cz'
+  AND t.host_name like :server
 order by 1, 2
 ;
 

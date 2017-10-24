@@ -7,6 +7,7 @@
 -- grant MGMT_ECM_VIEW to HP_MONITOR;
 grant MGMT_USER to HP_MONITOR;
 
+-- tohle by nemělo být třeba, je řešeno přes roli
 GRANT SELECT on SYSMAN.MGMT$METRIC_DETAILS to HP_MONITOR;
 GRANT SELECT on SYSMAN.MGMT$DB_DBNINSTANCEINFO to HP_MONITOR;
 GRANT SELECT on SYSMAN.CM$MGMT_ASM_CLIENT_ECM to HP_MONITOR;
@@ -98,6 +99,27 @@ WHERE 1=1
                           'total_mb')        -- Size (MB)
 ;
 
+#4) Wait event metriky
+
+SELECT
+   to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
+   d.DATABASE_NAME db_name,
+   m.target_guid,
+   m.metric_column, m.column_label,
+   m.key_value wait_event,
+   m.value
+FROM
+  MGMT$METRIC_DETAILS m
+  JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
+WHERE 1=1
+  -- AND m.target_name like 'CPTDA'
+  AND m.metric_name = 'topWaitEvents'
+  AND m.metric_column = 'averageWaitTime'
+  AND column_label like 'Average Wait Time (millisecond)'
+  AND key_value in ('log file sync', 'log file parallel write', 'direct path read temp',
+                    'control file sequential read', 'direct path read',
+                    'db file scattered read', 'db file sequential read')
+;
 
 
 2a) - Zaplnění tablespace = velikost databáze - ANO
@@ -130,11 +152,25 @@ Latence IO bloku je lepší sledovat na úrovni OS nebo úrovni SAN pole
 
 5) zápis - log file sync - ANO
 
-OEM metriky:
+SELECT
+   to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
+   d.DATABASE_NAME db_name,
+   m.target_guid,
+   m.metric_column, m.column_label,
+   m.key_value wait_event,
+   m.value
+FROM
+  MGMT$METRIC_DETAILS m
+  JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
+WHERE 1=1
+  -- AND m.target_name like 'CPTDA'
   AND m.metric_name = 'topWaitEvents'
   AND m.metric_column = 'averageWaitTime'
   AND column_label like 'Average Wait Time (millisecond)'
-  AND key_value     = 'log file sync'
+  AND key_value in ('log file sync', 'log file parallel write', 'direct path read temp',
+                    'control file sequential read', 'direct path read',
+                    'db file scattered read', 'db file sequential read')
+;
 
 6)Average Wait Time - NE
 

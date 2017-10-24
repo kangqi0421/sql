@@ -142,11 +142,17 @@ AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iombs_ps'
 AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
 
 -- Log File Sync
+-- Wait Event
   AND m.metric_name = 'topWaitEvents'
   AND m.metric_column = 'averageWaitTime'
   AND column_label like 'Average Wait Time (millisecond)'
 AND key_value     = 'log file sync'
--- AND key_value     = 'db file sequential read'
+-- AND key_value     = 'db file sequential read'  AND m.metric_name = 'topWaitEvents'
+  AND m.metric_column = 'averageWaitTime'
+  AND column_label like 'Average Wait Time (millisecond)'
+  AND key_value in ('log file sync', 'log file parallel write', 'direct path read temp',
+                    'control file sequential read', 'direct path read',
+                    'db file scattered read', 'db file sequential read')
 
 
 -- Current Logons Count

@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = pctldb01
+define server = tuxdbst
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -22,7 +22,7 @@ select
 --       metric_name = 'Load' AND metric_column = 'memUsedPct'
        -- logical used memory - trošku rozumnější hodnoty s hugepages
        metric_name = 'Load' AND metric_column = 'usedLogicalMemoryPct'
-   AND m.target_name like 'pctldb01%'
+   AND m.target_name like '&server%'
 --   AND REGEXP_LIKE(m.target_name, '^(t|d)ordb[0-9][0-9].vs.csin.cz')
 --   AND REGEXP_LIKE(m.target_name, '^(p|b|zp|zb|t|d)ordb0[0-9].vs.csin.cz')
    AND m.rollup_timestamp > sysdate - interval '1' month
@@ -52,7 +52,7 @@ SELECT
 --    AND (target_name like 'CASEP%'
 --      or target_name like 'CMTP%'
 --      )
-    and host_name like 'pctldb01%'
+    and host_name like '&server%'
 --    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
 --     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
 --     and target_name not like '%2'

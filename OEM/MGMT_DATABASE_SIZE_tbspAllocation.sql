@@ -13,6 +13,24 @@ WHERE m.metric_name = 'DATABASE_SIZE'
 GROUP BY d.database_name
 ;
 
+-- Tablespace size
+SELECT
+   to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
+   d.DATABASE_NAME db_name,
+   m.target_guid,
+   m.metric_column, m.column_label,
+   m.key_value tablespace,
+   m.value
+FROM
+  MGMT$METRIC_DETAILS m
+  JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
+WHERE 1=1
+  -- AND m.target_name like 'CPTDA'
+  AND m.metric_name = 'tbspAllocation'
+  AND m.metric_column in ('spaceUsed', 'spaceAllocated')
+ORDER by 1, 2
+;
+
 -- SQLDev report
 SELECT
     /* OEM metric daily */
