@@ -8,6 +8,12 @@ select * from dba_autotask_client
   where client_name = 'auto optimizer stats collection'
 ;
 
+-- Autotasks
+SELECT *
+FROM dba_autotask_job_history
+WHERE client_name like '%stats%'
+ORDER BY job_start_time desc;
+
 
 -- zrušení automatického přepočtu statistik
 

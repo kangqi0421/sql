@@ -8,7 +8,8 @@ column db_name new_value db_name print
 SELECT SYS_CONTEXT ('USERENV', 'DB_NAME') as db_name from dual;
 
 column spfile new_value spfile
-select regexp_replace(name, '/datafile/.*$', '/spfile&db_name..ora', 1, 1, 'i') as spfile
+select regexp_replace(name, '^(\+\w+)/\w+/datafile/.*',
+    '\1/&db_name/spfile&db_name..ora', 1, 1, 'i') as spfile
   from v$datafile where file# = 1;
 
 create pfile from spfile;

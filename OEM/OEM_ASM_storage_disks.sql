@@ -2,7 +2,7 @@
 -- ASM storage
 --
 
-define dbname = SMART
+define dbname = MDW
 
 select asm.db_name,
        disk_group,

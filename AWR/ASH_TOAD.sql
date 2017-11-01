@@ -28,10 +28,10 @@ select
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-10-15 20:55:00'
-                           AND TIMESTAMP'2017-10-15 21:03:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2017-10-30 15:00:00'
+                           AND TIMESTAMP'2017-10-30 15:07:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
-                         and SQL_ID = 'gr4r4pmvx1sj7'
+--                         and SQL_ID = 'gr4r4pmvx1sj7'
 --                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
@@ -53,7 +53,7 @@ select
 --                         and a.instance_number = 2
 --                         and a.inst_id = 2
 --                         and qc_instance_id in (1,2) 
---                         and user_id = (select user_id from dba_users where USERNAME in ('SYMPROXY'))
+                         and user_id = (select user_id from dba_users where USERNAME in ('CEN31049'))
 --                           and program like '%tux%' 
 --  XID having count(*) > 1
 --group by   sql_id ORDER by count(*) DESC 
@@ -103,8 +103,8 @@ select * from dba_indexes
     and index_name = 'PT_PK';
 
 select * from dba_users 
--- where username like 'ARM%'
- where user_id = 102
+ where username like 'CEN31049'
+-- where user_id = 102
  ;
 
 --

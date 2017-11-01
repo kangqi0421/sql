@@ -17,6 +17,14 @@ SELECT *
 ;
 
 
+-- Gather Stats
+select job_name,actual_start_date,log_date,run_duration
+from   dba_scheduler_job_run_details
+where JOB_NAME in (select JOB_NAME from dba_scheduler_job_log where additional_info like '%GATHER_STATS_PROG%')
+order by ACTUAL_START_DATE desc;
+
+select * from DBA_OPTSTAT_OPERATIONS  where operation = 'gather_database_stats(auto)' order by start_time;
+
 -- chyby z logu pro FAILED
 SET SQLFORMAT ANSICONSOLE
 

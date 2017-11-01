@@ -24,7 +24,6 @@ select THREAD#, l.GROUP#, member, bytes/1048576
   from v$log l join v$logfile f on l.group# = f.group#
   order by THREAD#, f.GROUP#;
 
-prompt current group:
 select thread#, current_group# from v$thread where status = 'OPEN';
 alter system switch logfile;
 
@@ -39,32 +38,32 @@ alter system switch logfile;
 --/
 
 -- RAC > single db - disable thread #2
-BEGIN
-for rec in (
-select thread#, enabled from v$thread
-  where enabled = 'PUBLIC' AND thread# > (
-     select max(instance_number) from gv$instance)
-   )
-   LOOP
-     execute immediate  'alter database disable thread '||rec.thread#;
-   END LOOP;
-END;
-/
+-- BEGIN
+-- for rec in (
+-- select thread#, enabled from v$thread
+--   where enabled = 'PUBLIC' AND thread# > (
+--      select max(instance_number) from gv$instance)
+--    )
+--    LOOP
+--      execute immediate  'alter database disable thread '||rec.thread#;
+--    END LOOP;
+-- END;
+-- /
 
 --
 select thread#, enabled from v$thread;
 
 -- RAC > single: drop logfile of disabled thread
-BEGIN
-for rec in (select group# from v$log
-  where thread# in (select thread# from v$thread
-                      where enabled = 'DISABLED')
-  )
-  LOOP
-    execute immediate 'alter database drop logfile group ' || rec.group#;
-  END LOOP;
-END;
-/
+-- BEGIN
+-- for rec in (select group# from v$log
+--   where thread# in (select thread# from v$thread
+--                       where enabled = 'DISABLED')
+--   )
+--   LOOP
+--     execute immediate 'alter database drop logfile group ' || rec.group#;
+--   END LOOP;
+-- END;
+-- /
 
 DECLARE
    -- TRUE  - print SQL statement

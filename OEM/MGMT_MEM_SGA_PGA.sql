@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = tuxdbst
+define server = dpsymdb01.vs.csin.cz
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -49,8 +49,8 @@ SELECT
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
---    AND (target_name like 'CASEP%'
---      or target_name like 'CMTP%'
+--    AND (target_name like 'PDBD%'
+--      or target_name like 'SYMDA%'
 --      )
     and host_name like '&server%'
 --    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
@@ -61,8 +61,8 @@ order by target_name, name;
 
 -- MGMT$DB_SGA
 select host_name, target_name, collection_timestamp, sganame, sgasize
-  from   sysman.MGMT$DB_SGA
- where  target_name like 'COLDA%';
+  from   MGMT$DB_SGA
+ where  target_name like 'MDWZA%';
 
 -- SGA per db on server
 SELECT
@@ -79,7 +79,7 @@ order by SGA desc;
 
 -- PGA per db on server
 SELECT
-    m.rollup_timestamp,
+   m.rollup_timestamp,
    m.target_name,
    round(m.maximum) PGA
 FROM
@@ -95,14 +95,18 @@ order by 1 desc;
 -- HugePages
 SELECT
    --host_name,
-   target_name,  name, --value,
-   round(value/1048576/1024) "GB",
-   sum(value/1048576/1024) over (),
-   sum(value/1024) over () / 2048 HugePages
- FROM MGMT$DB_INIT_PARAMS
- where
-    name in ('sga_target')
-    AND host_name like '&server%'
+    target_name,
+    name, --value,
+    round(value / 1048576 / 1024) "GB",
+    SUM(value / 1048576 / 1024) OVER(),
+    SUM(value / 1024) OVER() / 2048 hugepages
+FROM
+    mgmt$db_init_params
+WHERE
+    name IN (
+        'sga_target'
+    )
+    AND   host_name LIKE '&server%'
     --and value > 0
-order by target_name, name;
+ORDER BY  target_name,  name;
 

@@ -7,7 +7,7 @@
 
 -- nahradit za OEM_MONITOR - ANO
 
-define user = CEN32763
+define user = ESPIS
 
 grant OEM_MONITOR to &user;
 

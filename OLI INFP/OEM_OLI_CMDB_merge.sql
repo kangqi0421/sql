@@ -81,6 +81,22 @@ when matched then
     o.os = c.os
 ;
 
+-- update ARCHIVELOG mode
+merge
+ into OLI_OWNER.DATABASES o
+USING
+  (SELECT em_guid,
+          decode(log_mode, 'ARCHIVELOG', 'Y', 'N') archivelog
+        FROM DASHBOARD.EM_DATABASE
+  ) d
+ON (o.em_guid = d.em_guid)
+when matched then
+  update set o.archivelog = d.archivelog;
+;
+
+select *
+  from   OLI_OWNER.databases
+  where archivelog ='N';
 
 -- CMDB update DATABASES
 merge

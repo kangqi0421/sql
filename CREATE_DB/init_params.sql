@@ -47,7 +47,7 @@ BEGIN
     v$database, v$instance;
   IF v_version = '12.1.0.2.0' THEN
     -- workaround ve 12.1.0.2
-    execute immediate q'[alter system set "_optimizer_aggr_groupby_elim"=false  comment='Wrong results GROUP BY bugs 19567916 20508819' scope=both]';
+    execute immediate q'[alter system set "_optimizer_reduce_groupby_key"=false  comment='Wrong results GROUP BY bugs 20804826 22864303 23321926' scope=both]';
     IF v_platform like 'AIX%' THEN
       -- workaroundy pro AIX
       -- od PSU již není potřeba
