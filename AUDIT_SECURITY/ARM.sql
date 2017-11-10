@@ -1,13 +1,13 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DWHTA%
+DEFINE db=WDNZ
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
   WHERE 1=1
---    AND ARM_DB_NAME LIKE '%&db%'
-    AND ARM_FULLID LIKE 'DWHTA%'
-    and transfer_enabled = 'N'
+    AND ARM_DB_NAME LIKE '%&db%'
+--    AND ARM_FULLID LIKE 'DWHTA%'
+--    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
 -- ARM status ERROR

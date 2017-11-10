@@ -3,7 +3,7 @@
 Bug 26324206 - DBA_TABLESPACE_USAGE_METRICS.USED_PERCENT IS INCORRECT AFTER UPGRADE TO 12.2
 --
 
-define tablespace = CTI_OCA_DATA_TS
+define tablespace = ODI_DATA
 
 -- tablespace_size = sum(max_size) for autoextensible tablespace which corresponds to maxblocks in dba_data_files.
 --
@@ -57,10 +57,9 @@ select * from sys.ts$
   where name = '&tablespace';
 
 
-select tablespace_name,sum(bytes/1024/1024) "MB"
+select *
      from   dba_data_files
    WHERE tablespace_name = '&tablespace'
-     group by tablespace_name
 ;
 
 select value from v$parameter where name like 'db_block_size';
@@ -102,10 +101,11 @@ FROM
       dba_data_files
   )
 WHERE
-  tablespace_name = 'MDM'
+  tablespace_name = '&tablespace'
 GROUP BY tablespace_name;
 
 
 -- free space within datafiles bez autoextendu
 select sum(bytes)/1048576 from dba_free_space
-  where tablespace_name = 'SODS_DATA';
+  where tablespace_name = '&tablespace'
+;

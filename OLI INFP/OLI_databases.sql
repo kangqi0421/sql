@@ -18,6 +18,8 @@ FROM
 --  group by app_name,hostname
 ORDER BY APP_NAME;
 
+--
+
 -- server per APP
 SELECT DBNAME, hostname, app_name
 FROM

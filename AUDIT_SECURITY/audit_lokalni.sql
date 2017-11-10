@@ -1,3 +1,6 @@
+
+define user = FEWCRAS
+
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
 
@@ -24,11 +27,11 @@ select
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
 --                            and timestamp'2015-07-08 22:05:00'
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' HOUR
+  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
 -- AND UNIFIED_AUDIT_POLICIES is null
   and ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
---   and upper(dbusername)='DBSNMP'
+   and dbusername = '&user'
    and return_code > 0
 -- group by dbusername
 ORDER by event_timestamp desc

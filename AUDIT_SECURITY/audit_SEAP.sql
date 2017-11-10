@@ -1,4 +1,6 @@
-define db=CLMP
+
+define db=WDNZ
+define user = FEWCRAS
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -11,23 +13,25 @@ select ARM_DB_NAME, ARM_FULLID, TRANSFER_ENABLED from ARM_ADMIN.ARM_DATABASES wh
 -- kdo zamknul účet
 -- kdo co komu grantoval pres REDIM
 select --/*+ parallel full  (a) */
-    a.*
+--    a.*
+      -- locknuty ucet
+    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
+--
 --      object_schema, object_name, SQL_TEXT_VARCHAR2
---    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
     -- ARM_ACTION_NAME,DBUSERNAME, OS_USERNAME, USERHOST,
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
---  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '2' HOUR
-     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00' 
-                           and TIMESTAMP'2017-08-22 18:10:00'
---  and ARM_ACTION_NAME='LOGON'
+  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
+--     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00' 
+  --                         and TIMESTAMP'2017-08-22 18:10:00'
+  and ARM_ACTION_NAME='LOGON'
 --   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
 --     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
-    and upper(dbusername)='COLMANWORK'
+    and upper(dbusername)='&user'
 --    and return_code > 0
---    and return_code  in (1017)
+   and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role

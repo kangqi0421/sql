@@ -3,6 +3,11 @@ Trace=No
 Server=cadb.csin.cz,1441
 Database=mdb
 
+-- Test CMDB
+Server=TV1SQLDB1001.csint.cz,1441
+Database=mdb
+
+runas /netonly /noprofile /user:XTC\sol60210 "C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\Ssms.exe"
 
 --
 -- definovaná view pro OLI
@@ -11,6 +16,14 @@ Database=mdb
 [dbo].[zAPI_OLI_relations]
 [dbo].[zAPI_OLI_servers]
 [dbo].[zAPI_OLI_virtual_platforms]
+
+
+use mdb;
+
+-- dotaz na CMDB CA Servers
+select hostname, domain
+   from [dbo].[zAPI_OLI_servers]  WITH (NOLOCK)
+  WHERE DOMAIN like 'dppardb01.vs.csin.cz%'
 
 -- dotaz na licence WITH NOLOCK
 
@@ -25,4 +38,9 @@ WHERE  (STATUS = 'Alive')
 ORDER BY RESOURCE_NAME
 
 GO
+
+-- SQL Developer
+
+select * FROM "dbo"."zAPI_Oracle_licence_servers"@"CASDGW";
+
 

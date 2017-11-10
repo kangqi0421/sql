@@ -119,10 +119,7 @@ create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 -- data
 REM INSERTING into CLONING_METHOD
 SET DEFINE OFF;
-Insert into CLONING_METHOD values ('1','RMAN_DUPLICATE','Duplikace RMAN - do GUI','vykecavaci');
-Insert into CLONING_METHOD values ('2','HITACHI','Pole HITACHI HUS VM metoda','vykecavaci');
-Insert into CLONING_METHOD values ('3','SNAPVX','Pole VMAX3 přes SnapVX snapshoty','vykecavaci');
-
+Insert into CLONING_METHOD values ('7','GI_RESTORE','Golden Image restore from tape','Golden Image restore from tape', 'N');
 
 update CLONING_METHOD_STEP
   set step_name = 'STEP070_drop_db.sh',
@@ -137,89 +134,16 @@ update CLONING_METHOD_STEP
  where position = 1;
 
 
--- pridani restartu DB
-Insert into CLONING_METHOD_STEP values ('2','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
-Insert into CLONING_METHOD_STEP values ('3','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
-
-REM INSERTING into CLONING_METHOD_STEP
-SET DEFINE OFF;
-
-Insert into CLONING_METHOD_STEP values ('1','STEP010_shutdown_db.sh','10','Shutdown database','Y','N');
-Insert into CLONING_METHOD_STEP values ('1','STEP100_create_golden_image.sh','100','Create Golden Image','N','N');
-Insert into CLONING_METHOD_STEP values ('1','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
-
-
-Insert into CLONING_METHOD_STEP values ('5','STEP140_password_file.sh','140','Desc','Y','N');
-
-Insert into CLONING_METHOD_STEP values ('5','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
-
-Insert into CLONING_METHOD_STEP values ('5','STEP160_archivelog_db.sh','160','Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP210_rman_reset_config.sh','210','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP220_rman_resync.sh','220','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP300_app_sql_scripts.sh','300','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP310_grant_dba.sh','310','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP320_autoextend_on.sh','320','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('5','STEP400_arm_audit.sh','400','Desc','Y','Y');
-Insert into CLONING_METHOD_STEP values ('5','STEP410_send_email.sh','410','Desc','Y','Y');
-
--- Hitach HUS VM
-Insert into CLONING_METHOD_STEP values ('2','STEP001_prepare.sh','1','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP010_shutdown_db.sh','10','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP020_umount_asm_dg.sh','20','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP100_create_hitachi_clone.sh','100','Desc','N','N');
---
-Insert into CLONING_METHOD_STEP values ('2','STEP105_change_asm_diskstring.sh','105','Desc','N','N');
---
-Insert into CLONING_METHOD_STEP values ('2','STEP109_mount_asm_dg.sh','109','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP110_recover_clone_db.sh','110','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP120_rename_clone_db.sh','120','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP130_rename_clone_asmdg.sh','130','Desc','Y','N');
---
-Insert into CLONING_METHOD_STEP values ('2','STEP135_default_asm_diskstring.sh','135','Desc','N','N');
---
-Insert into CLONING_METHOD_STEP values ('2','STEP140_password_file.sh','140','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP210_rman_reset_config.sh','210','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP220_rman_resync.sh','220','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP230_rman_backup_validate.sh','230','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP300_app_sql_scripts.sh','300','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP310_grant_dba.sh','310','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP320_autoextend_on.sh','320','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('2','STEP400_arm_audit.sh','400','Desc','Y','Y');
-Insert into CLONING_METHOD_STEP values ('2','STEP410_send_email.sh','410','Desc','Y','Y');
-
--- DWH - pouze RECOVER a RENAME
-Insert into CLONING_METHOD_STEP values ('1','STEP001_prepare.sh','1','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP005_pre_sql_scripts.sh','5','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP109_mount_asm_dg.sh','109','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP110_recover_clone_db.sh','110','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP120_rename_clone_db.sh','120','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP130_rename_clone_asmdg.sh','130','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP140_password_file.sh','140','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP150_recreate_spfile_db.sh','150','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP180_rac_drop_unused_redo_thread.sh','180','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP205_emcli_stop_blackout.sh','205','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP210_rman_reset_config.sh','210','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP220_rman_resync.sh','220','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP230_rman_backup_validate.sh','230','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP300_app_sql_scripts.sh','300','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP310_grant_dba.sh','310','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP320_autoextend_on.sh','320','Desc','Y','N');
-Insert into CLONING_METHOD_STEP values ('4','STEP400_arm_audit.sh','400','Desc','Y','Y');
-Insert into CLONING_METHOD_STEP values ('4','STEP410_send_email.sh','410','Desc','Y','Y');
-
+-- STEP
+Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',110,'RMAN duplicate from tape','N','N');
 
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_PARAMETER  values ('I','control_files','N',null,'Parametr slouží pro změnu umístění controlfile při diskovém klonu, kdy jeden ze zdrojových controlfile je umístěn ve FRA (klonuje se pouze D01).',null,'N');
-Insert into CLONING_PARAMETER  values ('I','db_block_checksum','N','0',null,null,'N');
-Insert into CLONING_PARAMETER  values ('C','clone_opts','Y','0',null,null,'N');
+Insert into CLONING_PARAMETER  values ('C','until_time','N',NULL,'RMAN until time dd.mm.yyyy hh24:mi:ss','N');
+Insert into CLONING_PARAMETER  values ('C','restore_password','N',NULL,'Restore Appl. hash passwords with granted role CS_APPL_ACCOUNTS',NULL, 'N');
+
+
 Insert into CLONING_PARAMETER  values ('C','recover_opts','Y','0','Ponechat --noarchivelog pro vytvoření klonu. Pro změnu LOG_MODE se používá parametr ARCHIVELOG','--noarchivelog','N');
 Insert into CLONING_PARAMETER  values ('I','memory_target','N','0',null,null,'Y');
 Insert into CLONING_PARAMETER  values ('C','snapshot_name','Y','0',null,null,'N');
@@ -272,3 +196,30 @@ Insert into METHOD_PARAM_VALUE values ('2','C','asm_source_dg','${source_db}_D01
 Insert into METHOD_PARAM_VALUE values ('2','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
 Insert into METHOD_PARAM_VALUE values ('3','C','asm_source_dg','${source_db}_D01','N');
 Insert into METHOD_PARAM_VALUE values ('3','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
+
+
+REM INSERTING into CLONING_METHOD_STEP
+SET DEFINE OFF;
+Insert into CLONING_METHOD_STEP values (6,'STEP010_prepare.sh',10,'Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values (6,'STEP020_pre_sql_scripts.sh',20,'Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values (6,'STEP040_rman_delete_backup.sh',40,'RMAN: delete force noprompt backup','Y','N');
+Insert into CLONING_METHOD_STEP values (6,'STEP050_shutdown_db.sh',50,'Drop database','Y','N');
+Insert into CLONING_METHOD_STEP values (6,'STEP070_drop_db.sh',70,'Drop database','Y','N');
+
+
+REM INSERTING into CLONING_METHOD_STEP
+SET DEFINE OFF;
+Insert into CLONING_METHOD_STEP values (6, 'STEP115_srvctl_add_db.sh',115,'Přidání db do konfigurace Gridu','Y','N');
+
+Insert into CLONING_METHOD_STEP values (6, 'STEP150_recreate_spfile_db.sh',150,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP160_archivelog_db.sh',160,'Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP180_rac_drop_unused_redo_thread.sh',180,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP190_restart_db.sh',190,'Finální restart databaze pro overeni funkcnosti','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP205_emcli_stop_blackout.sh',206, 'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP210_rman_reset_config.sh',210,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP220_rman_resync.sh',220,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP300_app_sql_scripts.sh',300,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP310_grant_dba.sh',310,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP320_autoextend_on.sh',320,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (6, 'STEP400_arm_audit.sh',400,'Desc','Y','Y');
+Insert into CLONING_METHOD_STEP values (6, 'STEP410_send_email.sh',410,'Desc','Y','Y');

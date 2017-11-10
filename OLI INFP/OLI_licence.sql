@@ -1,23 +1,5 @@
 --
 
-Enterprise Edition - používat pouze volbu "Enterprise Edition"
-
-
-Diagnostics Pack  PP  8 8 -
-Enterprise Edition  PP  8 8 -
-Partitioning  PP  8 8 -
-Real Application Clusters PP  8 8 -
-Tuning Pack PP  8 8 -
-
-Lic. Environment - nazev serveru
-CSI: 18314601
-Active: Y
-Licence count: 8
-
--- AIX
--- tabulka s CPU poolem + hodnotu CPU
-https://linux.vs.csin.cz/server_list/?t=aixmspp
-
 
 -- PRODUCTS
 select * from OLI_OWNER.PRODUCTS
@@ -33,10 +15,10 @@ order by PROD_ID;
 -- fyzický server
 --
 select lic_env_id from servers
-  where hostname like 'bordb08%';
+  where hostname like 'pordb09%';
 
-define LIC_ENV_ID = 3292
-define PP = 64
+define LIC_ENV_ID = 3489
+define PP = 8
 
 -- Diagnostics Pack
 Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)

@@ -58,7 +58,9 @@ COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
 - pridat indexy ?
 
 -- EM_DATABASE
--- - vcetne DSN connect stringu
+--   - connect stringu
+--   - db size in MB
+--   - fra size in MB
 CREATE OR REPLACE FORCE VIEW DASHBOARD.EM_DATABASE
 AS
 select t.target_guid em_guid,
@@ -82,8 +84,9 @@ select t.target_guid em_guid,
        end SLA,
        -- servername
        -- pokud je db v clsteru, vrat scanName, jinak server name
-       NVL2(cluster_name, scanName, server_name) server_name,
-       port,
+       NVL2(cluster_name, scanName, server_name)
+         || ':' || port || '/'||database_name  AS CONNECT_DESCRIPTOR,
+       d.host_name,
        db_size_mb,
        db_log_size_mb
   FROM
@@ -167,6 +170,7 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
+
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
 AS
 SELECT e.dbname,
@@ -175,12 +179,13 @@ SELECT e.dbname,
        decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
        o.app_name,
        e.env_status,
-       e.server_name,
-       e.port
+       e.host_name,
+       e.connect_descriptor
 FROM
   OLI_DATABASE o
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
 ;
+
 
 
 --

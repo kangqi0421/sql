@@ -15,6 +15,17 @@ where view_name like 'OLAPI%';
 select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
 
+-- Oracle Gateway
+/etc/odbc.ini
+
+[casd]
+Driver=ODBC Driver 13 for SQL Server
+Description=CA Servicedesk database
+Trace=No
+Server=cadb.csint.cz,5441
+Database=mdb
+
+
 -- CMDB
 CMDB generuje synchronizační log (ve kterém jsou vidět chyby)
 http://caservicedesk/reportextracts/SyncLogs/SyncOLI_END.csv
