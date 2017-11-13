@@ -4,7 +4,7 @@ Server=cadb.csin.cz,1441
 Database=mdb
 
 -- Test CMDB
-Server=TV1SQLDB1001.csint.cz,1441
+Server=cadb.csint.cz,1441
 Database=mdb
 
 runas /netonly /noprofile /user:XTC\sol60210 "C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\Ssms.exe"

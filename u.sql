@@ -70,7 +70,16 @@ prompt
 
 set head on feedback on
 
+--
 -- reuse password hash
 --
+
 -- SELECT name, password, spare4 FROM sys.user$ WHERE name='DBEIM';
 -- ALTER USER DBEIM IDENTIFIED BY VALUES 'S:333377748712A1D3E7708FC4F39E2A62AFF76F1766508FF96CE7DD34B6AD';
+
+--
+-- zmena hesla na puvodni
+--
+-- ALTER USER SRBA default profile;
+
+

@@ -127,38 +127,27 @@ update CLONING_METHOD_STEP
       position = 70
  where position = 15;
 
- update CLONING_METHOD_STEP
-  set step_name = 'STEP001_prepare.sh',
-      step_description ='Prepare faze klonovani',
-      position = 10
- where position = 1;
 
-
--- STEP
+ -- STEP
 Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',110,'RMAN duplicate from tape','N','N');
 
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_PARAMETER  values ('C','until_time','N',NULL,'RMAN until time dd.mm.yyyy hh24:mi:ss','N');
-Insert into CLONING_PARAMETER  values ('C','restore_password','N',NULL,'Restore Appl. hash passwords with granted role CS_APPL_ACCOUNTS',NULL, 'N');
+Insert into CLONING_PARAMETER  values ('C','source_gi','N',NULL,'Source Golden Image name',NULL, 'N');
+Insert into CLONING_PARAMETER  values ('C','source_tsm_node','N',NULL,'Source TSM node, ze kterého se provádí obnova GI',NULL, 'N');
 
 
-Insert into CLONING_PARAMETER  values ('C','recover_opts','Y','0','Ponechat --noarchivelog pro vytvoření klonu. Pro změnu LOG_MODE se používá parametr ARCHIVELOG','--noarchivelog','N');
-Insert into CLONING_PARAMETER  values ('I','memory_target','N','0',null,null,'Y');
-Insert into CLONING_PARAMETER  values ('C','snapshot_name','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER  values ('C','pre_sql_scripts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER  values ('C','post_sql_scripts','Y','0',null,null,'N');
-Insert into CLONING_PARAMETER  values ('I','SHARED_POOL_SIZE','N',null,'minimalni hodnota pro shared pool',null,'N');
-Insert into CLONING_PARAMETER  values ('C','ARCHIVELOG','Y','0','Vynucené přepnutí databáze do archivního režimu.','false','N');
-Insert into CLONING_PARAMETER  values ('C','asm_source_dg','Y','0',null,'${source_db}_D01','N');
-Insert into CLONING_PARAMETER  values ('C','source_spfile','Y','0','Umístění zdrojového spfile.','+${source_db}_D01/${source_db}/spfile${source_db}.ora','N');
-Insert into CLONING_PARAMETER  values ('I','db_recovery_file_dest','N','0','Při ARCHIVELOG = true, default je <DBNAME>_FRA','${source_db}_FRA','N');
-Insert into CLONING_PARAMETER  values ('I','db_recovery_file_dest_size','N','0','Při ARCHIVELOG = true, default je velikost FRA ASM diskgroupy',null,'N');
-Insert into CLONING_PARAMETER  values ('C','app_supp_email','Y','0',null,'jsrba@csas.cz,jbohuslav@csas.cz','N');
-Insert into CLONING_PARAMETER  values ('I','cpu_count','N','0',null,'4','N');
-Insert into CLONING_PARAMETER  values ('I','pga_aggregate_target','N','0',null,'8G','N');
-Insert into CLONING_PARAMETER  values ('I','sga_target','N','0',null,'16G','N');
+-- delete params
+delete  from template_param_value
+  where parameter_name = 'ARCHIVELOG';
+
+delete FROM db_param_value
+  where parameter_name = 'ARCHIVELOG';
+
+delete FROM  cloning_parameter
+  where parameter_name = 'ARCHIVELOG';
+
 
 
 REM INSERTING into CLONING_TEMPLATE
@@ -188,38 +177,32 @@ Insert into TEMPLATE_PARAM_VALUE values ('2','C','app_supp_email','jsrba@csas.cz
 
 REM INSERTING into METHOD_PARAM_VALUE
 SET DEFINE OFF;
-Insert into METHOD_PARAM_VALUE values ('3','I','db_block_checksum','FULL','N');
-Insert into METHOD_PARAM_VALUE values ('3','C','recover_opts','--noarchivelog','N');
-Insert into METHOD_PARAM_VALUE values ('2','I','db_block_checksum','FULL','N');
-Insert into METHOD_PARAM_VALUE values ('2','C','recover_opts','--noarchivelog','N');
-Insert into METHOD_PARAM_VALUE values ('2','C','asm_source_dg','${source_db}_D01','N');
-Insert into METHOD_PARAM_VALUE values ('2','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
-Insert into METHOD_PARAM_VALUE values ('3','C','asm_source_dg','${source_db}_D01','N');
-Insert into METHOD_PARAM_VALUE values ('3','C','source_spfile','+${asm_source_dg}/${source_db}/spfile${source_db}.ora','N');
 
 
 REM INSERTING into CLONING_METHOD_STEP
 SET DEFINE OFF;
-Insert into CLONING_METHOD_STEP values (6,'STEP010_prepare.sh',10,'Pre-klonovací skripty','Y','N');
-Insert into CLONING_METHOD_STEP values (6,'STEP020_pre_sql_scripts.sh',20,'Pre-klonovací skripty','Y','N');
-Insert into CLONING_METHOD_STEP values (6,'STEP040_rman_delete_backup.sh',40,'RMAN: delete force noprompt backup','Y','N');
-Insert into CLONING_METHOD_STEP values (6,'STEP050_shutdown_db.sh',50,'Drop database','Y','N');
-Insert into CLONING_METHOD_STEP values (6,'STEP070_drop_db.sh',70,'Drop database','Y','N');
-
+Insert into CLONING_METHOD_STEP values (1,'STEP100_create_rman_catalog.sh',100,'Create RMAN catalog','N','Y');
 
 REM INSERTING into CLONING_METHOD_STEP
+REM INSERTING into CLONING_METHOD_STEP
 SET DEFINE OFF;
-Insert into CLONING_METHOD_STEP values (6, 'STEP115_srvctl_add_db.sh',115,'Přidání db do konfigurace Gridu','Y','N');
-
-Insert into CLONING_METHOD_STEP values (6, 'STEP150_recreate_spfile_db.sh',150,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP160_archivelog_db.sh',160,'Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP180_rac_drop_unused_redo_thread.sh',180,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP190_restart_db.sh',190,'Finální restart databaze pro overeni funkcnosti','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP205_emcli_stop_blackout.sh',206, 'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP210_rman_reset_config.sh',210,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP220_rman_resync.sh',220,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP300_app_sql_scripts.sh',300,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP310_grant_dba.sh',310,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP320_autoextend_on.sh',320,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (6, 'STEP400_arm_audit.sh',400,'Desc','Y','Y');
-Insert into CLONING_METHOD_STEP values (6, 'STEP410_send_email.sh',410,'Desc','Y','Y');
+Insert into CLONING_METHOD_STEP values (7,'STEP010_prepare.sh',10,'Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP020_pre_sql_scripts.sh',20,'Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP040_rman_delete_backup.sh',40,'RMAN: delete force noprompt backup','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP050_shutdown_db.sh',50,'Shutdown database','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP070_drop_db.sh',70,'Drop database','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP110_rman_duplicate_gi.sh',110,'RMAN duplicate from tape','N','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP115_srvctl_add_db.sh',115,'Přidání db do konfigurace Gridu','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP140_password_file.sh',140,'Create password file','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP150_recreate_spfile_db.sh',150,'Rescreate spfile do ASM','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP160_archivelog_db.sh',160,'Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP180_rac_drop_unused_redo_thread.sh',180,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP190_restart_db.sh',190,'Finální restart databaze pro overeni funkcnosti','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP205_emcli_stop_blackout.sh',207,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP210_rman_reset_config.sh',210,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP220_rman_resync.sh',220,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP300_app_sql_scripts.sh',300,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP310_grant_dba.sh',310,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP320_autoextend_on.sh',320,'Desc','Y','N');
+Insert into CLONING_METHOD_STEP values (7,'STEP400_arm_audit.sh',400,'Desc','Y','Y');
+Insert into CLONING_METHOD_STEP values (7,'STEP410_send_email.sh',410,'Desc','Y','Y');
