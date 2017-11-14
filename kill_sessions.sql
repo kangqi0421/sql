@@ -4,13 +4,13 @@
 
 -- skript pro killnutí všech blokujících sessions
 
-set lines 180
+set pages 0 lines 180
 select 'alter system kill session '''||sid||','||serial#||',@'||inst_id||''' -- '
        ||username||'@'||machine||' ('||program||');'
 from gv$session
   where 1=1
   --  AND EVENT like 'row cache lock'
-  and username = 'RMDB_ODI_USER'
+  and username = 'ADSREPDA_M'
   -- AND sql_id = 'azu104ujtd6yp'
   -- vsechny blokovane session
   --and sid in (

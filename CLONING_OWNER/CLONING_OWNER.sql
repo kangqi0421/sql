@@ -180,29 +180,4 @@ SET DEFINE OFF;
 
 
 REM INSERTING into CLONING_METHOD_STEP
-SET DEFINE OFF;
-Insert into CLONING_METHOD_STEP values (1,'STEP100_create_rman_catalog.sh',100,'Create RMAN catalog','N','Y');
-
-REM INSERTING into CLONING_METHOD_STEP
-REM INSERTING into CLONING_METHOD_STEP
-SET DEFINE OFF;
-Insert into CLONING_METHOD_STEP values (7,'STEP010_prepare.sh',10,'Pre-klonovací skripty','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP020_pre_sql_scripts.sh',20,'Pre-klonovací skripty','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP040_rman_delete_backup.sh',40,'RMAN: delete force noprompt backup','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP050_shutdown_db.sh',50,'Shutdown database','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP070_drop_db.sh',70,'Drop database','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP110_rman_duplicate_gi.sh',110,'RMAN duplicate from tape','N','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP115_srvctl_add_db.sh',115,'Přidání db do konfigurace Gridu','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP140_password_file.sh',140,'Create password file','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP150_recreate_spfile_db.sh',150,'Rescreate spfile do ASM','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP160_archivelog_db.sh',160,'Přepnutí databáze mezi archivním a nearchivním režimem.','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP180_rac_drop_unused_redo_thread.sh',180,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP190_restart_db.sh',190,'Finální restart databaze pro overeni funkcnosti','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP205_emcli_stop_blackout.sh',207,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP210_rman_reset_config.sh',210,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP220_rman_resync.sh',220,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP300_app_sql_scripts.sh',300,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP310_grant_dba.sh',310,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP320_autoextend_on.sh',320,'Desc','Y','N');
-Insert into CLONING_METHOD_STEP values (7,'STEP400_arm_audit.sh',400,'Desc','Y','Y');
-Insert into CLONING_METHOD_STEP values (7,'STEP410_send_email.sh',410,'Desc','Y','Y');
+Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',305,'Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');

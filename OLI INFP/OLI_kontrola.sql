@@ -15,7 +15,7 @@ FROM
      OLI_OWNER.DATABASES d
      JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
      JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
-where domain not like 'ack-prg%'  -- bez Karťáku
+--where domain not like 'ack-prg%'  -- bez Karťáku
 ORDER by 1;
 
 -- ALL targets db
@@ -55,7 +55,11 @@ FROM
      JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
      join OLI_OWNER.LICENSED_ENVIRONMENTS l on (s.lic_env_id = l.lic_env_id)
      join OLI_OWNER.DATACENTERS d on (d.datacenter_id = l.datacenter_id)
-minus SELECT
+     ;
+     
+minus ;
+
+SELECT
   i.INST_NAME
 FROM
   --OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
@@ -90,6 +94,5 @@ group by c.server_id, p.current_prod_id, la.lic_type_id, la.lic_env_id, gc.contr
        select licdb_id, LISTAGG(a.APP_NAME,',') WITHIN GROUP (ORDER BY a.app_id) app_name
          from OLI_OWNER.APPLICATIONS a join OLI_OWNER.APP_DB o ON (A.APP_ID = o.APP_ID)
         group by licdb_id) o ON (o.licdb_id = d.licdb_id)
-    LEFT JOIN (select NVL2(rac_guid, rac_guid, target_guid) guid, max(logons) logons from SRBA.MGMT_LOGONS
  group by NVL2(rac_guid, rac_guid, target_guid)) log ON (LOG.GUID = D.EM_GUID)
 ;

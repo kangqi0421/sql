@@ -8,11 +8,11 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE 1 = 1
---    dbname like 'CPT%'
+    AND dbname like 'CPTD%'
     -- Pouze VMWare ORACLE-02-ANT
-    and s.lic_env_id = 3292
+--    and s.lic_env_id = 3292
 --  s.domain like 'ack-prg.csin.cz'
-    and hostname like 'dp%'
+--    and hostname like 'dp%'
 --  a.app_name in ('SB')
 --  and domain like 'cc.csin.cz'
 --  group by app_name,hostname

@@ -80,6 +80,8 @@ set head on feedback on
 --
 -- zmena hesla na puvodni
 --
--- ALTER USER SRBA default profile;
+-- ALTER USER SRBA profile default;
+-- ALTER USER SRBA IDENTIFIED BY "xxx";
+-- ALTER USER SRBA profile PROF_DBA;
 
 
