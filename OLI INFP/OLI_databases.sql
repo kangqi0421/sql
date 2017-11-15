@@ -1,4 +1,6 @@
 
+define dbname = 'SYMP'
+
 -- DATABASES
 SELECT dbname, env_status, app_name, hostname, domain
 FROM
@@ -97,7 +99,7 @@ select DB_NAME,
        db_target_guid
   from OLI_OWNER.OMS_DATABASES_MATCHING
  WHERE match_status in ('U')
-   and db_name like 'CRMED'
+   and db_name like '&dbname'
 ;
 --
 
@@ -106,7 +108,7 @@ MERGE
 USING
   (select dbname, em_guid, is_rac
      from  DASHBOARD.EM_DATABASE_INFO
-    where dbname like 'COLT%'
+    where dbname like '%dbname'
   ) em
 ON (oli.dbname = em.dbname)
   when matched then
@@ -121,7 +123,7 @@ exec  dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session 
 
 -- INSERT do DBINSTANCES
 select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
-  where instance_name like 'CPT%';
+  where db_name like '&dbname';
 
 INSERT INTO OLI_OWNER.DBINSTANCES (LICDB_ID, SERVER_ID, INST_NAME, EM_GUID)
 SELECT
@@ -131,7 +133,7 @@ SELECT
   INSTANCE_TARGET_GUID
   from OLI_OWNER.OMS_DBINSTANCES_MATCHING
   where match_status in ('U')
-    AND instance_name like 'CLMD%'
+    AND db_name like '&dbname'
 ;
 
 --

@@ -1,10 +1,11 @@
 -- databaze z OEM, ktere chybi v OLI
 -- OEM
-select upper(REDIM_OWNER.REDIM_GET_SHORT_NAME(target_name)) dbname
+select d.database_name dbname
 --  , host_name
 --  from DASHBOARD.MGMT$TARGET
-    FROM DASHBOARD.mgmt_targets
- where CATEGORY_PROP_3 = 'DB'
+    FROM dashboard.MGMT$DB_DBNINSTANCEINFO d
+      JOIN dashboard.MGMT$TARGET t ON d.target_guid = t.target_guid
+ -- where t.CATEGORY_PROP_3 = 'DB'
  -- pouze Starbank
 -- AND target_name like 'SD%'
 minus
@@ -16,6 +17,16 @@ FROM
      JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
      JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
 --where domain not like 'ack-prg%'  -- bez Karťáku
+ORDER by 1;
+
+-- OEM instance bez zaznamu v OLI
+select upper(d.instance_name)
+    FROM dashboard.MGMT$DB_DBNINSTANCEINFO d
+      JOIN dashboard.MGMT$TARGET t ON d.target_guid = t.target_guid
+  MINUS      
+select i.inst_name
+FROM
+    OLI_OWNER.DBINSTANCES i
 ORDER by 1;
 
 -- ALL targets db
