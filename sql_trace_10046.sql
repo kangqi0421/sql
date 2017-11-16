@@ -20,6 +20,34 @@ BEGIN
 END;
 /
 
+---
+EXECUTE DBMS_SESSION.SESSION_TRACE_ENABLE(waits => TRUE, binds => TRUE);
+EXECUTE DBMS_SESSION.SESSION_TRACE_DISABLE();
+---
+
+-- event 10046
+oradebug setospid 24505
+
+-- start trace
+oradebug event 10046 trace name context forever, level 8
+
+execute sys.dbms_system.set_ev(368,7409,10046,8,'');
+
+DBMS_SESSION.SESSION_TRACE_ENABLE(waits => TRUE, binds => TRUE);
+
+-- stop  trace
+oradebug event 10046 trace name context off
+
+execute dbms_system.set_ev(368,7409,10046,0,'');
+
+dbms_session.session_trace_disable;
+
+---
+alter session set events '10046 trace name context forever, level 8';
+alter session set events '10046 trace name context off';
+
+
+
 -- sql trace
 -- Oradebug
 --
