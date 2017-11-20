@@ -48,7 +48,7 @@ select
     'alter user '||username
   ||' identified by "'||dbms_random.string('a',7)||ABS(trunc(dbms_random.value(0, 9)))
   ||'"'
-  ||' password expire;'
+  ||' account unlock password expire;'
   END
   from dba_users
  where upper(username) like upper('&&1')

@@ -86,6 +86,7 @@ select t.target_guid em_guid,
        -- pokud je db v clsteru, vrat scanName, jinak server name
        NVL2(cluster_name, scanName, server_name)
          || ':' || port || '/'||database_name  AS CONNECT_DESCRIPTOR,
+       NVL2(cluster_name, scanName, server_name) server_name,
        d.host_name,
        db_size_mb,
        db_log_size_mb
@@ -172,20 +173,19 @@ FROM
 
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
-AS
-SELECT e.dbname,
-       decode(e.rac, 'Y', 'true', 'false') is_rac,
+  AS
+  SELECT
+       e.dbname,
        e.dbversion,
+       decode(e.rac, 'Y', 'true', 'false') is_rac,
        decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
        o.app_name,
        e.env_status,
        e.host_name,
-       e.connect_descriptor
+       e.server_name, e.port, e.connect_descriptor
 FROM
   OLI_DATABASE o
-  join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
-;
-
+  join EM_DATABASE e on o.DB_EM_GUID = e.em_guid;
 
 
 --

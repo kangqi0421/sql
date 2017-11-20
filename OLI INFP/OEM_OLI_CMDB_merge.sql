@@ -1,28 +1,42 @@
 -- DB version update
 -- Lifecycle ENV_STATUS update
-PoznÃ¡mky:
-- MAX je tam z duvodu duplicitnich targetu
+
+-- Notes:
+--  - MAX je tam z duvodu duplicitnich targetu
 
 -- kontrola na rozdílná EM_GUID
 select oli.dbname, oli.em_guid,
-       d.target_guid
+       em.em_guid
   from   OLI_OWNER.databases oli
-    JOIN DASHBOARD.MGMT$DB_DBNINSTANCEINFO d ON oli.dbname = d.database_name
-    JOIN DASHBOARD.MGMT$TARGET t ON d.target_guid = t.target_guid
-where t.TYPE_QUALIFIER3 = 'DB'    -- mimo RAC
-  and oli.em_guid <> d.target_guid
+    JOIN DASHBOARD.EM_DATABASE em ON (oli.dbname = em.dbname)
+where oli.em_guid <> em.em_guid
 order by 1;
 
+MERGE INTO
+  OLI_OWNER.DATABASES oli
+USING (
+      select DB_NAME,
+             db_target_guid
+        from OLI_OWNER.OMS_DATABASES_MATCHING
+       WHERE match_status in ('NX')
+         -- and db_name like '{{ dbname }}'
+      ) em
+ON (oli.dbname = em.db_name)
+when matched then
+  UPDATE set oli.em_guid = em.db_target_guid;
+
+--
+-- DB instance
+--
+
 -- DB Inst target GUID
-select oli.inst_name, oli.em_guid,
-       d.target_guid
+select oli.inst_name,
+       oli.em_guid oli_guid,
+       em.em_guid
   from   OLI_OWNER.dbinstances oli
-    JOIN DASHBOARD.MGMT$DB_DBNINSTANCEINFO d
-      ON upper(oli.inst_name) = upper(d.instance_name)
-    JOIN DASHBOARD.MGMT$TARGET t ON d.target_guid = t.target_guid
-       -- pouze DB instance bez RAC database
-where  t.target_type = 'oracle_database'
-    AND oli.em_guid <> d.target_guid
+    JOIN DASHBOARD.EM_INSTANCE em
+      ON upper(oli.inst_name) = upper(em.instance_name)
+where oli.em_guid <> em.em_guid
 order by oli.inst_name;
 
 -- kontrola na rozdílná EM GUID u DB Instance

@@ -107,8 +107,8 @@ MERGE
  into OLI_OWNER.DATABASES oli
 USING
   (select dbname, em_guid, is_rac
-     from  DASHBOARD.EM_DATABASE_INFO
-    where dbname like '%dbname'
+     from  DASHBOARD.EM_DATABASE
+    where dbname like '&dbname'
   ) em
 ON (oli.dbname = em.dbname)
   when matched then

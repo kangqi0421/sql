@@ -12,28 +12,6 @@ define user = ESPIS
 grant OEM_MONITOR to &user;
 
 
---
--- OVOMON
---
-
-BEGIN
-  EXECUTE IMMEDIATE 'create user OVOMON identified by "abcd1234" '
-    ||'profile PROF_APPL default tablespace USERS';
-  EXCEPTION WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN EXECUTE IMMEDIATE 'create role CS_APPL_ACCOUNTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
-/
-
-GRANT CSCONNECT, CS_APPL_ACCOUNTS TO OVOMON;
-
-GRANT select on sys.v_$session  to OVOMON;
-GRANT select on sys.gv_$session to OVOMON;
-GRANT select on sys.gv_$sysmetric to OVOMON;
-GRANT SELECT ON sys.dba_scheduler_jobs TO OVOMON;
-
-
 -- CRM
 drop role admin_view_role;
 
