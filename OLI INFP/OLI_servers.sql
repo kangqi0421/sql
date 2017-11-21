@@ -29,12 +29,22 @@ INSERT into OLI_OWNER.SERVERS (HOSTNAME, DOMAIN, DR_HW, SPARE, LIC_ENV_ID)
 --
 select * from OLI_OWNER.OMS_HOSTS;
 
+select lic_env_id, lic_env_name
+  from LICENSED_ENVIRONMENTS
+ WHERE lic_env_name like '%PA802%';
+
+
 -- update lic env ID pro Starbank
 UPDATE OLI_OWNER.SERVERS
     set lic_env_id = (select lic_env_id
   from LICENSED_ENVIRONMENTS
  WHERE lic_env_name like 'PA802_Oracle')
   where hostname like 'tasb%';
+
+delete from OLI_OWNER.SERVERS
+   where lic_env_id = 3292
+   and hostname like 'ppgmon01'
+;
 
 --
 -- vloz VMWare servery
@@ -51,8 +61,9 @@ SELECT
   from OLI_OWNER.OMS_HOSTS_MATCHING o LEFT JOIN OLI_OWNER.ca_servers c
           on (regexp_replace(o.hostname, '^(\w+)(\.\w+)*$', '\1') = c.hostname
           AND regexp_replace(o.hostname, '^\w+\.(.+?\.)', '\1')   = c.domain)
- where REGEXP_LIKE(o.hostname, '^[dt][pb][a-z]{3}db\d{2}')
-   and match_status in ('U')
+ where match_status in ('U')
+   and c.hostname like 'dpora%'
+   -- and REGEXP_LIKE(o.hostname, '^[dt][pb][a-z]{3}db\d{2}')
 ;
 
 --

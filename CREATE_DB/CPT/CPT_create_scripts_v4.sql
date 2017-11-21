@@ -20,6 +20,7 @@ create role CONSOLE_APPSERVER;
 create role CONSOLE_OWNER_ROLE;
 create role CONSOLE_READONLY;
 create role CONSOLE_SUPPORT;
+
 create role CPTPK_APPSERVER;
 create role CPTPK_OWNER_ROLE;
 create role CPTPK_READONLY;
