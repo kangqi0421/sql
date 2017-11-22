@@ -19,12 +19,12 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=ODIDA_FRA
-AU_SIZE=1
+DG=CPTZ_FRA
+AU_SIZE=8
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
-    -diskList '/dev/mapper/asm_*ODID_FRA' \
+    -diskList '/dev/mapper/asm_*CPTZ_FRA1' \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 
