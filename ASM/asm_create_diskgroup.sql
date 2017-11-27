@@ -19,12 +19,12 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=CPTZ_FRA
-AU_SIZE=8
+DG=MAPTA_DATA
+AU_SIZE=4
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
-    -diskList '/dev/mapper/asm_*CPTZ_FRA1' \
+    -diskList "/dev/mapper/asm_*${DG}1'" \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 
@@ -33,7 +33,7 @@ asmca -silent -createDiskGroup \
 compatible.asm
 compatible.rdbms
 
-for each in REVT_D01 REVT_FRA
+for each in REVP_D01 REVP_FRA
 do
   asmcmd lsattr -l -G $each
   asmcmd setattr -G $each compatible.asm 12.1
