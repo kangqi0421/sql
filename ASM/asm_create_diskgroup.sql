@@ -19,12 +19,12 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=MAPTA_DATA
+DG=CLOUDA_DATA
 AU_SIZE=4
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
-    -diskList "/dev/mapper/asm_*${DG}1'" \
+    -diskList "/dev/mapper/asm_*${DG}*'" \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 

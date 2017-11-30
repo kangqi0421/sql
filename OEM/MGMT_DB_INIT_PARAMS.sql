@@ -45,12 +45,13 @@ SELECT *
   and target_name like 'EPM%'
 ORDER BY TARGET_NAME;
 
--- instance caging
+-- cpu_count - instance caging
 SELECT
   host_name, target_name, value
  FROM MGMT$DB_INIT_PARAMS
- where REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
- and name = 'cpu_count'
+ where name = 'cpu_count'
+--    AND REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
+    and REGEXP_LIKE(host_name, '[pb]ordb06.vs.csin.cz')
  order by target_name;
 
 -- db_recovery_file_dest_size

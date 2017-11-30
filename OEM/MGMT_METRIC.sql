@@ -101,6 +101,11 @@ AND metric_name = 'Load' AND metric_column = 'cpuUtil'
 AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
 AND metric_name = 'wait_bottlenecks' AND metric_column = 'user_cpu_time_cnt'
 
+-- CPU res mgr
+-- m.average
+  AND m.metric_name = 'topWaitEvents'  AND m.metric_column = 'totalWaitTime'
+  AND key_value like 'resmgr:cpu quantum'
+
 
 -- Memory util server
 AND metric_name = 'Load'

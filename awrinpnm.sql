@@ -1,3 +1,4 @@
+
 Rem $Header: awrinpnm.sql 05-jan-2005.14:23:20 adagarwa Exp $
 Rem
 Rem awrinpnm.sql

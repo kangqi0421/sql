@@ -2,8 +2,7 @@
 -- OEM CPU Usage
 --
 
-define server = tuxdbst.vs.csin.cz
-
+define server = pordb06.vs.csin.cz
 
 -- pocty CPU cores a CPU_COUNT
 CM$MGMT_DB_CPU_USAGE_ECM
@@ -15,12 +14,30 @@ SELECT
    d.DATABASE_NAME db_name,
    m.value "CPU"
 FROM
-       MGMT$METRIC_DETAILS m 
+       MGMT$METRIC_DETAILS m
   join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
   JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE  1 = 1
   AND m.metric_name = 'instance_efficiency' AND m.metric_column = 'cpuusage_ps'
   AND t.host_name like :server
+order by 1, 2
+;
+
+-- CPU resmgr:cpu quantum
+SELECT
+   m.COLLECTION_TIMESTAMP,
+   d.DATABASE_NAME db_name,
+   t.host_name,
+   m.value "CPU resmgr totalWaitTime"
+FROM
+       MGMT$METRIC_DETAILS m
+  join MGMT_TARGETS t on (t.TARGET_GUID = m.target_guid)
+  JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+WHERE  1 = 1
+  AND m.metric_name = 'topWaitEvents'  AND m.metric_column = 'totalWaitTime'
+  AND key_value like 'resmgr:cpu quantum'
+  AND t.host_name like :server
+  and m.COLLECTION_TIMESTAMP > sysdate - interval '7' day
 order by 1, 2
 ;
 

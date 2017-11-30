@@ -1,3 +1,4 @@
+
 --
 -- INFP
 --
@@ -182,7 +183,8 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
        o.app_name,
        e.env_status,
        e.host_name,
-       e.server_name, e.port, e.connect_descriptor
+       e.server_name, e.port, e.connect_descriptor,
+       round(e.db_size_mb / 1024) as db_size_gb
 FROM
   OLI_DATABASE o
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid;

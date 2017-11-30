@@ -4,15 +4,13 @@ set lines 32767
 set lines 32767 pages 0 trims on
 col cmd for a99999
 
--- 4x RATING
+-- 6x datafile
 select
- 'alter tablespace RATING_DATA add datafile ''+ODSP_D03'' size 512m autoextend on next 512m maxsize 65535M;'
-   ||chr(10) ||
-  'alter tablespace RATING_INDX add datafile ''+ODSP_D03'' size 512m autoextend on next 512m maxsize 65535M;'
+ 'alter tablespace CDM_MADB add datafile  size 512m autoextend on next 512m maxsize 32767m;'
  cmd
 from dual
 connect by
-   level <= 4
+   level <= 6
 /
 
 -- 6x OUT

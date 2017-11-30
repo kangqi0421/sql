@@ -134,8 +134,9 @@ Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_PARAMETER  values ('C','source_gi','N',NULL,'Source Golden Image name',NULL, 'N');
-Insert into CLONING_PARAMETER  values ('C','source_tsm_node','N',NULL,'Source TSM node, ze kterého se provádí obnova GI',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','golden_image','N',NULL,'Golden Image name',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_server','N',NULL,'TSM server pro REST API',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_node','N',NULL,'TSM TDPO node',NULL, 'N');
 
 
 -- delete params
