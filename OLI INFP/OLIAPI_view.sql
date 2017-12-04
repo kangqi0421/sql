@@ -2,11 +2,15 @@
 -- OLIAPI view
 --
 
--- nově
--- založit ownera OLI_API
+-- TODO: založit ownera OLI_API
 --
--- zprovoznit nad ním ORDS
--- https://www.thatjeffsmith.com/archive/2017/09/swagger-doc-for-ords-restful-services/
+
+grant execute on job
+  call dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_session => TRUE)
+
+grant select, insert, update, delete nad OLI tabulkami ?
+FIXME: převest na volání PL/SQL API od Davida Krcha
+
 
 select * from all_views
 where view_name like 'OLAPI%';

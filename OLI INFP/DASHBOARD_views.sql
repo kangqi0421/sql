@@ -12,6 +12,9 @@ create user SVOBODA identified by abcd1234 profile prof_dba;
 grant dba to SVOBODA;
 grant dba to DKRCH;
 
+create user PATOCKA identified by abcd1234 profile prof_dba;
+grant CSCONNECT, select any table to PATOCKA:
+
 
 db linky:
 - INFTA - změněno na PUBLIC

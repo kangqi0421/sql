@@ -19,7 +19,7 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=CLOUDA_DATA
+DG=ODIDA_FRA
 AU_SIZE=4
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
