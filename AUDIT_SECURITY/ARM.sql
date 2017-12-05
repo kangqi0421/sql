@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=WDNZ
+DEFINE db=MDWTB
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -13,7 +13,8 @@ order by ARM_DB_NAME;
 -- ARM status ERROR
 SELECT * FROM arm_admin.arm_status
   WHERE 1=1
-    AND ARM_DB_NAME LIKE '%&db%'
+--    AND ARM_DB_NAME LIKE '%&db%'
+    AND status = 'ERROR'
 --    AND status <> 'OK'
 --    AND status not like 'DISABLED'
 ORDER by ARM_DB_NAME;
