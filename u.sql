@@ -61,7 +61,7 @@ select
     DBMS_ASSERT.enquote_literal(lower(username)||'@CEN.CSIN.CZ') ||
 	' profile PROF_USER;'
   from dba_users
- where upper(username) like upper('&&1')
+where upper(username) like upper('&&1')
        and authentication_type = 'PASSWORD'
        and REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
 order by username;
@@ -75,13 +75,13 @@ set head on feedback on
 --
 
 -- SELECT name, password, spare4 FROM sys.user$ WHERE name='DBEIM';
--- ALTER USER DBEIM IDENTIFIED BY VALUES 'S:333377748712A1D3E7708FC4F39E2A62AFF76F1766508FF96CE7DD34B6AD';
+-- ALTER USER &user IDENTIFIED BY VALUES 'S:333377748712A1D3E7708FC4F39E2A62AFF76F1766508FF96CE7DD34B6AD';
 
 --
 -- zmena hesla na puvodni
 --
--- ALTER USER SRBA profile default;
--- ALTER USER SRBA IDENTIFIED BY "xxx";
--- ALTER USER SRBA profile PROF_DBA;
+-- ALTER USER &user profile default;
+-- ALTER USER &user IDENTIFIED BY "xxx";
+-- ALTER USER &user profile PROF_DBA;
 
 

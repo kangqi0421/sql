@@ -134,7 +134,7 @@ Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
 SET DEFINE OFF;
-Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','golden_image','N',NULL,'Golden Image name',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','rman_catalog','N',NULL,'RMAN catalog connect string',NULL, 'N');
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_server','N',NULL,'TSM server pro REST API',NULL, 'N');
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_node','N',NULL,'TSM TDPO node',NULL, 'N');
 
