@@ -6,17 +6,27 @@ SELECT component, round(current_size/1048576/1024) "current [GB]" FROM v$memory_
 
 -- OEM
 SELECT
-   host_name, target_name, round(value/1048576/1024)
+   host_name,
+   target_name,  name, --value,
+   round(value/1048576/1024) "GB",
+   ROUND(sum(value/1048576/1024) over ()) "SUM GB"
+--   ROUND(sum(value/1048576/1024) over (PARTITION BY target_name)) "SUM GB"
  FROM MGMT$DB_INIT_PARAMS
  where
-  REGEXP_LIKE(host_name, '^[p]ordb0[0-5].vs.csin.cz')
---  REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
- and name = 'memory_target' and value > 0
- order by host_name, target_name;
+    name in ('memory_target','sga_target','pga_aggregate_target')
+--    AND (target_name like 'PDBD%'
+--      or target_name like 'SYMDA%'
+--      )
+    and host_name like '&server%'
+--    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
+--     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
+--     and target_name not like '%2'
+    and value > 0
+order by target_name, name;
 
 -- Linux
-define sga=16G
-define pga=6G
+define sga=96G
+define pga=64G
 
 alter system reset sga_max_size;
 alter system reset memory_target;
