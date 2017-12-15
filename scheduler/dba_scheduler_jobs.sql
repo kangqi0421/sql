@@ -1,3 +1,14 @@
+--
+-- Scheduler jobs
+--
+
+- SRDC - DBMS_JOB : Checklist of Evidence to Supply (Doc ID 2115973.1)
+
+-- DIAG TRACE
+@srdc_db_job_diagnostic.sql "6"
+
+
+
 -- failure count > 0
 SELECT   owner, job_name,  enabled,
          max_failures, failure_count
@@ -26,8 +37,6 @@ order by ACTUAL_START_DATE desc;
 select * from DBA_OPTSTAT_OPERATIONS  where operation = 'gather_database_stats(auto)' order by start_time;
 
 -- chyby z logu pro FAILED
-SET SQLFORMAT ANSICONSOLE
-
 SELECT *
 --    cast(to_timestamp_tz(log_date) at local as date) log_date_local,
 --    owner,
@@ -35,7 +44,9 @@ SELECT *
 --    status,
 --    error#
   FROM DBA_SCHEDULER_JOB_RUN_DETAILS
-  WHERE job_name LIKE 'CS_JOB%'
+  WHERE 1=1
+--    and job_name LIKE 'CS_JOB%'
+    and owner = 'IPX'
 --    AND status <> 'SUCCEEDED'
   ORDER BY log_date DESC;
 
@@ -57,4 +68,5 @@ ORDER BY job_start_time;
    WHERE job_name LIKE 'EIM_01_JOB'
          AND run_duration > TO_DSINTERVAL ('0 00:05:00')
 ORDER BY log_date DESC;
+
 

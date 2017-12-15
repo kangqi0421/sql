@@ -31,22 +31,18 @@ WHERE 1=1
 ORDER by 1, 2
 ;
 
--- SQLDev report
+-- SQLDev report OEM - space report
 SELECT
-    /* OEM metric daily */
-    --   m.*,
-    trunc(m.rollup_timestamp) "DATE",
-    m.metric_column "SPACE",
+    -- OEM metric daily
+    trunc(m.rollup_timestamp) "date",
+    m.metric_column "size_gb",
     ROUND(m.average,1) value
   FROM MGMT$METRIC_DAILY m
   WHERE 1 = 1
-    AND m.target_name LIKE 'CRMP%'
-    --  and m.target_name not like '%.cc.%'  -- nechci Viden
-    -- Tablespace Allocated Space (MB)
+    AND m.target_name LIKE :db
     AND m.metric_name          ='DATABASE_SIZE'
-    AND (m.metric_column   ='ALLOCATED_GB'
-    OR m.metric_column     ='USED_GB')
---    AND m.rollup_timestamp > sysdate - 14
+    AND m.metric_column in ('ALLOCATED_GB', 'USED_GB')
+    AND m.rollup_timestamp > sysdate - interval '7' month
   ORDER BY m.rollup_timestamp ASC ;
 
 -- Database Space Usage - OEM graph
