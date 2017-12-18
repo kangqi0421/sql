@@ -1,4 +1,8 @@
+--
 -- disable space a tunning advisor
+--
+
+WHENEVER SQLERROR EXIT SQL.SQLCODE
 
 col client_name for a40
 select client_name, status from dba_autotask_client ;

@@ -2,6 +2,8 @@
 -- init parametry
 --
 
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+
 prompt
 prompt nastaveni  parametru pred zmenami
 prompt
@@ -102,17 +104,22 @@ alter system set resource_limit = true;
 alter system set os_authent_prefix = '' scope = spfile;
 
 -- povolím async IO pro ASM, pokud nejsem na HP-UX filesystemu
-alter system set disk_asynch_io = true scope=spfile;
+-- alter system set disk_asynch_io = true scope=spfile;
 
 -- pro kontrolu záloh redo přes EM metric extension
 alter system set ARCHIVE_LAG_TARGET= 1800;
 
 -- fast_start_mttr_target aspoň na 300
-alter system set fast_start_mttr_target = 300;
-
--- recycle bin vysypu a vypnu
-purge dba_recyclebin;
-alter system set recyclebin = off scope=spfile;
+DECLARE
+  v_value int;
+BEGIN
+  select TO_NUMBER(value) into v_value
+    FROM v$parameter where name = 'fast_start_mttr_target';
+  IF (v_value = 0) THEN
+    execute immediate 'alter system set fast_start_mttr_target = 300';
+  END IF;
+END;
+/
 
 -- open_cursors zvednout minimálně na 1000
 DECLARE
@@ -168,10 +175,3 @@ WHERE
            'session_cached_cursors', 'fast_start_mttr_target',
            'archive_lag_target', 'os_authent_prefix')
 ;
-
-
---
--- AWR - zvednout AWR retention na 14 dni
---
-exec  DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS(retention=>20160);
-

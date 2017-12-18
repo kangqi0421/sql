@@ -2,6 +2,8 @@
 -- kontrola na umisteni controlfile do stejne ASM diskgroupy jako jsou data, vhodne pro klonovani
 --
 
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+
 DECLARE
   v_data varchar2(4000);
 BEGIN

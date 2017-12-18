@@ -4,7 +4,7 @@ col value for 999999
 -- vypis memory parametru
 prompt NON-DEFAULT memory target, sga a pga
 SELECT name,
-  value/1048576 "value [MB]",
+  value/power(1024,3) "value [MB]",
   isdefault
 FROM V$SYSTEM_PARAMETER
 WHERE name IN ('memory_target','memory_max_target','sga_max_size','sga_target',
@@ -15,12 +15,12 @@ AND isdefault = 'FALSE'
 
 -- SGA a PGA memory target rozdìlení
 prompt memory target
-SELECT component, current_size/1048576 "current [MB]" FROM v$memory_dynamic_components
+SELECT component, current_size/power(1024,3) "current [GB]" FROM v$memory_dynamic_components
    WHERE component LIKE '%Target';
 
 prompt SGA
 prompt ===
-select INST_ID, name, round(bytes/1048576) "MB"
+select INST_ID, name, round(bytes/power(1024,3)) "GB"
    --, RESIZEABLE
   from gv$sgainfo
 -- where name like 'Large%'
