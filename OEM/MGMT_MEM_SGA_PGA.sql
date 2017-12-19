@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = dpsymdb01.vs.csin.cz
+define server = tpcptdb01.vs.csin.cz
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -53,7 +53,6 @@ SELECT
 --      or target_name like 'SYMDA%'
 --      )
     and host_name like '&server%'
---    AND REGEXP_LIKE(host_name, '^(p|b)ordb05.vs.csin.cz')
 --     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
 --     and target_name not like '%2'
     and value > 0
