@@ -19,7 +19,7 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=CPTEDU_DATA
+DG=EPMDA_DATA
 AU_SIZE=4
 COMPATIBLE="12.1"
 asmca -silent -createDiskGroup \
@@ -27,6 +27,7 @@ asmca -silent -createDiskGroup \
     -diskList "/dev/mapper/asm_*${DG}1'" \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
+
 
 ## asmcmd compatible
 
