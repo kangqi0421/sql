@@ -114,7 +114,7 @@ grant select on cloning_owner.cloning_method to cloning_py with grant option;
 grant select on cloning_owner.cloning_relation to cloning_py;
 create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
--- pipelined type - jde jen špatně přepsat vo selecktu ...
+-- pipelined type - jde jen špatně přepsat v selectu ...
 
 -- data
 REM INSERTING into CLONING_METHOD
@@ -128,8 +128,21 @@ update CLONING_METHOD_STEP
  where position = 15;
 
 
- -- STEP
+-- INSERTING into CLONING_METHOD_STEP - common / local (oem)
+insert into CLONING_METHOD_STEP values
+  (2,'STEP102_shutdown_cascade_snapshot.sh',102,'Shutdown HUS VM thin databases','N','Y');
+insert into CLONING_METHOD_STEP values
+  (2,'STEP105_create_hitachi_clone.sh',105,'Create HUS VM thin snapshot','N','N');
+insert into CLONING_METHOD_STEP values
+  (2,'STEP106_split_cascade_snapshot.sh',106,'Pairsplit HUS VM thin snapshot','N','Y');
+insert into CLONING_METHOD_STEP values
+  (2,'STEP107_change_asm_diskstring.sh',107,'Change asm disktring localne pro vice Thin db snapshot','N','N');
+
+
 Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',110,'RMAN duplicate from tape','N','N');
+
+
+Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',305,'Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');
 
 -- CLONING_PARAMETER
 REM INSERTING into CLONING_PARAMETER
@@ -176,9 +189,3 @@ Insert into TEMPLATE_PARAM_VALUE values ('2','C','post_sql_scripts','${TODAY_FMT
 Insert into TEMPLATE_PARAM_VALUE values ('2','C','app_supp_email','jsrba@csas.cz,rtods@csas.cz,fas-alfa@csas.cz','N');
 
 
-REM INSERTING into METHOD_PARAM_VALUE
-SET DEFINE OFF;
-
-
-REM INSERTING into CLONING_METHOD_STEP
-Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',305,'Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');
