@@ -13,3 +13,26 @@ create or replace directory MW_DB_LOG as '/oradb/logs/&db_name.log';
 GRANT WRITE ON DIRECTORY MW_CSOPS_EXP TO MW_DB_SERVER;
 GRANT READ ON DIRECTORY MW_CSOPS_IMP TO MW_DB_SERVER;
 GRANT READ, WRITE ON DIRECTORY MW_CSOPS_ARCH TO MW_DB_SERVER;
+
+-- JAVA permission
+-- nutno oddělit read a write na samostatný řádek
+
+-- MW
+BEGIN
+  dbms_java.grant_permission('MW', 'SYS:java.io.FilePermission', '/var/csopsd/export','read');
+  dbms_java.grant_permission('MW', 'SYS:java.io.FilePermission', '/var/csopsd/export', 'write');
+END;
+/
+
+-- DBEIM
+BEGIN
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/archiv/import/*','write');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','delete');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','write');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import/*','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import/*','write');
+END;
+/

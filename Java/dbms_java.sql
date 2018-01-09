@@ -22,11 +22,25 @@ $ORACLE_HOME/OPatch/datapatch -verbose
 --
 select * from sys.DBA_JAVA_POLICY
 where 1=1
-   and grantee = 'INT_OWNER'
-   and type_name = 'java.io.FilePermission'
+--   and grantee = 'INT_OWNER'
+  -- and type_name = 'java.io.FilePermission'
 --   and name like '/srv/data/pred/ccd/cont/remote/fint/import/ctlp/int_owner'
+  AND grantee in (
+    select username from dba_users where oracle_maintained = 'N'
+    )
+  and ENABLED = 'ENABLED'
+order by grantee, name, action desc
 ;
 
+-- recreate JAVA permission
+select 'exec '||stmt
+  from (select seq, 'dbms_java.grant_permission('''||grantee||''','''||
+        type_schema||':'||type_name||''','''||name||''','''||action||
+        ''');' stmt
+   from dba_java_policy
+  where grantee IN (
+    select username from dba_users where oracle_maintained = 'N')
+;
 
 -- Grant JAVA permission
 
@@ -44,6 +58,7 @@ BEGIN
 END;
 /
 
+-- MW DBEIM
 
 
 -- testcase

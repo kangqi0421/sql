@@ -9,6 +9,7 @@ FROM
     )
 WHERE m.metric_name = 'DATABASE_SIZE'
   AND m.metric_column = 'ALLOCATED_GB'
+-- AND m.metric_column in ('ALLOCATED_GB', 'USED_GB')
   AND m.target_name LIKE 'MCIP%'
 GROUP BY d.database_name
 ;
