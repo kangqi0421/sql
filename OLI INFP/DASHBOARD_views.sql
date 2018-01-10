@@ -45,8 +45,6 @@ connect DASHBOARD/abcd1234
 -- nakonec posilam pouze statickou SGA size
 
 -- pokud používám MView namísto view
-DROP MATERIALIZED VIEW DASHBOARD.EM_INSTANCE;
-
 CREATE OR REPLACE FORCE VIEW DASHBOARD.EM_INSTANCE
 AS
 SELECT
@@ -182,6 +180,31 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
+
+DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
+CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
+NOLOGGING
+REFRESH COMPLETE
+START WITH (SYSDATE) NEXT SYSDATE + 1/24
+WITH PRIMARY KEY
+  AS
+  SELECT
+       e.dbname,
+       e.dbversion,
+       decode(e.rac, 'Y', 'true', 'false') is_rac,
+       decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
+       o.app_name,
+       e.env_status,
+       e.host_name,
+       e.server_name, e.port, e.connect_descriptor,
+       round(e.db_size_mb / 1024) as db_size_gb
+FROM
+  OLI_DATABASE o
+  join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
+-- WHERE e.dbname is NOT NULL and e.env_status is NOT NULL
+;
+
+exec dbms_mview.refresh('mv_name');
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS

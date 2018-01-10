@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = tpcptdb01.vs.csin.cz
+define server = todbrca1.vs.csin.cz
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
