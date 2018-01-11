@@ -24,12 +24,14 @@ BEGIN EXECUTE IMMEDIATE 'drop directory MW_CSOPS_ARCHIMP'; EXCEPTION WHEN OTHERS
 -- nutno oddělit read a write na samostatný řádek
 
 -- MW
+/*
 BEGIN
   dbms_java.grant_permission('MW', 'SYS:java.io.FilePermission', '/var/csopsd/export','read');
   dbms_java.grant_permission('MW', 'SYS:java.io.FilePermission', '/var/csopsd/export', 'write');
   dbms_java.grant_permission('MW', 'SYS:java.io.FilePermission', '/var/csopsd/export', 'delete');
 END;
 /
+*/
 
 -- DBEIM
 BEGIN

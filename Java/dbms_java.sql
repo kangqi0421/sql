@@ -79,7 +79,7 @@ prompt Revoke existing privs
 begin
  for rc in (select seq from sys.DBA_JAVA_POLICY
              where type_name = 'java.io.FilePermission'
-               and grantee in ('INT_OWNER'))
+               and grantee in ('MW'))
  loop
   dbms_java.disable_permission(rc.seq);
   dbms_java.delete_permission(rc.seq);
