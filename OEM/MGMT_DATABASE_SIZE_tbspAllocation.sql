@@ -1,4 +1,22 @@
 -- DB size current
+-- pouze DB
+SELECT
+    d.entity_name dbname,
+    round(m.value) as database_size_gb
+FROM
+    sysman.mgmt$metric_current m
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d ON (
+        m.target_guid = d.entity_guid
+    )
+WHERE
+  d.category_prop_3 = 'DB'
+  AND m.metric_name = 'DATABASE_SIZE'
+  AND m.metric_column in ('ALLOCATED_GB', 'USED_GB')
+  AND m.target_name LIKE 'MCIP%'
+;
+
+
+-- varianta s mgmt$db_dbninstanceinfo a GROUP BY
 SELECT
     d.database_name dbname,
     round(max(m.value)) as database_size_gb
@@ -14,7 +32,9 @@ WHERE m.metric_name = 'DATABASE_SIZE'
 GROUP BY d.database_name
 ;
 
--- Tablespace size
+
+
+-- Database size
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    d.DATABASE_NAME db_name,
@@ -31,6 +51,42 @@ WHERE 1=1
   AND m.metric_column in ('spaceUsed', 'spaceAllocated')
 ORDER by 1, 2
 ;
+
+-- DB size Grafana
+SELECT
+     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
+     c.entity_name AS dbname,
+     c.entity_type,
+     p.PROPERTY_VALUE env_status,
+     k.key_part_1 AS tbs_name,
+     t.host_name,
+     c.metric_column_name,
+     c.metric_column_label,
+     c.unit,
+     sys_op_ceg(val.met_values,c.column_index) AS value
+FROM
+     sysman.em_metric_items i
+     join sysman.gc_metric_columns_target c on i.metric_group_id = c.metric_group_id
+     join sysman.em_metric_values val on i.metric_item_id = val.metric_item_id
+     join sysman.em_metric_keys k on i.metric_key_id = k.metric_key_id
+     join sysman.em_targets t on t.target_guid = c.entity_guid
+     join sysman.MGMT_TARGET_PROPERTIES p on p.target_guid = c.entity_guid
+WHERE
+     c.METRIC_GROUP_NAME = 'DATABASE_SIZE'
+     AND   p.property_name = 'orcl_gtp_lifecycle_status'
+     AND   i.target_guid = c.entity_guid
+     AND   c.column_type = 0
+     AND   c.data_column_type = 0
+     AND   i.last_collection_time = val.collection_time
+     AND   c.entity_guid NOT IN (
+         SELECT
+             dest_me_guid
+         FROM
+             sysman.gc$assoc_instances a
+         WHERE
+             a.assoc_type = 'cluster_contains'
+     )
+ORDER BY 1, 2, 4;
 
 -- SQLDev report OEM - space report
 SELECT

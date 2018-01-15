@@ -1,5 +1,8 @@
 
 
+-- MGMT$DB_DBNINSTANCEINFO - nahradit možno
+-- za sysman.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
+
 -- databases targets
 SELECT *
     FROM MGMT$DB_DBNINSTANCEINFO d

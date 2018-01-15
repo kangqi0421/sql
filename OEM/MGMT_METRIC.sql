@@ -24,6 +24,9 @@ MGMT$METRIC_DAILY     -  Stores the metrics in a daily snapshot format with AVG,
 em_metric_values
 em_metric_values_hourly
 em_metric_values_daily
+--
+sysman.em_metric_keys
+sysman.em_metric_items
 
 sysman.gc$metric_values_hourly
 

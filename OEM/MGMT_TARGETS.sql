@@ -2,7 +2,7 @@
 -- mgmt_targets
 -- mgmt_target_properties
 
-DB target: MGMT$DB_DBNINSTANCEINFO
+DB target: MGMT$DB_DBNINSTANCEINFO, sysman.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
 HOST target: MGMT$OS_HW_SUMMARY, MGMT_ECM_HW;
 
 -- ALL targets
