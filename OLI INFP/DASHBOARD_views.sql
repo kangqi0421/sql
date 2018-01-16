@@ -185,7 +185,7 @@ DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
 CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
 NOLOGGING
 REFRESH COMPLETE
-START WITH (SYSDATE) NEXT SYSDATE + 1/24
+START WITH (SYSDATE) NEXT SYSDATE + 6/24
 WITH PRIMARY KEY
   AS
   SELECT
@@ -201,14 +201,19 @@ WITH PRIMARY KEY
 FROM
   OLI_DATABASE o
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
--- WHERE e.dbname is NOT NULL and e.env_status is NOT NULL
 ;
 
+-- pridat do ansible
 exec dbms_mview.refresh('mv_name');
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
-  SELECT
+  SELECT * from DASHBOARD.API_DB_MV
+;
+
+
+-- puvodni prima varianta
+  SELECT /*+ result_cache */
        e.dbname,
        e.dbversion,
        decode(e.rac, 'Y', 'true', 'false') is_rac,
