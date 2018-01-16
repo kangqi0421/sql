@@ -17,6 +17,14 @@ select 'alter index '||owner||'.'||index_name||
 
 spool off
 
+-- dotaz do slovníku
+select /*csv*/
+   o.object_name,
+   decode(bitand(u.flags, 1), 0, 'NO', 'YES')  used
+from
+  sys.object_usage u join dba_objects o on u.obj# = o.object_id
+order by 1;
+
 -- OFF = nomonitoring
 
 -- dotaz jako nahrada za gv$object_usage, ktera je pouze pro vlastnika schematu
