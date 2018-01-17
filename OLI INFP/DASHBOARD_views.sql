@@ -180,7 +180,7 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
-
+-- API_DB
 DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
 CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
 NOLOGGING
@@ -204,7 +204,15 @@ FROM
 ;
 
 -- pridat do ansible
-exec dbms_mview.refresh('mv_name');
+call dbms_mview.refresh('mv_name');
+
+-- refresh ALL
+DECLARE
+  v_number_of_failures NUMBER(12) := 0;
+BEGIN
+  DBMS_MVIEW.REFRESH_ALL_MVIEWS(v_number_of_failures,'C','', TRUE, FALSE);
+END;
+/
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS

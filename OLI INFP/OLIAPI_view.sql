@@ -41,6 +41,7 @@ http://caservicedesk/reportextracts/SyncLogs/SyncOLI_APPS_DB_SRVS_FARM_FLG.csv
 -- Alešova původní view
 select * from OLI_OWNER.OLAPI_ACQUIRED_LICENSES;
 select * from OLI_OWNER.OLAPI_LICENCE_USAGE_DETAIL;
+
 -- již se nepoužívá, mělo by být nahraženo za moje
 select * from OLI_OWNER.OLAPI2_APPS_DB_SRVS_FARM_FLG;
 
