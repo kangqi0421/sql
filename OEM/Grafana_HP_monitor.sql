@@ -16,6 +16,11 @@ GRANT SELECT on SYSMAN.CM$MGMT_ASM_CLIENT_ECM to HP_MONITOR;
 INSERT INTO SYSMAN.mgmt_role_grants VALUES ('HP_MONITOR','EM_ALL_VIEWER',0,0);
 COMMIT;
 
+## Požadavky kapacitního plánování od HP
+
+-- Grafana EPOCH timestamp
+(m.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
+
 
 1), 2) tablespace - ANO
  - Zaplnění Oracle Filesystemu
@@ -32,9 +37,9 @@ Format metrik muze byt float
 
 pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespace_metricN
 
--- tablespaces metriky
+## tablespaces metriky
 SELECT
-   to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
+   to_char(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
    d.DATABASE_NAME db_name,
    m.target_guid,
    m.metric_column, m.column_label,
@@ -50,9 +55,48 @@ WHERE 1=1
 ORDER by 1, 2
 ;
 
-#2) dalsi pohled pro zbyvajici database metriky,
+## metriky bez key_value
+- DATABASE_SIZE
+- nová verze SQL
+SELECT
+     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS timestamp,
+     c.entity_name AS dbname,
+     c.entity_type,
+     p.PROPERTY_VALUE env_status,
+     k.key_part_1 AS tbs_name,
+     t.host_name,
+     lower(c.metric_column_name) metric_name,
+     c.metric_column_label metric_label,
+     c.unit,
+     sys_op_ceg(val.met_values,c.column_index) AS value
+FROM
+     sysman.em_metric_items i
+     join sysman.gc_metric_columns_target c on i.metric_group_id =
+c.metric_group_id
+     join sysman.em_metric_values val on i.metric_item_id =
+val.metric_item_id
+     join sysman.em_metric_keys k on i.metric_key_id = k.metric_key_id
+     join sysman.em_targets t on t.target_guid = c.entity_guid
+     join sysman.MGMT_TARGET_PROPERTIES p on p.target_guid = c.entity_guid
+WHERE
+     c.METRIC_GROUP_NAME = 'DATABASE_SIZE'
+     AND   p.property_name = 'orcl_gtp_lifecycle_status'
+     AND   i.target_guid = c.entity_guid
+     AND   c.column_type = 0
+     AND   c.data_column_type = 0
+     AND   i.last_collection_time = val.collection_time
+     AND   c.entity_guid NOT IN (
+         SELECT
+             dest_me_guid
+         FROM
+             sysman.gc$assoc_instances a
+         WHERE
+             a.assoc_type = 'cluster_contains'
+     )
+ORDER BY timestamp, dbname, env_status, metric_name;
 
--- metriky bez key_value
+--
+
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    m.target_guid,
@@ -75,7 +119,7 @@ WHERE 1=1
     ('ALLOCATED_GB', 'logons', 'cpuusage_ps', 'total_memory', 'iorequests_ps')
 ;
 
-#3) ASM metriky
+## ASM metriky
 
 -- ASM metriky
 -- LEFT join na DB_NAME, který není vždy uveden
@@ -99,7 +143,44 @@ WHERE 1=1
                           'total_mb')        -- Size (MB)
 ;
 
-#4) Wait event metriky
+## Wait Class
+
+- unit: Active_Sessions
+- union s CPU pro zobrazení jako ASH data
+
+select
+    to_char(END_TIME, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+    d.dbid,
+    d.name as dbname,
+    m.CON_ID,
+    INSTANCE_NAME,
+    HOST_NAME,
+    RT_CLASS,
+    'average_active_sessions' as METRIC_UNIT,
+    AAS as AVG,
+    'rt_class' as METRIC_TYPE
+from (
+select
+  m.END_TIME,
+  m.CON_ID,
+  replace(n.WAIT_CLASS,' ','_') as RT_CLASS,
+  round(m.time_waited/m.INTSIZE_CSEC,3) AAS
+ from
+  v$waitclassmetric m inner join v$system_wait_class n on m.wait_class_id=n.wait_class_id
+ where n.wait_class != 'Idle'
+union
+select END_TIME, m.CON_ID, 'CPU', round(value/100,3) AAS
+ from v$sysmetric m where metric_name='CPU Usage Per Sec' and group_id=2
+) m, V$INSTANCE i, V$DATABASE d
+order by RT_CLASS,CON_ID
+;
+
+
+
+
+## Wait event metriky
+
+- lepší sbírat online na úrovni direct DB
 
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",

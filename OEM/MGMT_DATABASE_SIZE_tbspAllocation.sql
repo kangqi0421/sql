@@ -15,6 +15,43 @@ WHERE
   AND m.target_name LIKE 'MCIP%'
 ;
 
+-- historicka data
+select
+  'dbsize'||','||
+  'dbname='||dbname||','||
+  'host_name='||host_name||','||
+  'env_status='||env_status||' '||
+  'allocated_gb='||ma_value||','||'used_gb='||mu_value||' '||
+  timestamp
+from (
+SELECT
+    to_char(ma.rollup_timestamp,'YYYY-MM-DD') AS "DATE",
+    (ma.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
+    d.entity_name dbname,
+    d.host_name,
+    p.PROPERTY_VALUE env_status,
+    ma.average as ma_value,
+    mu.average as mu_value
+FROM
+    sysman.MGMT$METRIC_DAILY ma
+    JOIN sysman.MGMT$METRIC_DAILY mu on (
+           ma.target_guid = mu.target_guid
+       AND ma.rollup_timestamp = mu.rollup_timestamp)
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d ON (ma.target_guid = d.entity_guid)
+    join sysman.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.entity_guid)
+WHERE
+  d.category_prop_3 = 'DB'
+  AND   p.property_name = 'orcl_gtp_lifecycle_status'
+  AND   ma.metric_name = 'DATABASE_SIZE'
+  AND   ma.metric_column in ('ALLOCATED_GB')
+  AND   mu.metric_column in ('USED_GB')
+  AND   ma.target_name LIKE 'MDWTB%'
+--ORDER BY timestamp, dbname, env_status, metric_name
+ ORDER BY timestamp, dbname
+)
+;
+
+
 
 -- varianta s mgmt$db_dbninstanceinfo a GROUP BY
 SELECT
@@ -34,7 +71,7 @@ GROUP BY d.database_name
 
 
 
--- Database size
+-- tbspAllocation
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    d.DATABASE_NAME db_name,
@@ -52,41 +89,7 @@ WHERE 1=1
 ORDER by 1, 2
 ;
 
--- DB size Grafana
-SELECT
-     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
-     c.entity_name AS dbname,
-     c.entity_type,
-     p.PROPERTY_VALUE env_status,
-     k.key_part_1 AS tbs_name,
-     t.host_name,
-     c.metric_column_name,
-     c.metric_column_label,
-     c.unit,
-     sys_op_ceg(val.met_values,c.column_index) AS value
-FROM
-     sysman.em_metric_items i
-     join sysman.gc_metric_columns_target c on i.metric_group_id = c.metric_group_id
-     join sysman.em_metric_values val on i.metric_item_id = val.metric_item_id
-     join sysman.em_metric_keys k on i.metric_key_id = k.metric_key_id
-     join sysman.em_targets t on t.target_guid = c.entity_guid
-     join sysman.MGMT_TARGET_PROPERTIES p on p.target_guid = c.entity_guid
-WHERE
-     c.METRIC_GROUP_NAME = 'DATABASE_SIZE'
-     AND   p.property_name = 'orcl_gtp_lifecycle_status'
-     AND   i.target_guid = c.entity_guid
-     AND   c.column_type = 0
-     AND   c.data_column_type = 0
-     AND   i.last_collection_time = val.collection_time
-     AND   c.entity_guid NOT IN (
-         SELECT
-             dest_me_guid
-         FROM
-             sysman.gc$assoc_instances a
-         WHERE
-             a.assoc_type = 'cluster_contains'
-     )
-ORDER BY 1, 2, 4;
+
 
 -- SQLDev report OEM - space report
 SELECT
