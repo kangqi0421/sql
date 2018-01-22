@@ -1,8 +1,8 @@
 set serveroutput on
 
-def owner = 
-def table = 
-def lob = 
+def owner =
+def table =
+def lob =
 
 /* TABLE - free space within a block */
 declare
@@ -123,5 +123,49 @@ BEGIN
   DBMS_OUTPUT.put_line('expired_bytes      :' || l_expired_bytes);
   DBMS_OUTPUT.put_line('unexpired_blocks   :' || l_unexpired_blocks);
   DBMS_OUTPUT.put_line('unexpired_bytes    :' || l_unexpired_bytes);
+END;
+/
+
+-- LOB PARTITION
+--
+set serveroutput on
+DECLARE
+ l_segment_size_blocks NUMBER;
+ l_segment_size_bytes NUMBER;
+ l_used_blocks NUMBER;
+ l_used_bytes NUMBER;
+ l_expired_blocks NUMBER;
+ l_expired_bytes NUMBER;
+ l_unexpired_blocks NUMBER;
+ l_unexpired_bytes NUMBER;
+ v_segname varchar2(30);
+BEGIN
+  DBMS_OUTPUT.ENABLE;
+  for rec in (select segment_name, partition_name from  dba_segments
+  where owner = 'MW'
+  and segment_type like 'LOB PARTITION'
+  and segment_name = 'SYS_LOB0000079599C00006$$')
+  LOOP
+    DBMS_SPACE.SPACE_USAGE(
+      segment_owner => 'MW',
+      segment_name => rec.segment_name,
+      segment_type => 'LOB PARTITION',
+      segment_size_blocks => l_segment_size_blocks,
+      segment_size_bytes => l_segment_size_bytes,
+      used_blocks => l_used_blocks,
+      used_bytes => l_used_bytes,
+      expired_blocks => l_expired_blocks,
+      expired_bytes => l_expired_bytes,
+      unexpired_blocks => l_unexpired_blocks,
+      unexpired_bytes => l_unexpired_bytes,
+      partition_name => rec.partition_name
+     );
+     DBMS_OUTPUT.PUT_LINE(' partition name = '||rec.partition_name);
+     DBMS_OUTPUT.PUT_LINE(' Segment Blocks = '||l_segment_size_blocks||' Bytes = '||l_segment_size_bytes);
+     DBMS_OUTPUT.PUT_LINE(' Used Blocks = '||l_used_blocks||' Bytes = '||l_used_bytes);
+     DBMS_OUTPUT.PUT_LINE(' Expired Blocks = '||l_expired_blocks||' Bytes = '||l_expired_bytes);
+     DBMS_OUTPUT.PUT_LINE(' Unexpired Blocks = '||l_unexpired_blocks||' Bytes = '||l_unexpired_bytes);
+     DBMS_OUTPUT.PUT_LINE('=============================================');
+  END LOOP;
 END;
 /

@@ -18,8 +18,15 @@ COMMIT;
 
 ## Požadavky kapacitního plánování od HP
 
--- Grafana EPOCH timestamp
-(m.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
+--
+-- Grafana
+--
+
+- EPOCH timestamp
+(m.rollup_timestamp - to_date('19700101', 'YYYYMMDD'))
+  * 24 * 60 * 60 * 1000 * 1000000  AS timestamp
+
+- alias sloupců - velkými písmeny v Node RED
 
 
 1), 2) tablespace - ANO
@@ -56,17 +63,17 @@ ORDER by 1, 2
 ;
 
 ## metriky bez key_value
-- DATABASE_SIZE
+- DATABASE_SIZE = dbsize
 - nová verze SQL
 SELECT
-     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS timestamp,
-     c.entity_name AS dbname,
+     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
+     c.entity_name AS DBNAME,
      c.entity_type,
-     p.PROPERTY_VALUE env_status,
-     k.key_part_1 AS tbs_name,
+     p.PROPERTY_VALUE ENV_STATUS,
+     k.key_part_1 AS TBS_NAME,
      t.host_name,
-     lower(c.metric_column_name) metric_name,
-     c.metric_column_label metric_label,
+     lower(c.metric_column_name) METRIC_NAME,
+     c.metric_column_label METRIC_LABEL,
      c.unit,
      sys_op_ceg(val.met_values,c.column_index) AS value
 FROM
@@ -77,9 +84,9 @@ c.metric_group_id
 val.metric_item_id
      join sysman.em_metric_keys k on i.metric_key_id = k.metric_key_id
      join sysman.em_targets t on t.target_guid = c.entity_guid
-     join sysman.MGMT_TARGET_PROPERTIES p on p.target_guid = c.entity_guid
+     join sysman.mgmt_target_properties p on p.target_guid = c.entity_guid
 WHERE
-     c.METRIC_GROUP_NAME = 'DATABASE_SIZE'
+     c.metric_group_name = 'DATABASE_SIZE'
      AND   p.property_name = 'orcl_gtp_lifecycle_status'
      AND   i.target_guid = c.entity_guid
      AND   c.column_type = 0
@@ -93,7 +100,7 @@ WHERE
          WHERE
              a.assoc_type = 'cluster_contains'
      )
-ORDER BY timestamp, dbname, env_status, metric_name;
+ORDER BY time, dbname, env_status, metric_name;
 
 --
 
@@ -121,6 +128,46 @@ WHERE 1=1
 
 ## ASM metriky
 
+
+
+-- Grafana
+SELECT
+    TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
+    c.entity_name AS ASM_INSTANCE_NAME,
+    k.key_part_1 AS ASM_GROUP_NAME,
+    t.host_name,
+    p.PROPERTY_VALUE ENV_STATUS,
+    lower(c.metric_column_name) METRIC_NAME,
+    c.metric_column_label METRIC_LABEL,
+    'MB' as unit,
+    sys_op_ceg(val.met_values,c.column_index) AS value
+FROM
+    sysman.em_metric_items i,
+    sysman.gc_metric_columns_target c,
+    sysman.em_metric_values val,
+    sysman.em_metric_keys k,
+    sysman.gc$target t,
+    sysman.MGMT_TARGET_PROPERTIES p
+WHERE
+    i.metric_group_id = c.metric_group_id
+    AND   i.target_guid = c.entity_guid
+    AND   t.target_guid = c.entity_guid
+    AND   i.metric_item_id = val.metric_item_id
+    AND   i.metric_key_id = k.metric_key_id
+    AND   c.column_type = 0
+    AND   c.data_column_type = 0
+    AND   p.target_guid = c.entity_guid
+    AND   p.property_name = 'orcl_gtp_lifecycle_status'
+    and   c.metric_group_name = 'DiskGroup_Usage'
+    AND   c.metric_column_name in (
+      'usable_file_mb',  -- Disk Group Usable Free (MB)
+      'total_mb')        -- Size (MB)
+    AND   i.last_collection_time = val.collection_time
+    AND p.PROPERTY_VALUE is not NULL
+ORDER BY
+    time, ASM_INSTANCE_NAME, ASM_GROUP_NAME, METRIC_NAME
+;
+
 -- ASM metriky
 -- LEFT join na DB_NAME, který není vždy uveden
 SELECT
@@ -139,9 +186,249 @@ WHERE 1=1
 --      AND a.db_name like 'CPTDA'
 --    AND key_value like 'RTOZA_%'
     AND m.metric_name = 'DiskGroup_Usage'
-    AND metric_column in ('usable_file_mb',  -- Disk Group Usable (MB)
-                          'total_mb')        -- Size (MB)
+    -- and   c.metric_group_name = 'DiskGroup_Usage'
+    AND metric_column in (
+      'usable_file_mb',  -- Disk Group Usable Free (MB)
+      'total_mb')        -- Size (MB)
 ;
+
+## OEM CPU
+
+SELECT
+    to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+    -- (m.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
+    d.database_name dbname,
+    d.instance_name,
+    d.host_name,
+    p.PROPERTY_VALUE env_status,
+    m.metric_column as METRIC_NAME,
+    m.column_label as METRIC_LABEL,
+    round(m.average, 3) as AVG,
+    round(m.minimum, 3) as MIN,
+    round(m.maximum, 3) as MAX
+FROM
+    sysman.MGMT$METRIC_DAILY m
+    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+    join sysman.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.target_guid)
+WHERE 1=1
+  AND   p.property_name = 'orcl_gtp_lifecycle_status'
+  AND   p.property_value is not NULL
+  AND   m.metric_name = 'instance_efficiency'
+  AND   m.metric_column = 'cpuusage_ps'
+  AND   m.rollup_timestamp > sysdate - interval '2' day
+  -- AND   d.database_name LIKE 'MCIZ%'
+ORDER BY timestamp, dbname, env_status, metric_name
+
+
+
+## Stat 12c SYSMETRIC
+
+select
+ to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+ case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
+ d.NAME,
+ m.CON_ID,
+ -- 11.2-- 0 as CON_ID,
+ i.INSTANCE_NAME,
+ i.HOST_NAME,
+ m.METRIC_NAME as METRIC_NAME,
+ m.METRIC_UNIT,
+ round(m.value,3) as AVG,
+ case when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
+      when METRIC_NAME = 'Database CPU Time Ratio' then 'response_time'
+      when METRIC_NAME = 'Database Wait Time Ratio' then 'response_time'
+      when METRIC_NAME =  'SQL Service Response Time' then 'response_time'
+      when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
+      when METRIC_NAME = 'Host CPU Utilization (%)' then 'cpu'
+      when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
+      when METRIC_NAME = 'Session Count' then 'session'
+      when METRIC_NAME = 'Logons Per Sec' then 'session'
+      when METRIC_NAME = 'User Commits Per Sec' then 'transactions'
+      when METRIC_NAME = 'User Rollbacks Per Sec' then 'transactions'
+      when METRIC_NAME = 'Logical Reads Per Sec' then 'io'
+      when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
+      when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
+      when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
+      when METRIC_NAME = 'Temp Space Used' then 'memory'
+      when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
+      when METRIC_NAME = 'I/O Requests per Second' then 'io'
+      when METRIC_NAME = 'I/O Megabytes per Second' then 'io'
+      when METRIC_NAME = 'Total Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Queries parallelized Per Sec' then 'pq'
+     else 'other' end as METRIC_TYPE,
+ case when METRIC_NAME = 'Database Time Per Sec' then 'Database_Time'
+      when METRIC_NAME = 'Database CPU Time Ratio' then 'Database_CPU_Time'
+      when METRIC_NAME = 'Database Wait Time Ratio' then 'Database_Wait_Time'
+      when METRIC_NAME = 'SQL Service Response Time' then 'SQL_Service_Response_Time'
+      when METRIC_NAME = 'CPU Usage Per Sec' then 'CPU_Usage'
+      when METRIC_NAME = 'Host CPU Utilization (%)' then 'Host_CPU_Utilization'
+      when METRIC_NAME = 'Redo Generated Per Sec' then 'Redo_Generated'
+      when METRIC_NAME = 'Session Count' then 'Session_Count'
+      when METRIC_NAME = 'Logons Per Sec' then 'Logons'
+      when METRIC_NAME = 'User Commits Per Sec' then 'User_Commits'
+      when METRIC_NAME = 'User Rollbacks Per Sec' then 'User_Rollbacks'
+      when METRIC_NAME = 'Logical Reads Per Sec' then 'Logical_Reads'
+      when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
+      when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
+      when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'Total_PGA_Allocated'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
+      when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
+      when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
+      when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
+      when METRIC_NAME = 'I/O Megabytes per Second' then 'IO_Megabytes'
+      when METRIC_NAME = 'Total Parse Count Per Sec' then 'Total_Parse'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
+      when METRIC_NAME = 'Queries parallelized Per Sec' then 'Queries_parallelized'
+     else 'other' end as METRIC
+from
+ V$SYSMETRIC m, V$INSTANCE i, V$DATABASE d
+where
+ d.CON_ID = i.CON_ID
+ AND i.CON_ID = m.CON_ID
+ and m.group_id = 2
+ AND m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3)
+ and m.METRIC_NAME in (
+    'Database Time Per Sec',
+    'Database CPU Time Ratio',
+    'Database Wait Time Ratio',
+    'SQL Service Response Time',
+    'CPU Usage Per Sec',
+    'Host CPU Utilization (%)',
+    'Redo Generated Per Sec',
+    'Session Count',
+    'Logons Per Sec',
+    'User Commits Per Sec',
+    'User Rollbacks Per Sec',
+    'Logical Reads Per Sec',
+    'Total Table Scans Per Sec',
+    'Full Index Scans Per Sec',
+    'Current Open Cursors Count',
+    'Total PGA Allocated',
+    'Total PGA Used by SQL Workareas',
+    'Temp Space Used',
+    'Disk Sort Per Sec',
+    'I/O Requests per Second',
+    'I/O Megabytes per Second',
+    'Total Parse Count Per Sec',
+    'Hard Parse Count Per Sec',
+    'Queries parallelized Per Sec')
+order by METRIC_NAME,METRIC_UNIT,CON_ID
+
+-- puvodni verze od Vitka
+
+msg.topic = 'stat';
+msg.query = `select
+ to_char(max(DATUM),'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+ min(DBID) as DBID,
+ min(NAME) as DBNAME,
+ CON_ID,
+ min(INSTANCE_NAME) as INSTANCE_NAME,
+ min(HOST_NAME) as HOST_NAME,
+ METRIC_NAME,
+ METRIC_UNIT,
+ round(avg(value),3) as AVG,
+ round(min(value),3) as MIN,
+ round(max(value),3) as MAX,
+ case when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
+      when METRIC_NAME = 'Database CPU Time Ratio' then 'response_time'
+      when METRIC_NAME = 'Database Wait Time Ratio' then 'response_time'
+      when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
+      when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
+      when METRIC_NAME = 'Session Count' then 'session'
+      when METRIC_NAME = 'Logons Per Sec' then 'session'
+      when METRIC_NAME = 'User Commits Per Sec' then 'transactions'
+      when METRIC_NAME = 'User Rollbacks Per Sec' then 'transactions'
+      when METRIC_NAME = 'Logical Reads Per Sec' then 'io'
+      when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
+      when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
+      when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
+      when METRIC_NAME = 'Temp Space Used' then 'memory'
+      when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
+      when METRIC_NAME = 'I/O Requests per Second' then 'io'
+      when METRIC_NAME = 'I/O Megabytes per Second' then 'io'
+      when METRIC_NAME = 'Total Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
+      when METRIC_NAME = 'Queries parallelized Per Sec' then 'pq'
+     else 'other' end as METRIC_TYPE,
+ case when METRIC_NAME = 'Database Time Per Sec' then 'Database_Time'
+      when METRIC_NAME = 'Database CPU Time Ratio' then 'Database_CPU_Time'
+      when METRIC_NAME = 'Database Wait Time Ratio' then 'Database_Wait_Time'
+      when METRIC_NAME = 'CPU Usage Per Sec' then 'CPU_Usage'
+      when METRIC_NAME = 'Redo Generated Per Sec' then 'Redo_Generated'
+      when METRIC_NAME = 'Session Count' then 'Session_Count'
+      when METRIC_NAME = 'Logons Per Sec' then 'Logons'
+      when METRIC_NAME = 'User Commits Per Sec' then 'User_Commits'
+      when METRIC_NAME = 'User Rollbacks Per Sec' then 'User_Rollbacks'
+      when METRIC_NAME = 'Logical Reads Per Sec' then 'Logical_Reads'
+      when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
+      when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
+      when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'Total_PGA_Allocated'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
+      when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
+      when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
+      when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
+      when METRIC_NAME = 'I/O Megabytes per Second' then 'IO_Megabytes'
+      when METRIC_NAME = 'Total Parse Count Per Sec' then 'Total_Parse'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
+      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
+      when METRIC_NAME = 'Queries parallelized Per Sec' then 'Queries_parallelized'
+     else 'other' end as METRIC
+from
+(
+select
+ END_TIME as DATUM,
+ case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
+ d.NAME,
+ m.CON_ID,
+ i.INSTANCE_NAME,
+ i.HOST_NAME,
+ m.METRIC_NAME as METRIC_NAME,
+ m.METRIC_UNIT,
+ m.value
+from
+ V$SYSMETRIC_HISTORY m, V$INSTANCE i, V$DATABASE d
+where
+ d.CON_ID = i.CON_ID and
+ i.CON_ID = m.CON_ID and
+ m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3) and
+ m.METRIC_NAME in (
+'Database Time Per Sec',
+'Database CPU Time Ratio',
+'Database Wait Time Ratio',
+'CPU Usage Per Sec',
+'Redo Generated Per Sec',
+'Session Count',
+'Logons Per Sec',
+'User Commits Per Sec',
+'User Rollbacks Per Sec',
+'Logical Reads Per Sec',
+'Total Table Scans Per Sec',
+'Full Index Scans Per Sec',
+'Current Open Cursors Count',
+'Total PGA Allocated',
+'Total PGA Used by SQL Workareas',
+'Temp Space Used',
+'Disk Sort Per Sec',
+'I/O Requests per Second',
+'I/O Megabytes per Second',
+'Total Parse Count Per Sec',
+'Hard Parse Count Per Sec',
+'Queries parallelized Per Sec')
+)
+group by METRIC_NAME,METRIC_UNIT,CON_ID
+order by METRIC_NAME,METRIC_UNIT,CON_ID`;
+return msg;
+
 
 ## Wait Class
 
@@ -181,7 +468,53 @@ order by RT_CLASS,CON_ID
 ## Wait event metriky
 
 - lepší sbírat online na úrovni direct DB
+select
+ to_char(max(DATUM),'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+ min(DBID) as DBID,
+ min(NAME) as DBNAME,
+ CON_ID,
+ min(INSTANCE_NAME) as INSTANCE_NAME,
+ min(HOST_NAME) as HOST_NAME,
+ METRIC,
+ METRIC_UNIT,
+ round(avg(TIME_WAITED_FG),0) as TIME_WAITED_FG,
+ round(avg(WAIT_COUNT_FG),0) as WAIT_COUNT_FG,
+ round(avg(AVG_WAIT),3) as AVG_WAIT,
+ 'wait' as METRIC_TYPE
+from
+(
+select
+ END_TIME as DATUM,
+ case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
+ d.NAME,
+ m.CON_ID,
+ i.INSTANCE_NAME,
+ i.HOST_NAME,
+ replace(e.NAME,' ','_') METRIC,
+ 'millisecond' as METRIC_UNIT,
+ m.TIME_WAITED_FG*10 as TIME_WAITED_FG,
+ m.WAIT_COUNT_FG,
+ case when m.WAIT_COUNT_FG<>0 then m.TIME_WAITED_FG/m.WAIT_COUNT_FG*10 else 0
+end  as AVG_WAIT
+from
+ V$EVENTMETRIC m, V$EVENT_NAME e, V$INSTANCE i, V$DATABASE d
+where
+   d.CON_ID = i.CON_ID and
+   i.CON_ID = m.CON_ID and
+   m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3) and
+   m.EVENT_ID = e.EVENT_ID and
+   e.NAME in (
+      'log file parallel write',
+      'log file sync',
+      'db file scattered read',
+      'db file sequential read',
+      'resmgr:cpu quantum')
+)
+group by METRIC,METRIC_UNIT,CON_ID
+order by METRIC,METRIC_UNIT,CON_ID
 
+
+- EM
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    d.DATABASE_NAME db_name,

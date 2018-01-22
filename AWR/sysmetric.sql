@@ -6,22 +6,31 @@
  - 'I/O Requests per Second' je v pohodì
  - Network Traffic Volume Per Sec - public network traffic per second
 
+There are 2 records for two different groups because of short duration and long duration intervals.
+
+- System Metrics Long Duration (group_id= 2) : 60 second interval
+- System Metrics Short Duration (group_id = 3) : 15 second interval
+
+
 SGA/PGA
  - Buffer Cache Hit Ratio
  - Total PGA Allocated
 
---// vyber zajimavych metrik //--
-select * from V$METRICNAME 
-  where metric_name like '%Block%'
+-- vyber zajimavych metrik
+select Metric_Name, Metric_Unit
+  from V$METRICNAME
+  where 1=1
+   AND upper(metric_name) like '%SGA%'
+    and group_id = 2
   order by metric_name;
 
-select * from v$sysmetric
-  where metric_name like '%multi%'
- order by metric_name;
- 
 select * from V$SYSMETRIC_SUMMARY
   where metric_name like '%Read%'
- order by metric_name; 
+ order by metric_name;
+
+select metric_name, value, metric_unit from v$sysmetric
+  where metric_name like'%CPU%' where group_id=2;
+
 
 -- header
 Time;Average Active Sessions;CPU Usage Per Sec[%];CPU Usage Per Tx;Logons [-];OS load[-];DB Time [sec];DB Block Changes Per Sec;CPU util [%];
