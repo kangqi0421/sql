@@ -23,8 +23,8 @@ COMMIT;
 --
 
 - EPOCH timestamp
-(m.rollup_timestamp - to_date('19700101', 'YYYYMMDD'))
-  * 24 * 60 * 60 * 1000 * 1000000  AS timestamp
+to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+(m.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp
 
 - alias sloupců - velkými písmeny v Node RED
 
@@ -62,7 +62,7 @@ WHERE 1=1
 ORDER by 1, 2
 ;
 
-## metriky bez key_value
+## DBNAME metriky
 - DATABASE_SIZE = dbsize
 - nová verze SQL
 SELECT
@@ -104,6 +104,7 @@ ORDER BY time, dbname, env_status, metric_name;
 
 --
 
+## INSTANCE metriky
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    m.target_guid,
@@ -192,20 +193,27 @@ WHERE 1=1
       'total_mb')        -- Size (MB)
 ;
 
-## OEM CPU
+## OEM CPU MEMORY IO
 
 SELECT
     to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
-    -- (m.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
-    d.database_name dbname,
+    d.database_name DBNAME,
     d.instance_name,
     d.host_name,
-    p.PROPERTY_VALUE env_status,
-    m.metric_column as METRIC_NAME,
+    p.PROPERTY_VALUE ENV_STATUS,
+    lower(m.metric_column) as METRIC_NAME,
     m.column_label as METRIC_LABEL,
-    round(m.average, 3) as AVG,
-    round(m.minimum, 3) as MIN,
-    round(m.maximum, 3) as MAX
+    round(m.average, 2) as AVG,
+    round(m.minimum, 2) as MIN,
+    round(m.maximum, 2) as MAX,
+    case
+      when m.metric_column = 'cpuusage_ps' then 'cpu'
+      when m.metric_column = 'total_memory' then 'memory'
+      when m.metric_column = 'sga_total' then 'memory'
+      when m.metric_column = 'pga_total' then 'memory'
+      when m.metric_column = 'iombs_ps' then 'io'
+      when m.metric_column = 'iorequests_ps' then 'io'
+    else 'other' end as METRIC_TYPE
 FROM
     sysman.MGMT$METRIC_DAILY m
     JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
@@ -213,10 +221,12 @@ FROM
 WHERE 1=1
   AND   p.property_name = 'orcl_gtp_lifecycle_status'
   AND   p.property_value is not NULL
-  AND   m.metric_name = 'instance_efficiency'
-  AND   m.metric_column = 'cpuusage_ps'
-  AND   m.rollup_timestamp > sysdate - interval '2' day
-  -- AND   d.database_name LIKE 'MCIZ%'
+  AND   m.metric_name in (
+           'instance_efficiency', 'memory_usage', 'memory_usage_sga_pga', 'instance_throughput')
+  AND   m.metric_column in (
+           'cpuusage_ps', 'total_memory', 'sga_total', 'pga_total', 'iorequests_ps', 'iombs_ps')
+  AND   m.rollup_timestamp > sysdate - interval '3' day
+  AND   d.database_name LIKE 'MCIZ%'
 ORDER BY timestamp, dbname, env_status, metric_name
 
 
@@ -581,8 +591,7 @@ WHERE 1=1
   AND m.metric_name = 'topWaitEvents'
   AND m.metric_column = 'averageWaitTime'
   AND column_label like 'Average Wait Time (millisecond)'
-  AND key_value in ('log file sync', 'log file parallel write', 'direct path read temp',
-                    'control file sequential read', 'direct path read',
+  AND key_value in ('log file sync', 'log file parallel write',
                     'db file scattered read', 'db file sequential read')
 ;
 

@@ -70,11 +70,22 @@ select * from dba_views
 order by view_name
 ;
 
-select metric_item_id
-      ,collection_time
-      ,met_values
-  from em_metric_values
- where rownum < 11;
+-- metriky vcetne source "c.source"
+select
+    c.entity_name name,
+    --c.source,
+    c.*,
+    val.metric_item_id,
+    val.collection_time,
+    sys_op_ceg(val.met_values,c.column_index) AS value
+  from sysman.em_metric_values val
+       join sysman.gc_metric_columns_target c
+            on (c.metric_group_id = val.metric_item_id)
+  where c.entity_name like 'MCIZ%'
+    and   c.metric_group_name = 'DiskGroup_Usage'
+ --FETCH FIRST 10 ROWS ONLY
+ ;
+
 
 -- retention periods
 select table_name, partitions_retained
@@ -82,9 +93,13 @@ from SYSMAN.em_int_partitioned_tables
 where table_name in ('EM_METRIC_VALUES','EM_METRIC_VALUES_HOURLY','EM_METRIC_VALUES_DAILY');
 
 
-
 -- hledani metriky
--- zaměnit za sysman.mgmt_metrics ?
+ select
+--      m.*,
+      distinct metric_name, metric_column, metric_label, column_label
+   from sysman.mgmt_metrics m
+   where column_label like '%CPU%'
+     and category_prop_3 = 'DB';
 
 select distinct metric_name, metric_column, metric_label, column_label
   from mgmt$metric_current
@@ -170,7 +185,6 @@ AND metric_name = 'Database_Resource_Usage' AND metric_column = 'opencursors'
 
 -- Number of Transactions (per second)
 and m.metric_name = 'instance_throughput'
-AND m.metric_label = 'Throughput'
 -- TPS
 AND m.metric_column = 'transactions_ps'
 -- User Commits
