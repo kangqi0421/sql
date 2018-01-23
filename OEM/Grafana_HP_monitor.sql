@@ -106,26 +106,39 @@ ORDER BY time, dbname, env_status, metric_name;
 
 ## INSTANCE metriky
 SELECT
-   to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
-   m.target_guid,
-   d.DATABASE_NAME db_name,
-   d.instance_name instance_name,
-   m.metric_column, m.column_label,
-   m.value
+    to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+    d.database_name DBNAME,
+    d.instance_name,
+    d.host_name,
+    p.PROPERTY_VALUE ENV_STATUS,
+    lower(m.metric_column) as METRIC_NAME,
+    m.column_label as METRIC_LABEL,
+    round(m.average, 2) as AVG,
+    round(m.minimum, 2) as MIN,
+    round(m.maximum, 2) as MAX,
+    case
+      when m.metric_column = 'cpuusage_ps' then 'cpu'
+      when m.metric_column = 'total_memory' then 'memory'
+      when m.metric_column = 'sga_total' then 'memory'
+      when m.metric_column = 'pga_total' then 'memory'
+      when m.metric_column = 'iombs_ps' then 'io'
+      when m.metric_column = 'iorequests_ps' then 'io'
+      when m.metric_column = 'transactions_ps' then 'transactions'
+    else 'other' end as METRIC_TYPE
 FROM
-  MGMT$METRIC_DETAILS m
-  JOIN MGMT$DB_DBNINSTANCEINFO d
-    ON (m.target_guid = d.target_guid
-    AND m.target_name = d.target_name)
+    sysman.MGMT$METRIC_DAILY m
+    JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
+    join sysman.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.target_guid)
 WHERE 1=1
-  -- AND m.target_name like 'CPTDA'
-  -- AND d.database_name like 'MCIZ'
-  AND m.metric_name in
-    ('DATABASE_SIZE', 'Database_Resource_Usage', 'instance_efficiency',
-     'memory_usage', 'instance_throughput')
-  AND m.metric_column in
-    ('ALLOCATED_GB', 'logons', 'cpuusage_ps', 'total_memory', 'iorequests_ps')
-;
+  AND   p.property_name = 'orcl_gtp_lifecycle_status'
+  AND   p.property_value is not NULL
+  AND   m.metric_name in (
+           'instance_efficiency', 'memory_usage', 'memory_usage_sga_pga', 'instance_throughput')
+  AND   m.metric_column in (
+           'cpuusage_ps', 'total_memory', 'sga_total', 'pga_total', 'iorequests_ps', 'iombs_ps', 'transactions_ps')
+  AND   m.rollup_timestamp > sysdate - interval '2' day
+  AND   d.database_name LIKE 'MDWP'
+ORDER BY timestamp, dbname, env_status, metric_name
 
 ## ASM metriky
 
