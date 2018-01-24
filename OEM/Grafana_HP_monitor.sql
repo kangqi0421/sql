@@ -247,20 +247,20 @@ ORDER BY timestamp, dbname, env_status, metric_name
 ## Stat 12c SYSMETRIC
 
 select
- to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
- case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
- d.NAME,
- m.CON_ID,
- -- 11.2-- 0 as CON_ID,
- i.INSTANCE_NAME,
- i.HOST_NAME,
- m.METRIC_NAME as METRIC_NAME,
- m.METRIC_UNIT,
- round(m.value,3) as AVG,
- case when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
+    to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+    case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
+    d.NAME,
+    m.CON_ID,
+    i.INSTANCE_NAME,
+    i.HOST_NAME,
+    m.METRIC_NAME as METRIC_NAME,
+    m.METRIC_UNIT,
+    round(m.value,3) as AVG,
+    case
+      when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
       when METRIC_NAME = 'Database CPU Time Ratio' then 'response_time'
       when METRIC_NAME = 'Database Wait Time Ratio' then 'response_time'
-      when METRIC_NAME =  'SQL Service Response Time' then 'response_time'
+      when METRIC_NAME = 'SQL Service Response Time' then 'response_time'
       when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
       when METRIC_NAME = 'Host CPU Utilization (%)' then 'cpu'
       when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
@@ -282,8 +282,9 @@ select
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
       when METRIC_NAME = 'Queries parallelized Per Sec' then 'pq'
-     else 'other' end as METRIC_TYPE,
- case when METRIC_NAME = 'Database Time Per Sec' then 'Database_Time'
+    else 'other' end as METRIC_TYPE,
+    case
+      when METRIC_NAME = 'Database Time Per Sec' then 'Database_Time'
       when METRIC_NAME = 'Database CPU Time Ratio' then 'Database_CPU_Time'
       when METRIC_NAME = 'Database Wait Time Ratio' then 'Database_Wait_Time'
       when METRIC_NAME = 'SQL Service Response Time' then 'SQL_Service_Response_Time'
@@ -308,14 +309,13 @@ select
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
       when METRIC_NAME = 'Queries parallelized Per Sec' then 'Queries_parallelized'
-     else 'other' end as METRIC
+    else 'other' end as METRIC
 from
- V$SYSMETRIC m, V$INSTANCE i, V$DATABASE d
+  GV$SYSMETRIC m
+  join GV$INSTANCE i ON (m.inst_id = i.inst_id AND i.CON_ID = m.CON_ID)
+  join GV$DATABASE d ON (i.inst_id = d.inst_id AND d.CON_ID = i.CON_ID)
 where
- d.CON_ID = i.CON_ID
- AND i.CON_ID = m.CON_ID
- and m.group_id = 2
- AND m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3)
+     m.group_id = 2
  and m.METRIC_NAME in (
     'Database Time Per Sec',
     'Database CPU Time Ratio',
@@ -340,8 +340,11 @@ where
     'I/O Megabytes per Second',
     'Total Parse Count Per Sec',
     'Hard Parse Count Per Sec',
-    'Queries parallelized Per Sec')
-order by METRIC_NAME,METRIC_UNIT,CON_ID
+    'Queries parallelized Per Sec'
+    )
+order by METRIC_NAME, METRIC_UNIT, INSTANCE_NAME, CON_ID
+;
+;
 
 -- puvodni verze od Vitka
 
@@ -449,7 +452,8 @@ where
 'Queries parallelized Per Sec')
 )
 group by METRIC_NAME,METRIC_UNIT,CON_ID
-order by METRIC_NAME,METRIC_UNIT,CON_ID`;
+order by METRIC_NAME,METRIC_UNIT,CON_ID
+`;
 return msg;
 
 

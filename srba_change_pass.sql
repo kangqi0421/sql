@@ -16,6 +16,11 @@ grant create session to &username;
 
 select username, account_status from dba_users where username = '&username';
 
+-- posunutí expirace
+alter user &username profile DEFAULT;
+alter user &username identified by "jiri123cek";
+alter user &username profile PROF_DBA;
+
 */
 
 

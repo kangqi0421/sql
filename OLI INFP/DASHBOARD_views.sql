@@ -94,8 +94,10 @@ select t.target_guid em_guid,
        -- servername
        -- pokud je db v clsteru, vrat scanName, jinak server name
        NVL2(cluster_name, scanName, server_name)
-         || ':' || port || '/'||database_name  AS CONNECT_DESCRIPTOR,
+         || ':' || port || '/'||
+         NVL2(domain, database_name||'.'||domain, database_name)  AS CONNECT_DESCRIPTOR,
        NVL2(cluster_name, scanName, server_name) server_name,
+       port,
        d.host_name,
        db_size_mb,
        db_log_size_mb
@@ -107,6 +109,7 @@ select t.target_guid em_guid,
         'RACOption' as rac,
         'ClusterName' as cluster_name,
         'MachineName' as server_name,
+        'DBDomain' as domain,
         'Port' as port
         )) p ON (d.target_guid = p.target_guid)
   -- pouze DB bez RAC instance
@@ -132,10 +135,13 @@ select t.target_guid em_guid,
     ON p.cluster_name = s.target_name
   -- pouze DB bez RAC instance
 WHERE t.TYPE_QUALIFIER3 = 'DB'
+  -- and database_name = 'CPTZ'
 /
 
-COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
-  'OEM data pro target databaze vcetne db size, fra size';
+
+--
+-- COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
+--  'OEM data pro target databaze vcetne db size, fra size';
 
 
 -- OLI data pro REST
@@ -203,8 +209,8 @@ FROM
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
 ;
 
--- pridat do ansible
-call dbms_mview.refresh('mv_name');
+-- pridat do ansible ?
+exec DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
 
 -- refresh ALL
 DECLARE
@@ -216,17 +222,22 @@ END;
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
-  SELECT * from DASHBOARD.API_DB_MV
+SELECT * from DASHBOARD.API_DB_MV
+;
+--  where dbname not in (
+
+
 --
-  where dbname not in (
-'TPTESTB', 'SDST', 'DMSTIU', 'DMSTIU', 'COGT', 'DMSRC2', 'TPTESTA', 'CATEST1', 'PWTESTA', 'CPTDB', 'SDJO', 'APPTB', 'DMSTIU', 'MIGRDEV', 'MIGRINT', 'COGD', 'DWHSRC2', 'TGASPER2', 'CAETB', 'SK1O',
-'CAETB', 'SDJB', 'VSDTA', 'APPTA', 'CATEST2', 'CAITA', 'COLRZ', 'VSDTA', 'CAETB', 'TECOM1', 'ESPEB', 'TECOM1', 'DMSZIU', 'COLZ', 'DWHSRC2', 'COGD', 'DWHSRC2', 'MCMETA', 'TGASPER2', 'TGASPER2', 'CAETB', 'SDJB', 'VSDTA', 'APPTA', 'CATEST2', 'CAITA', 'COLRZ', 'VSDTA', 'CAETB', 'TECOM1', 'ESPEB', 'TECOM1', 'DMSZIU', 'COLZ', 'DWHSRC2', 'COGD', 'DWHSRC2', 'MCMETA', 'TGASPER2', 'TGASPER2',
-'TPTESTB', 'SDST', 'APPTB', 'SK1O', 'DMSTIU', 'ESPTB', 'ROTTA', 'RMDZB', 'MCMITA', 'MCMITA', 'CAETA', 'CATEST2', 'COLRZ', 'CAITA', 'COGT', 'CATEST1', 'CAETB', 'MIGRDEV', 'MIGRINT', 'TECOM1', 'TPTESTB', 'SDST', 'APPTB', 'SK1O', 'DMSTIU', 'ESPTB', 'ROTTA', 'RMDZB', 'MCMITA', 'MCMITA', 'CAETA', 'CATEST2', 'COLRZ', 'CAITA', 'COGT', 'CATEST1', 'CAETB', 'MIGRDEV', 'MIGRINT', 'TECOM1'
-);
+'CATEST1', 'CATEST2', 'PWTESTA', 'TECOM1', 'TGASPER2', 'TPTESTA', 'TPTESTB'
+
+SDJB
+SDJO
+SDST
+SK1O
 
 
 
--- puvodni prima varianta
+-- puvodni varianta s VIEW
   SELECT /*+ result_cache */
        e.dbname,
        e.dbversion,
