@@ -3,16 +3,19 @@
 -- SQL verze
 
 /*
-def username=SRBA
+def username=SOL60210
 
 set VERIFY OFF termout off feedback off trimspool on trimout on
 
 create user &username IDENTIFIED BY abcd1234;
-alter user &username identified by "EU6sIVHrXN1dfgIIUUI8";
+--alter user &username identified by "EU6sIVHrXN1dfgIIUUI8";
 alter user &username account lock;
 alter user &username profile PROF_DBA;
-revoke dba from &username;
+grant dba from &username;
+
 grant create session to &username;
+
+revoke dba from &username;
 
 select username, account_status from dba_users where username = '&username';
 
