@@ -462,12 +462,14 @@ return msg;
 - unit: Active_Sessions
 - union s CPU pro zobrazení jako ASH data
 
+msg.topic = 'rtclass';
+msg.query = `
 select
     to_char(END_TIME, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
     d.dbid,
     d.name as dbname,
     m.CON_ID,
-    INSTANCE_NAME,
+    i.INSTANCE_NAME,
     HOST_NAME,
     RT_CLASS,
     'average_active_sessions' as METRIC_UNIT,
@@ -477,24 +479,33 @@ from (
 select
   m.END_TIME,
   m.CON_ID,
+  m.inst_id,
   replace(n.WAIT_CLASS,' ','_') as RT_CLASS,
   round(m.time_waited/m.INTSIZE_CSEC,3) AAS
  from
-  v$waitclassmetric m inner join v$system_wait_class n on m.wait_class_id=n.wait_class_id
+  gv$waitclassmetric m
+  join v$system_wait_class n on
+     (m.wait_class_id=n.wait_class_id)
  where n.wait_class != 'Idle'
 union
-select END_TIME, m.CON_ID, 'CPU', round(value/100,3) AAS
- from v$sysmetric m where metric_name='CPU Usage Per Sec' and group_id=2
-) m, V$INSTANCE i, V$DATABASE d
-order by RT_CLASS,CON_ID
-;
-
+select END_TIME, m.CON_ID, m.inst_id, 'CPU', round(value/100,3) AAS
+ from gv$sysmetric m where metric_name='CPU Usage Per Sec' and group_id=2
+) m, GV$INSTANCE i, V$DATABASE d
+where m.inst_id = i.inst_id
+order by RT_CLASS, INSTANCE_NAME, CON_ID
+`;
+return msg;
 
 
 
 ## Wait event metriky
 
 - lepší sbírat online na úrovni direct DB
+
+-- online sber dat
+msg.topic = 'wait';
+msg.query = `
+-- RAC GV$EVENTMETRIC verze 12c
 select
  to_char(max(DATUM),'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
  min(DBID) as DBID,
@@ -524,24 +535,27 @@ select
  case when m.WAIT_COUNT_FG<>0 then m.TIME_WAITED_FG/m.WAIT_COUNT_FG*10 else 0
 end  as AVG_WAIT
 from
- V$EVENTMETRIC m, V$EVENT_NAME e, V$INSTANCE i, V$DATABASE d
+ GV$EVENTMETRIC m, V$EVENT_NAME e, GV$INSTANCE i, V$DATABASE d
 where
-   d.CON_ID = i.CON_ID and
-   i.CON_ID = m.CON_ID and
-   m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3) and
-   m.EVENT_ID = e.EVENT_ID and
-   e.NAME in (
-      'log file parallel write',
-      'log file sync',
-      'db file scattered read',
-      'db file sequential read',
-      'resmgr:cpu quantum')
+ d.CON_ID = i.CON_ID
+ AND m.inst_id = i.inst_id
+ --m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3) and
+ and m.EVENT_ID = e.EVENT_ID and
+ e.NAME in (
+    'log file parallel write',
+    'log file sync',
+    'db file scattered read',
+    'db file sequential read',
+    'resmgr:cpu quantum'
+    )
 )
-group by METRIC,METRIC_UNIT,CON_ID
-order by METRIC,METRIC_UNIT,CON_ID
+group by METRIC,METRIC_UNIT,INSTANCE_NAME,CON_ID
+order by METRIC,METRIC_UNIT,INSTANCE_NAME,CON_ID
+`;
+return msg;
 
 
-- EM
+- EM verze
 SELECT
    to_char(m.collection_timestamp,'yyyy-mm-dd hh24:mi:ss') "timestamp",
    d.DATABASE_NAME db_name,
