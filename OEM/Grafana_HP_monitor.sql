@@ -249,7 +249,7 @@ ORDER BY timestamp, dbname, env_status, metric_name
 select
     to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
     case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
-    d.NAME,
+    d.NAME as DBNAME,
     m.CON_ID,
     i.INSTANCE_NAME,
     i.HOST_NAME,

@@ -49,7 +49,7 @@ SELECT
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
---    AND (target_name like 'PDBD%'
+    AND target_name in( 'RMDTESTB','RMDTESTC','RMDTESTD')
 --      or target_name like 'SYMDA%'
 --      )
     and host_name like '&server%'

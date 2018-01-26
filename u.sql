@@ -74,8 +74,26 @@ set head on feedback on
 -- reuse password hash
 --
 
+-- http://marcel.vandewaters.nl/oracle/security/password-hashes
+
 -- SELECT name, password, spare4 FROM sys.user$ WHERE name='DBEIM';
 -- ALTER USER &user IDENTIFIED BY VALUES 'S:333377748712A1D3E7708FC4F39E2A62AFF76F1766508FF96CE7DD34B6AD';
+
+/*
+set lines 999 pages 0
+col name for a10
+col password for a20
+col spare4 for a99999
+SELECT
+  name,
+  -- password
+  spare4
+   FROM sys.user$ WHERE name in (
+'ACC', 'BISADM', 'CIS', 'SVC', 'R_SBSERV', 'CDU', 'DTF', 'OPS$SBSERV'
+)
+order by name
+;
+*/
 
 --
 -- zmena hesla na puvodni
