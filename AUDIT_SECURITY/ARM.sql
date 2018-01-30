@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=MDWTB
+DEFINE db=RDSPA
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -26,7 +26,7 @@ SELECT *
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
 --      AND arm_db_name LIKE 'RTOP'
-     AND sub_date > sysdate - interval '2' hour
+     AND sub_date > sysdate - interval '4' hour
 --     AND status <> 'F'
 ORDER BY sub_date DESC;
 

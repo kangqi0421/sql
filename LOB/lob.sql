@@ -9,17 +9,17 @@
 alter table MW.LOG_FE_REPLY modify LOB(MESSAGE) (deduplicate compress medium);
 
 -- MDWTB
-alter table MW.LOG_FE_REPLY modify partition D20180125 LOB(MESSAGE) (deduplicate compress medium);
-alter table MW.LOG_FE_REPLY modify partition D20180126 LOB(MESSAGE) (deduplicate compress medium);
+alter table MW.LOG_FE_REPLY modify partition D20180130 LOB(MESSAGE) (KEEP_DUPLICATES compress medium);
+alter table MW.LOG_FE_REPLY modify partition D20180131 LOB(MESSAGE) (KEEP_DUPLICATES compress medium);
 
 
-select PARTITION_NAME, COMPRESSION, deduplication
-  from   dba_lob_partitions
-  where table_owner = 'MW'
-    and table_name = 'LOG_FE_REPLY'
-order by partition_name ;
-
-select partition_name, bytes/power(1024,3) from dba_segments where SEGMENT_NAME='SYS_LOB0000079599C00006$$';
+select l.PARTITION_NAME, COMPRESSION, deduplication,
+    round(s.bytes/power(1024,3) , 1)
+  from   dba_lob_partitions l
+     join dba_segments s on (l.lob_partition_name = s.partition_name)
+  where l.table_owner = 'MW'
+    and l.table_name = 'LOG_FE_REPLY'
+order by s.partition_name;
 
 
 -- TABLE and INDEX PARTITION

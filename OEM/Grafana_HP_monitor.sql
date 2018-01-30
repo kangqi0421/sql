@@ -45,11 +45,53 @@ Format metrik muze byt float
 pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespace_metricN
 
 ## tablespaces metriky
+
+```
+msg.payload = [];
+msg.topic = 'tbs';
+msg.query = `
+SELECT
+    TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
+    c.entity_name AS DBNAME,
+    k.key_part_1 AS TABLESPACE_NAME,
+    t.host_name,
+    p.PROPERTY_VALUE ENV_STATUS,
+    lower(c.metric_column_name) as METRIC_NAME,
+    c.metric_column_label as METRIC_LABEL,
+    c.unit,
+    round(sys_op_ceg(val.met_values,c.column_index), 2) AS VALUE
+FROM
+    sysman.em_metric_items i,
+    sysman.gc_metric_columns_target c,
+    sysman.em_metric_values val,
+    sysman.em_metric_keys k,
+    sysman.gc$target t,
+    sysman.mgmt_target_properties p
+WHERE
+    i.metric_group_id = c.metric_group_id
+    AND   i.target_guid = c.entity_guid
+    AND   t.target_guid = c.entity_guid
+    AND   p.target_guid = c.entity_guid
+    AND   p.property_name = 'orcl_gtp_lifecycle_status'
+    AND   i.metric_item_id = val.metric_item_id
+    AND   i.metric_key_id = k.metric_key_id
+    AND   c.column_type = 0
+    AND   c.data_column_type = 0
+    and   c.metric_group_name in ('tbspAllocation')
+    AND   i.last_collection_time = val.collection_time
+    --AND   c.entity_name = 'MDWTB'
+    --and   k.key_part_1 = 'USERS'
+ORDER BY TIMESTAMP, DBNAME, TABLESPACE_NAME, METRIC_NAME
+`;
+return msg;
+```
+
 SELECT
    to_char(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
    d.DATABASE_NAME db_name,
    m.target_guid,
-   m.metric_column, m.column_label,
+   m.metric_column,
+   m.column_label,
    m.key_value tablespace,
    m.value
 FROM
@@ -57,8 +99,8 @@ FROM
   JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
 WHERE 1=1
   -- AND m.target_name like 'CPTDA'
-  AND m.metric_name = 'tbspAllocation'
-  AND m.metric_column in ('spaceUsed', 'spaceAllocated')
+  AND m.metric_name in ('problemTbsp', 'tbspAllocation')
+  -- AND m.metric_column in ('spaceUsed', 'spaceAllocated')
 ORDER by 1, 2
 ;
 
@@ -107,7 +149,7 @@ ORDER BY time, dbname, env_status, metric_name;
 ## INSTANCE metriky
 SELECT
     to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
-    d.database_name DBNAME,
+    d.database_name as DBNAME,
     d.instance_name,
     d.host_name,
     p.PROPERTY_VALUE ENV_STATUS,
@@ -246,6 +288,9 @@ ORDER BY timestamp, dbname, env_status, metric_name
 
 ## Stat 12c SYSMETRIC
 
+msg.topic = 'stat';
+msg.query = `
+-- RAC gv$sysmetric v12.1
 select
     to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
     case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
@@ -268,6 +313,8 @@ select
       when METRIC_NAME = 'Logons Per Sec' then 'session'
       when METRIC_NAME = 'User Commits Per Sec' then 'transactions'
       when METRIC_NAME = 'User Rollbacks Per Sec' then 'transactions'
+      when METRIC_NAME = 'DB Block Changes Per Sec' then 'io'
+      when METRIC_NAME = 'DB Block Gets Per Sec' then 'io'
       when METRIC_NAME = 'Logical Reads Per Sec' then 'io'
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
@@ -295,6 +342,8 @@ select
       when METRIC_NAME = 'Logons Per Sec' then 'Logons'
       when METRIC_NAME = 'User Commits Per Sec' then 'User_Commits'
       when METRIC_NAME = 'User Rollbacks Per Sec' then 'User_Rollbacks'
+      when METRIC_NAME = 'DB Block Changes Per Sec' then 'db_block_changes'
+      when METRIC_NAME = 'DB Block Gets Per Sec' then 'db_block_gets'
       when METRIC_NAME = 'Logical Reads Per Sec' then 'Logical_Reads'
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
@@ -328,6 +377,8 @@ where
     'Logons Per Sec',
     'User Commits Per Sec',
     'User Rollbacks Per Sec',
+    'DB Block Changes Per Sec',
+    'DB Block Gets Per Sec',
     'Logical Reads Per Sec',
     'Total Table Scans Per Sec',
     'Full Index Scans Per Sec',
@@ -343,10 +394,11 @@ where
     'Queries parallelized Per Sec'
     )
 order by METRIC_NAME, METRIC_UNIT, INSTANCE_NAME, CON_ID
-;
-;
+`;
+return msg;
 
--- puvodni verze od Vitka
+
+-- puvodni verze od Vitka, vcetne AVG agregace
 
 msg.topic = 'stat';
 msg.query = `select
