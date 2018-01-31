@@ -1,4 +1,14 @@
+--
 -- DB size current
+--
+
+-- source DATABASE_SIZE:
+ SELECT ROUND(nvl(sum(tablespace_size)/1024/1024/1024,0),2) ALLOCATED_GB,
+        ROUND(nvl(sum(tablespace_used_size)/1024/1024/1024,0),2) USED_GB,
+        target_guid
+FROM mgmt$db_tablespaces group by target_guid
+
+
 -- pouze DB
 SELECT
     d.entity_name dbname,
@@ -70,6 +80,24 @@ GROUP BY d.database_name
 ;
 
 
+-- Grafana tablespace
+select
+     TO_CHAR(t.collection_timestamp,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
+     d.entity_name as DBNAME,
+     d.host_name,
+     p.PROPERTY_VALUE ENV_STATUS,
+     tablespace_name,
+     round(tablespace_size/power(1024,2)) as SIZE_MB,
+     round(tablespace_used_size/power(1024,2)) AS USED_MB
+  from    mgmt$db_tablespaces t
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d
+      ON (t.target_guid = d.entity_guid)
+    JOIN sysman.mgmt_target_properties p
+      ON (p.target_guid = d.entity_guid)
+ where p.property_name = 'orcl_gtp_lifecycle_status'
+    AND d.entity_name = 'MDWTB'
+    --and tablespace_name = 'SYSTEM'
+;
 
 -- tbspAllocation
 SELECT

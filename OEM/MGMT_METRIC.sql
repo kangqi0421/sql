@@ -37,6 +37,14 @@ select * from dba_objects
 and owner = 'SYSMAN'
 ;
 
+-- source METRIC
+select entity_name, metric_group_name
+      metric_column_name, metric_column_label, short_name,
+      source
+    from sysman.gc_metric_columns_target
+  where entity_name = 'MDWTB'
+    and metric_group_name = 'DATABASE_SIZE';
+
 
 -- HW metriky
 CM$MGMT_ECM_HW
@@ -83,7 +91,7 @@ select
             on (c.metric_group_id = val.metric_item_id)
   where c.entity_name like 'MCIZ%'
     and   c.metric_group_name = 'DiskGroup_Usage'
- --FETCH FIRST 10 ROWS ONLY
+FETCH FIRST 10 ROWS ONLY
  ;
 
 
