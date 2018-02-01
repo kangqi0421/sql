@@ -45,9 +45,9 @@ prompt =======
 select name,
   case
      when unit = 'bytes' then round(value/1048576)
-  else value
+    else value
   end value,
-     decode (unit,'bytes','MB') UNIT
+  decode (unit,'bytes','MB') UNIT
  from v$pgastat
   where name in ('aggregate PGA target parameter','aggregate PGA auto target','total PGA allocated','maximum PGA allocated',
 				 'cache hit percentage','over allocation count');

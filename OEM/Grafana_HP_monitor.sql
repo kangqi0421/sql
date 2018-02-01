@@ -47,62 +47,27 @@ pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespac
 ## tablespaces metriky
 
 ```
-msg.payload = [];
-msg.topic = 'tbs';
 msg.query = `
-SELECT
-    TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-    c.entity_name AS DBNAME,
-    k.key_part_1 AS TABLESPACE_NAME,
-    t.host_name,
-    p.PROPERTY_VALUE ENV_STATUS,
-    lower(c.metric_column_name) as METRIC_NAME,
-    c.metric_column_label as METRIC_LABEL,
-    c.unit,
-    round(sys_op_ceg(val.met_values,c.column_index), 2) AS VALUE
-FROM
-    sysman.em_metric_items i,
-    sysman.gc_metric_columns_target c,
-    sysman.em_metric_values val,
-    sysman.em_metric_keys k,
-    sysman.gc$target t,
-    sysman.mgmt_target_properties p
-WHERE
-    i.metric_group_id = c.metric_group_id
-    AND   i.target_guid = c.entity_guid
-    AND   t.target_guid = c.entity_guid
-    AND   p.target_guid = c.entity_guid
-    AND   p.property_name = 'orcl_gtp_lifecycle_status'
-    AND   i.metric_item_id = val.metric_item_id
-    AND   i.metric_key_id = k.metric_key_id
-    AND   c.column_type = 0
-    AND   c.data_column_type = 0
-    and   c.metric_group_name in ('tbspAllocation')
-    AND   i.last_collection_time = val.collection_time
-    --AND   c.entity_name = 'MDWTB'
-    --and   k.key_part_1 = 'USERS'
-ORDER BY TIMESTAMP, DBNAME, TABLESPACE_NAME, METRIC_NAME
+select
+     TO_CHAR(t.collection_timestamp,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
+     d.entity_name as DBNAME,
+     d.host_name,
+     p.PROPERTY_VALUE ENV_STATUS,
+     tablespace_name,
+     round(tablespace_size/power(1024,2)) as SIZE_MB,
+     round(tablespace_used_size/power(1024,2)) AS USED_MB,
+     'MB' as UNIT
+  from    mgmt$db_tablespaces t
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d
+      ON (t.target_guid = d.entity_guid)
+    JOIN sysman.mgmt_target_properties p
+      ON (p.target_guid = d.entity_guid)
+ where p.property_name = 'orcl_gtp_lifecycle_status'
+    AND d.entity_name = 'MDWTB'
+    --and tablespace_name = 'SYSTEM'
+ORDER BY TIMESTAMP, DBNAME, TABLESPACE_NAME
 `;
-return msg;
 ```
-
-SELECT
-   to_char(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
-   d.DATABASE_NAME db_name,
-   m.target_guid,
-   m.metric_column,
-   m.column_label,
-   m.key_value tablespace,
-   m.value
-FROM
-  MGMT$METRIC_DETAILS m
-  JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
-WHERE 1=1
-  -- AND m.target_name like 'CPTDA'
-  AND m.metric_name in ('problemTbsp', 'tbspAllocation')
-  -- AND m.metric_column in ('spaceUsed', 'spaceAllocated')
-ORDER by 1, 2
-;
 
 ## DBNAME metriky
 - DATABASE_SIZE = dbsize
@@ -292,7 +257,7 @@ msg.topic = 'stat';
 msg.query = `
 -- RAC gv$sysmetric v12.1
 select
-    to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
+    to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
     case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
     d.NAME as DBNAME,
     m.CON_ID,
@@ -693,6 +658,45 @@ metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
 
 OEM MEM DB:
 AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
+
+
+msg.topic = 'memory';
+msg.query = `
+select
+   to_char(sysdate, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+   d.name as DBNAME,
+   i.INSTANCE_NAME,
+   HOST_NAME,
+   lower(replace(p.name, ' ', '_')) as METRIC,
+   VALUE,
+   METRIC_UNIT,
+   'memory' as METRIC_TYPE
+ from (
+        -- SGA info
+        select
+           INST_ID,
+           name,
+           round(bytes/power(1024,2)) AS VALUE,
+           'MB' as METRIC_UNIT
+          from gv$sgainfo
+        UNION
+        -- PGA info
+        select INST_ID,
+           name,
+           case
+             when unit = 'bytes' then round(value/1048576)
+            else value
+          end VALUE,
+          decode (unit,'bytes','MB') METRIC_UNIT
+         from    gv$pgastat
+          where name in ('aggregate PGA target parameter','aggregate PGA auto target',
+             'total PGA allocated','cache hit percentage','over allocation count')
+     ) p
+      join GV$INSTANCE i on (p.inst_id = i.inst_id)
+      join GV$DATABASE d on (d.inst_id = i.inst_id)
+order by INSTANCE_NAME, METRIC
+`;
+return msg;
 
 
 9)  IOPSy co produkují naše db - ANO
