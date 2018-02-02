@@ -10,7 +10,7 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE 1 = 1
-    AND dbname like 'CPTD%'
+    AND dbname like 'DLKTA%'
     -- Pouze VMWare ORACLE-02-ANT
 --    and s.lic_env_id = 3292
 --  s.domain like 'ack-prg.csin.cz'
@@ -182,14 +182,31 @@ ON (s.licdb_id = d.licdb_id AND s.app_id = d.app_id)
 
 
 --
--- API delete při migraci
--- změna umístění serveru
+-- API delete databaze
 --
+
+define db=DLKTA
+
+-- delete db instance pro migrace
 DELETE from OLI_OWNER.DBINSTANCES
   WHERE licdb_id IN (
     SELECT distinct(i.licdb_id)
     FROM
       OLI_OWNER.DATABASES d
       JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-    WHERE dbname = 'ESPPA'
+    WHERE dbname = '&DLKTA'
 );
+
+--
+BEGIN
+  for rec in (
+    select licdb_id from OLI_OWNER.DATABASES
+      where dbname = '&db')
+  LOOP
+    DELETE from OLI_OWNER.APP_DB where licdb_id = rec.licdb_id;
+    DELETE from OLI_OWNER.DBINSTANCES where licdb_id = rec.licdb_id;
+    DELETE from OLI_OWNER.DATABASES where licdb_id = rec.licdb_id;
+  END LOOP;
+END;
+/
+
