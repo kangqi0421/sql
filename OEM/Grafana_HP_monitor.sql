@@ -284,8 +284,6 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
       when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
       when METRIC_NAME = 'Temp Space Used' then 'memory'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
       when METRIC_NAME = 'I/O Requests per Second' then 'io'
@@ -313,8 +311,6 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
       when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'Total_PGA_Allocated'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
       when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
       when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
@@ -348,8 +344,6 @@ where
     'Total Table Scans Per Sec',
     'Full Index Scans Per Sec',
     'Current Open Cursors Count',
-    'Total PGA Allocated',
-    'Total PGA Used by SQL Workareas',
     'Temp Space Used',
     'Disk Sort Per Sec',
     'I/O Requests per Second',

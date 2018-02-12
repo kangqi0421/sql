@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RDSPA
+DEFINE db=CPTZ
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
