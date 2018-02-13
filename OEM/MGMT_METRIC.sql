@@ -28,7 +28,13 @@ em_metric_values_daily
 sysman.em_metric_keys
 sysman.em_metric_items
 
+-- gc metric
 sysman.gc$metric_values_hourly
+
+-- retention metrics
+select gc_interval_partition_mgr.get_retention('SYSMAN', 'EM_METRIC_VALUES') from dual;
+
+
 
 -- MGMT / CM metriky
 select * from dba_objects
@@ -153,6 +159,7 @@ AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'pga_total'
 --AND m.metric_name = 'db_inst_pga_alloc' AND m.metric_column = 'total_pga_allocated'
 
 -- I/O server
+--
 AND m.metric_name = 'DiskActivitySummary'
   AND m.metric_column = 'totiosmade'
   AND column_label like 'Total Disk I/O made across all disks (per second)'
@@ -165,12 +172,15 @@ AND m.metric_name = 'DiskActivitySummary'
 AND m.metric_name = 'DiskActivity' AND m.metric_column = 'diskActivReadsPerSec'
   AND column_label like 'Disk Reads (per second)'
 
+--
 -- IO Database
+-
+-- I/O Requests (per second) - database
+AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
+
 -- I/O Megabytes (per second) - database
 AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iombs_ps'
 
--- I/O Requests (per second) - database
-AND m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
 
 -- Log File Sync
 -- Wait Event
@@ -233,18 +243,9 @@ AND key_value     = 'MDM'
 
 -- mgmt$db_tablespaces
 SELECT
-         ROUND(SUM(t.tablespace_size/1024/1024/1024), 2) AS ALLOC_GB,
-         ROUND(SUM(t.tablespace_used_size/1024/1024/1024), 2) AS USED_GB,
-         ROUND(SUM((t.tablespace_size - tablespace_used_size)/1024/1024/1024), 2) AS ALLOC_FREE_GB
        FROM
          mgmt$db_tablespaces t,
-         (SELECT target_guid
-            FROM mgmt$target
-            WHERE target_guid=HEXTORAW(??EMIP_BIND_TARGET_GUID??) AND
-            (target_type='rac_database' OR
-            (target_type='oracle_database' AND TYPE_QUALIFIER3 != 'RACINST'))) tg
-       WHERE
-         t.target_guid=tg.target_guid
+
 
 -- ASM diskgroup
 Disk Group Usage

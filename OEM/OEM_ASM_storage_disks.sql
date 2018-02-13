@@ -4,17 +4,19 @@
 
 define dbname = MDW
 
-select asm.db_name,
+select NVL(d.db_name, 'UNKNOWN'),
        disk_group,
        round(total_size) "total size GB",
        round(total_size/member_disk_count) "disk size",
        round(total_size)/8 "disk size po 8-mi",
        member_disk_count
-  from CM$MGMT_ASM_CLIENT_ECM asm join CM$MGMT_ASM_DISKGROUP_ECM dg
-         on (asm.diskgroup = dg.disk_group)
-  where asm.db_name like ('&dbname%')
+  from SYSMAN.MGMT_ASM_DISKGROUP_ECM dg
+       LEFT JOIN SYSMAN.MGMT_ASM_CLIENT_ECM d
+         on (d.diskgroup = dg.disk_group)
+  where d.db_name is NULL
 order by db_name, disk_group
 ;
+
 
 -- metric
 AND m.metric_name = 'DiskGroup_Usage'

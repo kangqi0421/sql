@@ -149,8 +149,9 @@ WHERE 1=1
   AND   d.database_name LIKE 'MDWP'
 ORDER BY timestamp, dbname, env_status, metric_name
 
-## ASM metriky
 
+
+## ASM metriky
 
 
 -- Grafana
@@ -699,3 +700,36 @@ return msg;
 
 OEM:
 m.metric_name = 'instance_throughput' AND m.metric_column = 'iorequests_ps'
+
+
+## db size - historická data
+
+-- db size historicky
+SELECT
+    to_char(ma.rollup_timestamp,'YYYY-MM-DD') AS "DATE",
+    (ma.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
+    d.entity_name dbname,
+    d.host_name,
+    p.PROPERTY_VALUE env_status,
+    ma.average as ma_value,
+    mu.average as mu_value
+FROM
+    sysman.MGMT$METRIC_DAILY ma
+    JOIN sysman.MGMT$METRIC_DAILY mu on (
+           ma.target_guid = mu.target_guid
+       AND ma.rollup_timestamp = mu.rollup_timestamp)
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d ON (ma.target_guid = d.entity_guid)
+    join sysman.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.entity_guid)
+WHERE
+  d.category_prop_3 = 'DB'
+  AND   p.property_name = 'orcl_gtp_lifecycle_status'
+  AND   ma.metric_name = 'DATABASE_SIZE'
+  AND   ma.metric_column in ('ALLOCATED_GB')
+  AND   mu.metric_column in ('USED_GB')
+  AND   p.property_value is not NULL
+  AND   d.entity_name LIKE 'A%'
+--ORDER BY timestamp, dbname, env_status, metric_name
+ORDER BY dbname
+OFFSET 0 ROWS FETCH NEXT 100 ROWS ONLY
+)
+;

@@ -26,14 +26,6 @@ WHERE
 ;
 
 -- historicka data
-select
-  'dbsize'||','||
-  'dbname='||dbname||','||
-  'host_name='||host_name||','||
-  'env_status='||env_status||' '||
-  'allocated_gb='||ma_value||','||'used_gb='||mu_value||' '||
-  timestamp
-from (
 SELECT
     to_char(ma.rollup_timestamp,'YYYY-MM-DD') AS "DATE",
     (ma.rollup_timestamp - to_date('19700101', 'YYYYMMDD')) * 24 * 60 * 60 * 1000 * 1000000  AS timestamp,
@@ -58,7 +50,6 @@ WHERE
   AND   ma.target_name LIKE 'MDWTB%'
 --ORDER BY timestamp, dbname, env_status, metric_name
  ORDER BY timestamp, dbname
-)
 ;
 
 
