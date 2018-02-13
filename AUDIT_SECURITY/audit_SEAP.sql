@@ -15,13 +15,15 @@ select ARM_DB_NAME, ARM_FULLID, TRANSFER_ENABLED from ARM_ADMIN.ARM_DATABASES wh
 select --/*+ parallel full  (a) */
 --    a.*
       -- locknuty ucet
-    ARM_TIMESTAMP, OS_USERNAME, USERHOST, RETURN_CODE
+    ARM_TIMESTAMP, 
+    to_char(ARM_TIMESTAMP, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"'),
+    OS_USERNAME, USERHOST, RETURN_CODE
 --
 --      object_schema, object_name, SQL_TEXT_VARCHAR2
     -- ARM_ACTION_NAME,DBUSERNAME, OS_USERNAME, USERHOST,
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
- where ARM_FULLID=(select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name='&db' and TRANSFER_ENABLED = 'Y')
+ where ARM_FULLID in (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name in '&db' and TRANSFER_ENABLED = 'Y')
   AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
 --     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00' 
   --                         and TIMESTAMP'2017-08-22 18:10:00'
@@ -29,7 +31,7 @@ select --/*+ parallel full  (a) */
 --   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
 --     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
-    and upper(dbusername)='&user'
+    and upper(dbusername) like '&user'
 --    and return_code > 0
    and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
@@ -42,7 +44,7 @@ select --/*+ parallel full  (a) */
 --    and dbusername = 'INFO'
 --    and os_username = 'cen86206@CEN.CSIN.CZ'
 order by event_timestamp DESC
---FETCH FIRST 5 PERCENT ROWS ONLY
+FETCH FIRST 5 ROWS ONLY
 ;
 
 

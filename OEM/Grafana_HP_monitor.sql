@@ -71,7 +71,9 @@ ORDER BY TIMESTAMP, DBNAME, TABLESPACE_NAME
 
 ## DBNAME metriky
 - DATABASE_SIZE = dbsize
-- nová verze SQL
+
+
+- verze SQL od Golema
 SELECT
      TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS time,
      c.entity_name AS DBNAME,
@@ -257,7 +259,7 @@ msg.topic = 'stat';
 msg.query = `
 -- RAC gv$sysmetric v12.1
 select
-    to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+    to_char(end_time, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
     case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
     d.NAME as DBNAME,
     m.CON_ID,
@@ -284,6 +286,8 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
       when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
       when METRIC_NAME = 'Temp Space Used' then 'memory'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
       when METRIC_NAME = 'I/O Requests per Second' then 'io'
@@ -311,6 +315,8 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
       when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
+      when METRIC_NAME = 'Total PGA Allocated' then 'total_pga_allocated_bytes'
+      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
       when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
       when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
@@ -344,6 +350,8 @@ where
     'Total Table Scans Per Sec',
     'Full Index Scans Per Sec',
     'Current Open Cursors Count',
+    'Total PGA Allocated',
+    'Total PGA Used by SQL Workareas',
     'Temp Space Used',
     'Disk Sort Per Sec',
     'I/O Requests per Second',
@@ -385,8 +393,6 @@ msg.query = `select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
       when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
       when METRIC_NAME = 'Temp Space Used' then 'memory'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
       when METRIC_NAME = 'I/O Requests per Second' then 'io'
@@ -409,8 +415,6 @@ msg.query = `select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
       when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'Total_PGA_Allocated'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
       when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
       when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
@@ -452,8 +456,6 @@ where
 'Total Table Scans Per Sec',
 'Full Index Scans Per Sec',
 'Current Open Cursors Count',
-'Total PGA Allocated',
-'Total PGA Used by SQL Workareas',
 'Temp Space Used',
 'Disk Sort Per Sec',
 'I/O Requests per Second',

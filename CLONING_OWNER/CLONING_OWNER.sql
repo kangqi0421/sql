@@ -10,6 +10,32 @@ sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
 connect CLONING_OWNER/abcd1234
 
+
+-- source target info
+select licdb_id, dbname, clone_source_licdb_id, clone_source_alias_id from oli_owner.databases
+  where dbname like 'DMTA2';
+
+-- DWHT update na alias 1
+UPDATE oli_owner.databases d
+  set d.clone_source_licdb_id = NULL,
+  set d.clone_source_alias_id = 1
+ where d.dbname like 'DWHT%';
+
+-- DMT update na alias 1
+UPDATE oli_owner.databases d
+  set d.clone_source_licdb_id = NULL,
+  set d.clone_source_alias_id = 2
+ where d.dbname like 'DMT%';
+
+
+select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
+  where target_dbname like 'DWHTA2';
+
+
+-- source alias
+SELECT * FROM source_alias;
+SELECT * FROM source_alias_db;
+
 -- CLONE_SOURCE_LICDB_ID - SnapVX
 -- zmenit method_id
 -- zmenit template_id
@@ -31,8 +57,7 @@ select licdb_id, dbname, rac,
     and cloning_method_id = 3
   order by DBNAME;
 
-select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
-  where target_dbname like 'RDBTA%';
+
 
 -- EXPORT/IMPORT
 ```
