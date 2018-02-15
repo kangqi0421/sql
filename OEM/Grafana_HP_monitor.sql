@@ -56,8 +56,8 @@ select
      d.host_name,
      p.PROPERTY_VALUE ENV_STATUS,
      tablespace_name,
-     round(tablespace_size/power(1024,2)) as "SIZE",
-     round(tablespace_used_size/power(1024,2)) AS USED,
+     round(tablespace_size/power(1024,2)) as SIZE_MB,
+     round(tablespace_used_size/power(1024,2)) AS USED_MB,
      'MB' as UNIT
   from    mgmt$db_tablespaces t
     JOIN sysman.EM_MANAGEABLE_ENTITIES d
@@ -65,7 +65,7 @@ select
     JOIN sysman.mgmt_target_properties p
       ON (p.target_guid = d.entity_guid)
  where p.property_name = 'orcl_gtp_lifecycle_status'
-    -- AND d.entity_name = 'MDWTB'
+    AND d.entity_name = 'MDWTB'
     --and tablespace_name = 'SYSTEM'
 ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 `;
@@ -118,16 +118,18 @@ return msg;
 
 3) ASM metriky
 
-- hourly agg
+- pouze daiy aggregace, hourly sice neexistují, ale sjednoceno s velikostí DB
 
 ```
 msg.payload = [];
 msg.topic = 'asm';
-// hourly agg
+// daily agg
 msg.query = `
-SELECT
-    TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-    NVL(d.db_name, 'UNKNOWN') DBNAME,
+-- FIXME: duplicity pres MGMT_ASM_CLIENT_ECM, lepsi join nez DISTINCT
+SELECT DISTINCT
+    TO_CHAR(val.collection_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
+    NVL(dg.db_name, 'UNKNOWN') DBNAME,
+    dg.instance_name INSTANCE_NAME,
     c.entity_name AS ASM_INSTANCE_NAME,
     k.key_part_1 AS ASM_GROUP_NAME,
     t.host_name,
@@ -135,12 +137,12 @@ SELECT
     lower(c.metric_column_name) METRIC_NAME,
     c.metric_column_label METRIC_LABEL,
     'MB' as unit,
-    sys_op_ceg(val.avg_values,c.column_index) AS VALUE
+    round(sys_op_ceg(val.avg_values,c.column_index)) AS VALUE
 FROM
     sysman.em_metric_items i,
     sysman.gc_metric_columns_target c,
-    sysman.em_metric_values_hourly val,
-    sysman.em_metric_keys k LEFT JOIN SYSMAN.MGMT_ASM_CLIENT_ECM d on (d.diskgroup = k.key_part_1),
+    sysman.em_metric_values_daily val,
+    sysman.em_metric_keys k LEFT JOIN SYSMAN.MGMT_ASM_CLIENT_ECM dg on (dg.diskgroup = k.key_part_1),
     sysman.gc$target t,
     sysman.MGMT_TARGET_PROPERTIES p
 WHERE
@@ -158,10 +160,10 @@ WHERE
     AND   c.metric_column_name in (
                 'usable_file_mb',  -- Disk Group Usable Free (MB)
                 'total_mb')        -- Size (MB)
-    AND   val.collection_time > sysdate - interval '1' DAY
-    --AND   k.key_part_1 like 'MDWZ_DATA' AND c.metric_column_name = 'total_mb'
+    AND   val.collection_time > sysdate - interval '2' DAY
+    -- AND   dg.db_name = 'ARSZ' --AND   k.key_part_1 like 'MDWZ_DATA' AND c.metric_column_name = 'total_mb'
 ORDER BY
-    TIMESTAMP, DBNAME, ASM_INSTANCE_NAME, ASM_GROUP_NAME, METRIC_NAME
+    TIMESTAMP, ASM_INSTANCE_NAME, ASM_GROUP_NAME, METRIC_NAME
 `;
 return msg;
 ```
@@ -177,10 +179,10 @@ msg.payload = [];
 msg.topic = 'cpu';
 msg.query = `
 SELECT
-    to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIMESTAMP,
+    to_char(m.rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
     d.database_name DBNAME,
-    d.instance_name,
-    d.host_name,
+    d.instance_name INSTANCE_NAME,
+    d.host_name HOST_NAME,
     p.PROPERTY_VALUE ENV_STATUS,
     lower(m.metric_column) as METRIC_NAME,
     m.column_label as METRIC_LABEL,
@@ -216,9 +218,8 @@ WHERE 1=1
            'transactions_ps', 'logons', 'opencursors')
   AND   m.rollup_timestamp > sysdate - interval '1' day
   AND   m.average is NOT NULL
-  --AND   d.database_name LIKE 'MDWP'
+  -- AND   d.database_name LIKE 'MDWP'
 ORDER BY timestamp, dbname, instance_name, host_name, metric_name
-
 `;
 return msg;
 ```

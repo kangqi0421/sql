@@ -28,9 +28,9 @@ select
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-02-02 01:10:00'
-                           AND TIMESTAMP'2018-02-02 01:12:00'
---                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
+--       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-02-02 01:10:00'
+--                           AND TIMESTAMP'2018-02-02 01:12:00'
+                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
 --                         and SQL_ID = 'gr4r4pmvx1sj7'
 --                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
@@ -40,7 +40,7 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
-                         and SESSION_ID in (309)  and SESSION_SERIAL# in (44715)
+--                         and SESSION_ID in (309)  and SESSION_SERIAL# in (44715)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
