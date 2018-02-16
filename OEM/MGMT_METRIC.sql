@@ -84,6 +84,11 @@ select * from dba_views
 order by view_name
 ;
 
+
+-- key value
+select * from sysman.em_metric_keys
+  where key_part_1 = 'log file sync';
+
 -- metriky vcetne source "c.source"
 select
     c.entity_name name,
@@ -98,7 +103,7 @@ select
   where c.entity_name like 'MCIZ%'
     and   c.metric_group_name = 'DiskGroup_Usage'
 FETCH FIRST 10 ROWS ONLY
- ;
+  ;
 
 
 -- retention periods

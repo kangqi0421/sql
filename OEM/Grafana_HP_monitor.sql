@@ -225,10 +225,11 @@ return msg;
 ```
 
 
--- online data
+## online data
 
 ## Stat 12c SYSMETRIC
 
+```
 msg.topic = 'stat';
 msg.query = `
 -- RAC gv$sysmetric v12.1
@@ -260,8 +261,6 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
       when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'memory'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'memory'
       when METRIC_NAME = 'Temp Space Used' then 'memory'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
       when METRIC_NAME = 'I/O Requests per Second' then 'io'
@@ -289,8 +288,6 @@ select
       when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
       when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
       when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
-      when METRIC_NAME = 'Total PGA Allocated' then 'total_pga_allocated_bytes'
-      when METRIC_NAME = 'Total PGA Used by SQL Workareas' then 'Total_PGA_Used'
       when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
       when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
@@ -324,8 +321,6 @@ where
     'Total Table Scans Per Sec',
     'Full Index Scans Per Sec',
     'Current Open Cursors Count',
-    'Total PGA Allocated',
-    'Total PGA Used by SQL Workareas',
     'Temp Space Used',
     'Disk Sort Per Sec',
     'I/O Requests per Second',
@@ -337,112 +332,7 @@ where
 order by METRIC_NAME, METRIC_UNIT, INSTANCE_NAME, CON_ID
 `;
 return msg;
-
-
--- puvodni verze od Vitka, vcetne AVG agregace
-
-msg.topic = 'stat';
-msg.query = `select
- to_char(max(DATUM),'YYYY-MM-DD"T"HH24:MI:SS"+01:00"') as TIME,
- min(DBID) as DBID,
- min(NAME) as DBNAME,
- CON_ID,
- min(INSTANCE_NAME) as INSTANCE_NAME,
- min(HOST_NAME) as HOST_NAME,
- METRIC_NAME,
- METRIC_UNIT,
- round(avg(value),3) as AVG,
- round(min(value),3) as MIN,
- round(max(value),3) as MAX,
- case when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
-      when METRIC_NAME = 'Database CPU Time Ratio' then 'response_time'
-      when METRIC_NAME = 'Database Wait Time Ratio' then 'response_time'
-      when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
-      when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
-      when METRIC_NAME = 'Session Count' then 'session'
-      when METRIC_NAME = 'Logons Per Sec' then 'session'
-      when METRIC_NAME = 'User Commits Per Sec' then 'transactions'
-      when METRIC_NAME = 'User Rollbacks Per Sec' then 'transactions'
-      when METRIC_NAME = 'Logical Reads Per Sec' then 'io'
-      when METRIC_NAME = 'Total Table Scans Per Sec' then 'io'
-      when METRIC_NAME = 'Full Index Scans Per Sec' then 'io'
-      when METRIC_NAME = 'Current Open Cursors Count' then 'cursors'
-      when METRIC_NAME = 'Temp Space Used' then 'memory'
-      when METRIC_NAME = 'Disk Sort Per Sec' then 'memory'
-      when METRIC_NAME = 'I/O Requests per Second' then 'io'
-      when METRIC_NAME = 'I/O Megabytes per Second' then 'io'
-      when METRIC_NAME = 'Total Parse Count Per Sec' then 'parsing'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
-      when METRIC_NAME = 'Queries parallelized Per Sec' then 'pq'
-     else 'other' end as METRIC_TYPE,
- case when METRIC_NAME = 'Database Time Per Sec' then 'Database_Time'
-      when METRIC_NAME = 'Database CPU Time Ratio' then 'Database_CPU_Time'
-      when METRIC_NAME = 'Database Wait Time Ratio' then 'Database_Wait_Time'
-      when METRIC_NAME = 'CPU Usage Per Sec' then 'CPU_Usage'
-      when METRIC_NAME = 'Redo Generated Per Sec' then 'Redo_Generated'
-      when METRIC_NAME = 'Session Count' then 'Session_Count'
-      when METRIC_NAME = 'Logons Per Sec' then 'Logons'
-      when METRIC_NAME = 'User Commits Per Sec' then 'User_Commits'
-      when METRIC_NAME = 'User Rollbacks Per Sec' then 'User_Rollbacks'
-      when METRIC_NAME = 'Logical Reads Per Sec' then 'Logical_Reads'
-      when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
-      when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
-      when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
-      when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
-      when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
-      when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
-      when METRIC_NAME = 'I/O Megabytes per Second' then 'IO_Megabytes'
-      when METRIC_NAME = 'Total Parse Count Per Sec' then 'Total_Parse'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
-      when METRIC_NAME = 'Queries parallelized Per Sec' then 'Queries_parallelized'
-     else 'other' end as METRIC
-from
-(
-select
- END_TIME as DATUM,
- case when d.CON_ID=0 then d.DBID else d.CON_DBID end as DBID,
- d.NAME,
- m.CON_ID,
- i.INSTANCE_NAME,
- i.HOST_NAME,
- m.METRIC_NAME as METRIC_NAME,
- m.METRIC_UNIT,
- m.value
-from
- V$SYSMETRIC_HISTORY m, V$INSTANCE i, V$DATABASE d
-where
- d.CON_ID = i.CON_ID and
- i.CON_ID = m.CON_ID and
- m.INTSIZE_CSEC>5000 and m.BEGIN_TIME>(sysdate-1/24/60*3) and
- m.METRIC_NAME in (
-'Database Time Per Sec',
-'Database CPU Time Ratio',
-'Database Wait Time Ratio',
-'CPU Usage Per Sec',
-'Redo Generated Per Sec',
-'Session Count',
-'Logons Per Sec',
-'User Commits Per Sec',
-'User Rollbacks Per Sec',
-'Logical Reads Per Sec',
-'Total Table Scans Per Sec',
-'Full Index Scans Per Sec',
-'Current Open Cursors Count',
-'Temp Space Used',
-'Disk Sort Per Sec',
-'I/O Requests per Second',
-'I/O Megabytes per Second',
-'Total Parse Count Per Sec',
-'Hard Parse Count Per Sec',
-'Queries parallelized Per Sec')
-)
-group by METRIC_NAME,METRIC_UNIT,CON_ID
-order by METRIC_NAME,METRIC_UNIT,CON_ID
-`;
-return msg;
-
+```
 
 ## memory stats
 
