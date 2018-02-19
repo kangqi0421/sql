@@ -22,6 +22,7 @@ order by db_name, disk_group
 AND m.metric_name = 'DiskGroup_Usage'
 AND metric_column in ('usable_file_mb',  -- Disk Group Usable (MB)
                       'total_mb')        -- Size (MB)
+          'percent_used'     -- Percent Used
 
 
 --

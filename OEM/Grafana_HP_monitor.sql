@@ -121,60 +121,97 @@ return msg;
 - pouze daiy aggregace, hourly sice neexistují, ale sjednoceno s velikostí DB
 
 ```
+// daily agg
 msg.payload = [];
 msg.topic = 'asm';
-// daily agg
 msg.query = `
--- FIXME: duplicity pres MGMT_ASM_CLIENT_ECM, lepsi join nez DISTINCT
-SELECT DISTINCT
-    TO_CHAR(val.collection_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-    NVL(dg.db_name, 'UNKNOWN') DBNAME,
-    dg.instance_name INSTANCE_NAME,
-    c.entity_name AS ASM_INSTANCE_NAME,
-    k.key_part_1 AS ASM_GROUP_NAME,
+SELECT
+     TO_CHAR(m.collection_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
+     dg.DB_NAME as DBNAME,
+     HOST_NAME,
+     ENV_STATUS,
+     ASM_GROUP_NAME,
+     FREE_MB,
+     TOTAL_MB,
+     'MB' as unit
+  from (
+select
+    val.collection_time,
     t.host_name,
-    p.PROPERTY_VALUE ENV_STATUS,
+    k.key_part_1 AS ASM_GROUP_NAME,
     lower(c.metric_column_name) METRIC_NAME,
-    c.metric_column_label METRIC_LABEL,
-    'MB' as unit,
+    p.PROPERTY_VALUE ENV_STATUS,
     round(sys_op_ceg(val.avg_values,c.column_index)) AS VALUE
-FROM
-    sysman.em_metric_items i,
-    sysman.gc_metric_columns_target c,
-    sysman.em_metric_values_daily val,
-    sysman.em_metric_keys k LEFT JOIN SYSMAN.MGMT_ASM_CLIENT_ECM dg on (dg.diskgroup = k.key_part_1),
-    sysman.gc$target t,
-    sysman.MGMT_TARGET_PROPERTIES p
+  from
+    sysman.gc_metric_columns_target c
+    JOIN sysman.em_metric_items i
+      ON (i.metric_group_id = c.metric_group_id AND i.target_guid = c.entity_guid)
+    JOIN sysman.em_metric_values_daily val on (i.metric_item_id = val.metric_item_id)
+    JOIN sysman.em_metric_keys k ON (i.metric_key_id = k.metric_key_id)
+    JOIN sysman.gc$target t
+      ON (t.target_guid = c.entity_guid)
+    JOIN sysman.MGMT_TARGET_PROPERTIES p
+      ON (p.target_guid = c.entity_guid)
 WHERE
-    i.metric_group_id = c.metric_group_id
-    AND   i.target_guid = c.entity_guid
-    AND   t.target_guid = c.entity_guid
-    AND   i.metric_item_id = val.metric_item_id
-    AND   i.metric_key_id = k.metric_key_id
-    AND   c.column_type = 0
-    AND   c.data_column_type = 0
-    AND   p.target_guid = c.entity_guid
-    AND   p.property_name = 'orcl_gtp_lifecycle_status'
-    AND   p.PROPERTY_VALUE is not NULL
-    AND   c.metric_group_name = 'DiskGroup_Usage'
+          c.metric_group_name = 'DiskGroup_Usage'
+    AND   c.key_column_names = 'dg_name'
     AND   c.metric_column_name in (
                 'usable_file_mb',  -- Disk Group Usable Free (MB)
                 'total_mb')        -- Size (MB)
+    AND   p.property_name = 'orcl_gtp_lifecycle_status'
+    AND   p.PROPERTY_VALUE is not NULL
     AND   val.collection_time > sysdate - interval '2' DAY
-    -- AND   dg.db_name = 'ARSZ' --AND   k.key_part_1 like 'MDWZ_DATA' AND c.metric_column_name = 'total_mb'
+)
+PIVOT (MIN(VALUE) FOR METRIC_NAME IN (
+    'usable_file_mb' AS FREE_MB,
+    'total_mb' AS TOTAL_MB)) m
+  LEFT JOIN (
+    select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
+    ) dg on (dg.diskgroup = m.ASM_GROUP_NAME)
+WHERE 1=1
+   AND DB_NAME = 'ARSZ'
 ORDER BY
-    TIMESTAMP, ASM_INSTANCE_NAME, ASM_GROUP_NAME, METRIC_NAME
+    TIMESTAMP, DBNAME, ASM_GROUP_NAME
 `;
 return msg;
 ```
 
+// transform ASM
+var res = [];
+var tagNames = ["DBNAME", "ASM_GROUP_NAME", "HOST_NAME", "ENV_STATUS", "UNIT"];
+for (var p in msg.payload) {
+    var m = msg.payload[p];
+
+    var vals = {};
+    vals['size_mb'] = m.TOTAL_MB;
+    vals['free_mb'] = m.FREE_MB;
+
+    var tags = {};
+    for (var i in tagNames) {
+         tags[tagNames[i].toLowerCase()] = m[tagNames[i]];
+    }
+
+    // calculated values
+    var totalSize = vals['size_mb'];
+    var freeSize  = vals['free_mb'];
+
+    vals['used_mb'] = Math.round(totalSize - freeSize)
+
+    res.push({
+        measurement: 'asm_1d',
+        fields: vals,
+        tags: tags,
+        timestamp: new Date(m.TIMESTAMP)
+    });
+}
+msg.payload = res;
+return msg;
 
 
 4) DB INSTANCE metriky: CPU, MEM, IO, Transactions
 
--- hourly agg
+-- daily agg
 
-```
 msg.payload = [];
 msg.topic = 'cpu';
 msg.query = `
@@ -202,9 +239,9 @@ SELECT
       when m.metric_column = 'opencursors' then 'cursors'
     else 'other' end as METRIC_TYPE
 FROM
-    sysman.MGMT$METRIC_HOURLY m
+    SYSMAN.MGMT$METRIC_DAILY m
     JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
-    join sysman.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.target_guid)
+    join SYSMAN.MGMT_TARGET_PROPERTIES p on (p.target_guid = d.target_guid)
 WHERE 1=1
   AND   p.property_name = 'orcl_gtp_lifecycle_status'
   AND   p.property_value is not NULL
@@ -216,20 +253,18 @@ WHERE 1=1
            'iorequests_ps', 'iombs_ps',
            'redosize_ps',
            'transactions_ps', 'logons', 'opencursors')
-  AND   m.rollup_timestamp > sysdate - interval '1' day
+  AND   m.rollup_timestamp > sysdate - interval '2' day
   AND   m.average is NOT NULL
-  -- AND   d.database_name LIKE 'MDWP'
+  AND   d.database_name LIKE 'MDWZ'
 ORDER BY timestamp, dbname, instance_name, host_name, metric_name
 `;
 return msg;
-```
 
 
 ## online data
 
 ## Stat 12c SYSMETRIC
 
-```
 msg.topic = 'stat';
 msg.query = `
 -- RAC gv$sysmetric v12.1
@@ -242,13 +277,14 @@ select
     i.HOST_NAME,
     m.METRIC_NAME as METRIC_NAME,
     m.METRIC_UNIT,
-    round(m.value,3) as AVG,
+    round(m.value,2) as AVG,
     case
       when METRIC_NAME = 'Database Time Per Sec' then 'response_time'
       when METRIC_NAME = 'Database CPU Time Ratio' then 'response_time'
       when METRIC_NAME = 'Database Wait Time Ratio' then 'response_time'
       when METRIC_NAME = 'SQL Service Response Time' then 'response_time'
       when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
+      when METRIC_NAME = 'CPU Usage Per Txn' then 'cpu'
       when METRIC_NAME = 'Host CPU Utilization (%)' then 'cpu'
       when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
       when METRIC_NAME = 'Session Count' then 'session'
@@ -275,7 +311,8 @@ select
       when METRIC_NAME = 'Database CPU Time Ratio' then 'Database_CPU_Time'
       when METRIC_NAME = 'Database Wait Time Ratio' then 'Database_Wait_Time'
       when METRIC_NAME = 'SQL Service Response Time' then 'SQL_Service_Response_Time'
-      when METRIC_NAME = 'CPU Usage Per Sec' then 'CPU_Usage'
+      when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu_usage'
+      when METRIC_NAME = 'CPU Usage Per Txn' then 'cpu_usage_txn'
       when METRIC_NAME = 'Host CPU Utilization (%)' then 'Host_CPU_Utilization'
       when METRIC_NAME = 'Redo Generated Per Sec' then 'Redo_Generated'
       when METRIC_NAME = 'Session Count' then 'Session_Count'
@@ -309,6 +346,7 @@ where
     'Database Wait Time Ratio',
     'SQL Service Response Time',
     'CPU Usage Per Sec',
+    'CPU Usage Per Txn',
     'Host CPU Utilization (%)',
     'Redo Generated Per Sec',
     'Session Count',
@@ -332,7 +370,6 @@ where
 order by METRIC_NAME, METRIC_UNIT, INSTANCE_NAME, CON_ID
 `;
 return msg;
-```
 
 ## memory stats
 
