@@ -133,6 +133,7 @@ select * from sysman.MGMT_ECM_HW;
 
 
 -- VMWare DEV/TEST
+-- seznam
   SELECT
 --    *
          host_name "hostname",

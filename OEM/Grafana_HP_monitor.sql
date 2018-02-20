@@ -120,7 +120,6 @@ return msg;
 
 - pouze daiy aggregace, hourly sice neexistují, ale sjednoceno s velikostí DB
 
-```
 // daily agg
 msg.payload = [];
 msg.topic = 'asm';
@@ -169,13 +168,11 @@ PIVOT (MIN(VALUE) FOR METRIC_NAME IN (
     select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
     ) dg on (dg.diskgroup = m.ASM_GROUP_NAME)
 WHERE 1=1
-   AND DB_NAME = 'ARSZ'
+   AND DB_NAME = 'MDWP'
 ORDER BY
     TIMESTAMP, DBNAME, ASM_GROUP_NAME
 `;
 return msg;
-```
-
 // transform ASM
 var res = [];
 var tagNames = ["DBNAME", "ASM_GROUP_NAME", "HOST_NAME", "ENV_STATUS", "UNIT"];
