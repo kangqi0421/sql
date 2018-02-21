@@ -72,48 +72,122 @@ ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 return msg;
 ```
 
+```
+var res = [];
+var tagNames = ["DBNAME", "TABLESPACE_NAME", "HOST_NAME", "ENV_STATUS", "UNIT"];
+for (var p in msg.payload) {
+    var m = msg.payload[p];
+
+    var vals = {};
+    vals['size_mb'] = m.SIZE_MB;
+    vals['used_mb'] = m.USED_MB;
+
+    // tags
+    var tags = {};
+    for (var i in tagNames) {
+        tags[tagNames[i].toLowerCase()] = m[tagNames[i]];
+    }
+
+    //additional computations
+    /*
+    var bytesFree = vals['bytesfree'];
+    var pctUsed = vals['pctused'];
+    if (pctUsed != 100) {
+        vals['occupied'] = Math.round(bytesFree/(100-pctUsed)*pctUsed);
+        vals['maxsize'] = Math.round(100/(100-pctUsed)*bytesFree);
+    }
+    vals['bytesfree'] = Math.round(vals['bytesfree']);
+    vals['pctused'] = Number(vals['pctused'].toFixed(2));
+    */
+
+    res.push({
+        measurement: 'tablespace_1d',
+        fields: vals,
+        tags: tags,
+        timestamp: new Date(m.TIMESTAMP)
+    });
+}
+msg.payload = res;
+return msg;
+```
+
+
 2) DATABASE SIZE
 
 - pouze daily aggregace, hourly neexistují
 
+// daily agg
 msg.payload = [];
 msg.topic = 'size';
 msg.query = `
+WITH DB_METRIC
+AS (
+  SELECT
+   rollup_timestamp,
+   target_guid,
+   METRIC_COLUMN,
+   ROUND(AVERAGE) VALUE
+ FROM
+        SYSMAN.MGMT$METRIC_DAILY
+ WHERE
+       METRIC_NAME    = 'DATABASE_SIZE'
+   AND METRIC_COLUMN in ('ALLOCATED_GB', 'USED_GB')
+)
 SELECT
-     TO_CHAR(val.collection_time,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-     c.entity_name AS DBNAME,
-     c.entity_type,
-     p.PROPERTY_VALUE ENV_STATUS,
-     t.host_name,
-     lower(c.metric_column_name) METRIC_NAME,
-     c.metric_column_label METRIC_LABEL,
-     'GB' as UNIT,
-     sys_op_ceg(avg_values,c.column_index) AS VALUE
-FROM
-     sysman.em_metric_items i
-     join sysman.gc_metric_columns_target c
-       on (i.metric_group_id = c.metric_group_id)
-     join sysman.em_metric_values_daily val
-       on (i.metric_item_id = val.metric_item_id)
-     join sysman.em_metric_keys k on i.metric_key_id = k.metric_key_id
-     join sysman.em_targets t on t.target_guid = c.entity_guid
-     join sysman.MGMT_TARGET_PROPERTIES p on p.target_guid = c.entity_guid
+   to_char(rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
+   d.entity_name DBNAME,
+   t.host_name as HOST_NAME,
+   p.property_value ENV_STATUS,
+   ALLOCATED_GB,
+   USED_GB
+FROM DB_METRIC
+    PIVOT (MIN(VALUE) FOR METRIC_COLUMN IN (
+        'ALLOCATED_GB' AS ALLOCATED_GB,
+        'USED_GB' AS USED_GB)
+          ) m
+    JOIN MGMT$TARGET t
+      ON (m.target_guid = t.target_guid)
+    JOIN sysman.EM_MANAGEABLE_ENTITIES d
+      ON (m.target_guid = d.entity_guid)
+    JOIN MGMT_TARGET_PROPERTIES p
+      ON (p.target_guid = m.target_guid)
 WHERE
-     c.METRIC_GROUP_NAME = 'DATABASE_SIZE'
-     AND   p.property_name = 'orcl_gtp_lifecycle_status'
-     AND   p.PROPERTY_VALUE is not NULL
-     AND   i.target_guid = c.entity_guid
-     AND   c.column_type = 0
-     AND   c.data_column_type = 0
-     AND   val.collection_time > sysdate - interval '2' DAY
-     AND   c.entity_guid NOT IN (
-         SELECT dest_me_guid
-           FROM sysman.gc$assoc_instances a
-         WHERE a.assoc_type = 'cluster_contains')
-     -- AND  c.entity_name = 'MDWZ'
-ORDER BY TIMESTAMP, dbname, env_status, metric_name
+       d.category_prop_3 = 'DB'
+  AND  p.property_name = 'orcl_gtp_lifecycle_status'
+  AND  p.property_value is not NULL
+  AND  m.rollup_timestamp > sysdate - interval '2' DAY
+  AND  d.entity_name = 'MDWP'
+ORDER BY
+    TIMESTAMP, DBNAME, HOST_NAME
 `;
 return msg;
+
+```
+// daily agg
+var res = [];
+var tagNames = ['DBNAME', 'HOST_NAME', 'ENV_STATUS'];
+for (var p in msg.payload) {
+    var m = msg.payload[p];
+
+    var vals = {};
+    vals['allocated_gb'] = m.ALLOCATED_GB;
+    vals['used_gb'] = m.USED_GB;
+
+    var tags = {};
+    for (var i in tagNames) {
+         tags[tagNames[i].toLowerCase()] = m[tagNames[i]];
+    }
+
+    res.push({
+        measurement: 'dbsize_1d',
+        fields: vals,
+        tags: tags,
+        timestamp: new Date(m.TIMESTAMP)
+    });
+}
+msg.payload = res;
+return msg;
+```
 
 
 3) ASM metriky
@@ -124,64 +198,66 @@ return msg;
 msg.payload = [];
 msg.topic = 'asm';
 msg.query = `
-SELECT
-     TO_CHAR(m.collection_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-     dg.DB_NAME as DBNAME,
-     HOST_NAME,
-     ENV_STATUS,
-     ASM_GROUP_NAME,
-     FREE_MB,
-     TOTAL_MB,
-     'MB' as unit
-  from (
-select
-    val.collection_time,
-    t.host_name,
-    k.key_part_1 AS ASM_GROUP_NAME,
-    lower(c.metric_column_name) METRIC_NAME,
-    p.PROPERTY_VALUE ENV_STATUS,
-    round(sys_op_ceg(val.avg_values,c.column_index)) AS VALUE
-  from
-    sysman.gc_metric_columns_target c
-    JOIN sysman.em_metric_items i
-      ON (i.metric_group_id = c.metric_group_id AND i.target_guid = c.entity_guid)
-    JOIN sysman.em_metric_values_daily val on (i.metric_item_id = val.metric_item_id)
-    JOIN sysman.em_metric_keys k ON (i.metric_key_id = k.metric_key_id)
-    JOIN sysman.gc$target t
-      ON (t.target_guid = c.entity_guid)
-    JOIN sysman.MGMT_TARGET_PROPERTIES p
-      ON (p.target_guid = c.entity_guid)
+WITH ASM_METRIC
+AS (
+  SELECT
+   rollup_timestamp,
+   target_guid,
+   key_value as ASM_GROUP_NAME,
+   METRIC_COLUMN,
+   ROUND(AVERAGE) VALUE
+FROM
+    SYSMAN.MGMT$METRIC_DAILY
 WHERE
-          c.metric_group_name = 'DiskGroup_Usage'
-    AND   c.key_column_names = 'dg_name'
-    AND   c.metric_column_name in (
-                'usable_file_mb',  -- Disk Group Usable Free (MB)
-                'total_mb')        -- Size (MB)
-    AND   p.property_name = 'orcl_gtp_lifecycle_status'
-    AND   p.PROPERTY_VALUE is not NULL
-    AND   val.collection_time > sysdate - interval '2' DAY
+  target_type like 'osm%'
+  AND METRIC_NAME = 'DiskGroup_Usage'
+  AND METRIC_COLUMN in ('usable_file_mb',  -- Disk Group Usable (MB)
+                          'total_mb',        -- Size (MB)
+                          'percent_used'     -- Percent Used
+                          )
 )
-PIVOT (MIN(VALUE) FOR METRIC_NAME IN (
-    'usable_file_mb' AS FREE_MB,
-    'total_mb' AS TOTAL_MB)) m
-  LEFT JOIN (
-    select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
-    ) dg on (dg.diskgroup = m.ASM_GROUP_NAME)
-WHERE 1=1
-   AND DB_NAME = 'MDWP'
+select
+   to_char(rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
+   dg.DB_NAME as DBNAME,
+   t.host_name as HOST_NAME,
+   ASM_GROUP_NAME,
+   p.property_value ENV_STATUS,
+   FREE_MB,
+   TOTAL_MB,
+   PERCENT_USED
+  FROM ASM_METRIC
+    PIVOT (MIN(VALUE) FOR METRIC_COLUMN IN (
+        'usable_file_mb' AS FREE_MB,
+        'total_mb' AS TOTAL_MB,
+        'percent_used' AS PERCENT_USED)
+          ) m
+    JOIN MGMT$TARGET t ON (m.target_guid = t.target_guid)
+    JOIN sysman.MGMT_TARGET_PROPERTIES p
+      ON (p.target_guid = m.target_guid)
+    LEFT JOIN (
+      select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
+        ) dg on (dg.diskgroup = m.ASM_GROUP_NAME)
+WHERE
+       p.property_name = 'orcl_gtp_lifecycle_status'
+  AND  p.PROPERTY_VALUE is not NULL
+  AND  m.rollup_timestamp > sysdate - interval '2' DAY
+  -- AND  dg.DB_NAME = 'MCIP' and m.ASM_GROUP_NAME = 'MCIP_D01'
 ORDER BY
     TIMESTAMP, DBNAME, ASM_GROUP_NAME
 `;
 return msg;
-// transform ASM
+
+
+-- transform ASM
 var res = [];
-var tagNames = ["DBNAME", "ASM_GROUP_NAME", "HOST_NAME", "ENV_STATUS", "UNIT"];
+var tagNames = ["DBNAME", "ASM_GROUP_NAME", "HOST_NAME", "ENV_STATUS"];
 for (var p in msg.payload) {
     var m = msg.payload[p];
 
     var vals = {};
     vals['size_mb'] = m.TOTAL_MB;
     vals['free_mb'] = m.FREE_MB;
+    vals['percent_used'] = m.PERCENT_USED;
 
     var tags = {};
     for (var i in tagNames) {
@@ -203,6 +279,7 @@ for (var p in msg.payload) {
 }
 msg.payload = res;
 return msg;
+
 
 
 4) DB INSTANCE metriky: CPU, MEM, IO, Transactions

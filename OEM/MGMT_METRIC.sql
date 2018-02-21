@@ -258,10 +258,11 @@ Disk Group Usage
 - Size (MB)
 
 
--- Disk Group Usable Free (MB)
-AND m.metric_name = 'DiskGroup_Usage'
-AND metric_column in ('usable_file_mb',  -- Disk Group Usable (MB)
-                      'total_mb')        -- Size (MB)
+-- ASM Disk Group size (MB)
+AND metric_column in ('usable_file_mb',  -- Disk Group Usable Free (MB)
+                      'total_mb',        -- Total Size (MB)
+                      'percent_used'     -- Percent Used
+                      )
 
 -- Network
 AND m.metric_name = 'NetworkSummary'

@@ -17,7 +17,7 @@ SELECT
 --  ,t.category_prop_1
   ,T.Host_Name
 FROM
-  MGMT_TARGETS t
+  MGMT$TARGET t
  WHERE
    t.target_type IN ('oracle_database','rac_database')
    -- t.TYPE_QUALIFIER3 = 'DB'
