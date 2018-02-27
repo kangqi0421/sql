@@ -1,16 +1,15 @@
 --
--- MCIP cursor: pin S wait on X
+-- skript pro killnutí všech blokujících sessions
 --
 
--- skript pro killnutí všech blokujících sessions
-
 set pages 0 lines 180
-select 'alter system kill session '''||sid||','||serial#||',@'||inst_id||''' -- '
-       ||username||'@'||machine||' ('||program||');'
-from gv$session
+select 'alter system kill session '''||s.sid||','||s.serial#||',@'||s.inst_id
+  ||''' immediate -- '||s.username||'@'||s.machine||' ('||s.program||') spid: '|| p.spid || ';'
+from gv$session s inner join gv$process p
+       ON (s.inst_id = p.inst_id and s.paddr=p.addr)
   where 1=1
   --  AND EVENT like 'row cache lock'
-  and username = 'ADSREPDA_M'
+  and s.username = 'SYSTEM'
   -- AND sql_id = 'azu104ujtd6yp'
   -- vsechny blokovane session
   --and sid in (
