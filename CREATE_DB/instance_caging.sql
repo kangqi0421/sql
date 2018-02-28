@@ -2,6 +2,8 @@
 -- instance caging
 --
 
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+
 -- nastav resource_manager_plan na DEFAULT_PLAN
 -- pouze, pokud již není nataven na jinou hodnotu
 DECLARE
@@ -23,4 +25,4 @@ select instance_caging from v$rsrc_plan where cpu_managed='ON' and is_top_plan='
 select value from v$parameter where name ='cpu_count'
   and (isdefault='FALSE' or ismodified != 'FALSE');
 
--- prenastavit i job queueu na hodnotu CPU count ?
+-- TODO: prenastavit i job queueu na hodnotu CPU count ?
