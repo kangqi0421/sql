@@ -37,14 +37,14 @@ END;
 /
 */
 
--- DBEIM
+-- DBEIM java granty
 BEGIN
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export','read');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','delete');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','read');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/export/*','write');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import','read');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import/*','read');
-  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/var/csopsd/import/*','write');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/export/MDWPP1','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/export/MDWPP1/*','delete');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/export/MDWPP1/*','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/export/MDWPP1/*','write');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/import/MDWPP1','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/import/MDWPP1/*','read');
+  dbms_java.grant_permission('DBEIM','SYS:java.io.FilePermission','/srv/data/prod/csops/csopsd/remote/csopsd/import/MDWPP1/*','write');
 END;
 /
