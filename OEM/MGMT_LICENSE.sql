@@ -9,20 +9,42 @@ Database > Monitoring > Metric and Collections Settings
 Feature Usage: change to Enable
 
 select count(*) from MGMT$DB_FEATUREUSAGE;
+
   COUNT(*)
 ----------
       7855
+    167476
 
+-- Advanced Compression
+-- porovnat s OLI_OWNER tabulkou
+select
+    host,
+    max(last_usage_date), max(last_sample_date)
+  FROM MGMT$DB_FEATUREUSAGE
+ WHERE 1=1
+--   and database_name = 'CPTINT'
+ -- AND name like '%Compression%'
+    AND name in ('Hybrid Columnar Compression',
+                  'SecureFile Compression (user)',
+                  'Backup LOW Compression')
+    and currently_used='TRUE'
+group by host
+order by 1;
 
 -- Compression
 select
+    host,
+    target_guid,
     database_name,
     NAME,
     currently_used, last_usage_date, last_sample_date
   FROM MGMT$DB_FEATUREUSAGE
  WHERE 1=1
 --   and database_name = 'CPTINT'
-    AND name like '%Compression%'
+ -- AND name like '%Compression%'
+    AND name in ('Hybrid Columnar Compression',
+                  'SecureFile Compression (user)',
+                  'Backup LOW Compression')
     and currently_used='TRUE'
 ;
 
