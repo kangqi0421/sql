@@ -10,6 +10,7 @@ from gv$session s inner join gv$process p
   where 1=1
   --  AND EVENT like 'row cache lock'
   and s.username = 'SYSTEM'
+  --and osuser = 'oracle'
   -- AND sql_id = 'azu104ujtd6yp'
   -- vsechny blokovane session
   --and sid in (

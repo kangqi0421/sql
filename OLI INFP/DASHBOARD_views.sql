@@ -23,7 +23,7 @@ CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 US
 
 -- private db linky
 DROP DATABASE LINK "OEM_PROD";
-CREATE DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMSP';
+CREATE DATABASE LINK "OEM_PROD" CONNECT TO DASHBOARD IDENTIFIED BY abcd1234 USING 'OMSP';
 
 --
 create user DASHBOARD identified by abcd1234 profile DEFAULT;
@@ -64,15 +64,9 @@ WHERE m.sganame = 'Total SGA (MB)'
 COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
   'OEM data pro target db instance včetně CPU MEM SIZE';
 
-- pridat indexy ?
-
--- EM_DATABASE
---   - connect stringu
---   - db size in MB
---   - fra size in MB
-CREATE OR REPLACE FORCE VIEW DASHBOARD.EM_DATABASE
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE"
 AS
-select t.target_guid em_guid,
+  select t.target_guid em_guid,
        t.target_name,
        database_name dbname,
        log_mode,
@@ -100,7 +94,8 @@ select t.target_guid em_guid,
        port,
        d.host_name,
        db_size_mb,
-       db_log_size_mb
+       db_log_size_mb,
+       dg.diskgroup AS ASM_DISKGROUP
   FROM
     MGMT$DB_DBNINSTANCEINFO d
     JOIN MGMT$TARGET_PROPERTIES
@@ -133,12 +128,18 @@ select t.target_guid em_guid,
          from MGMT$TARGET_PROPERTIES
         where property_name = 'scanName') s
     ON p.cluster_name = s.target_name
-  -- pouze DB bez RAC instance
+  -- ASM diskgroup concat s ","
+  LEFT JOIN (
+      select db_name,
+             listagg(diskgroup, ',' ) within group (order by diskgroup) as diskgroup
+         from (
+            select distinct db_name,  diskgroup
+             from MGMT_ASM_CLIENT_ECM)
+        group by db_name
+        ) dg on (dg.db_name = d.database_name)
 WHERE t.TYPE_QUALIFIER3 = 'DB'
   -- and database_name = 'CPTZ'
-/
-
-
+;
 --
 -- COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
 --  'OEM data pro target databaze vcetne db size, fra size';
@@ -203,7 +204,8 @@ WITH PRIMARY KEY
        e.env_status,
        e.host_name,
        e.server_name, e.port, e.connect_descriptor,
-       round(e.db_size_mb / 1024) as db_size_gb
+       round(e.db_size_mb / 1024) as db_size_gb,
+       e.ASM_DISKGROUP
 FROM
   OLI_DATABASE o
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
@@ -229,13 +231,6 @@ SELECT * from DASHBOARD.API_DB_MV
 
 --
 'CATEST1', 'CATEST2', 'PWTESTA', 'TECOM1', 'TGASPER2', 'TPTESTA', 'TPTESTB'
-
--- zprovoznit
-SDJB
-SDJO
-SDST
-SK1O
-
 
 
 -- puvodni varianta s VIEW
@@ -267,7 +262,9 @@ CREATE OR REPLACE FORCE VIEW MGMT$TARGET AS select  * from MGMT$TARGET@OEM_PROD;
 
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_PROPERTIES AS select  * from MGMT$TARGET_PROPERTIES@OEM_PROD;
 
-drop view MGMT$TARGET_FLAT_MEMBERS;
+CREATE OR REPLACE FORCE VIEW MGMT$DB_FEATUREUSAGE AS select * from MGMT$DB_FEATUREUSAGE@OEM_PROD;
+CREATE OR REPLACE FORCE VIEW MGMT_ASM_CLIENT_ECM AS select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_PROD;
+
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_FLAT_MEMBERS
 AS select  * from MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
 ;

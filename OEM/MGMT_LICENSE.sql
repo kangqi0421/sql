@@ -15,11 +15,13 @@ select count(*) from MGMT$DB_FEATUREUSAGE;
       7855
     167476
 
+
+
 -- Advanced Compression
 -- porovnat s OLI_OWNER tabulkou
 select
-    host,
-    max(last_usage_date), max(last_sample_date)
+    host
+    -- max(last_usage_date), max(last_sample_date)
   FROM MGMT$DB_FEATUREUSAGE
  WHERE 1=1
 --   and database_name = 'CPTINT'
@@ -30,6 +32,14 @@ select
     and currently_used='TRUE'
 group by host
 order by 1;
+
+
+-- data z OLI
+select hostname||'.'||domain as server
+    from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
+  where current_prod_id = 3
+ order by 1
+;
 
 -- Compression
 select

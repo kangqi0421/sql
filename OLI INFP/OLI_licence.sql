@@ -8,6 +8,13 @@ select * from OLI_OWNER.PRODUCTS
   and db_product = 'Y'
 order by PROD_ID;
 
+-- Licence summary
+select hostname||'.'||domain as server
+    from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
+  where current_prod_id = 3
+ order by 1;
+
+
 
 --> INSERT do LICENSE_ALLOCATIONS
 
@@ -15,7 +22,7 @@ order by PROD_ID;
 -- fyzický server
 --
 select lic_env_id from servers
-  where hostname like 'pordb09%';
+  where hostname like 'pordb06%';
 
 define LIC_ENV_ID = 3489
 define PP = 8
@@ -50,6 +57,7 @@ select * from OLI_OWNER.PRODUCTS
   and db_product = 'Y'
 order by PROD_ID;
 
+- 3 Advanced Compression
 
 -- Licence summary
 -- LICENSE_COSTS_FULL
