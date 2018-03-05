@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=CPTZ
+DEFINE db=MDWP
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -100,16 +100,7 @@ exec arm_admin.arm_adm.add_subpart('RTOP1246254454',DATE '2016-09-18', DATE '201
 update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'RTOP1246254454';
 commit;
 
---
--- DELETE/DROP ARM db
---
 
--- delete all subpart
-select arm_fullid, data_protected,version, age_max * 30 from arm_admin.arm_databases where ARM_DB_NAME LIKE '%&db%';
--- pøenastavit age_max na 2 dny, na 1 den tam má Aleš ochranu ;-)
-update arm_admin.arm_databases set age_max = 2/30 where ARM_DB_NAME LIKE '%&db%';
-
-exec arm_admin.arm_adm.drop_subpart('2832974852CICAT1');
 
 -- log
 select * from ARM_ADMIN.ARM_DROP_LOG
@@ -144,22 +135,41 @@ END;
 --
 -- DELETE db
 --
-delete from ARM_ADMIN.ARM_DATABASES  where ARM_FULLID LIKE 'RTOP1330573738'
-  and TRANSFER_ENABLED = 'N';
+
+--
+-- DELETE/DROP ARM db
+--
+
+-- delete all subpart
+select arm_fullid, data_protected,version, age_max * 30 from arm_admin.arm_databases where ARM_DB_NAME LIKE '%&db%';
+-- pøenastavit age_max na 2 dny, na 1 den tam má Aleš ochranu ;-)
+update arm_admin.arm_databases set age_max = 2/30 where ARM_DB_NAME LIKE '%&db%';
+
+--MDWP1742801569
+--MDWP1559806405
+
 -- pod arm_admin ARM_ADMIN/
 conn ARM_ADMIN/arm234arm
 
-select * from dba_db_links where db_link like 'RTOP%';
+DEFINE arm_fullid = MDWP1559806405
 
--- Paralellen� provoz 2 DB sou�asn�
+exec arm_admin.arm_adm.drop_subpart('&arm_fullid');
+delete from arm_admin.arm_databases where arm_fullid = '&arm_fullid' and TRANSFER_ENABLED = 'N';
+commit;
+
+select * from dba_db_links where db_link like 'MDWP%';
+
+drop database link MDWP_HPUX;
+
+-- DB link
 -- vytvorit 2 samostane linky a 2 zaznamy v ARM_DATABASES
 -- create db link
-drop database link RTOP;
-create database link RTOP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'RTOP_AIX';
+drop database link MDWP;
+create database link MDWP_AIX connect to ARM_CLIENT identified by "cli456cli" using 'MDWP_AIX';
 
 -- rušená DB - update dblink
-update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'DWHTA3_OLD', ARM_DB_NAME = 'DWHTA3OLD'
-  WHERE ARM_FULLID LIKE 'DWHTA3158718224';
+update ARM_ADMIN.ARM_DATABASES SET DBLINK = 'MDWP_AIX', ARM_DB_NAME = 'MDWPAIX'
+  WHERE ARM_FULLID LIKE 'MDWP1844761911';
 commit;
 
 -- nová DWH přejmenovaná z ODS

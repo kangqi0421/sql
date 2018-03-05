@@ -27,8 +27,8 @@ select
 --   and database_name = 'CPTINT'
  -- AND name like '%Compression%'
     AND name in ('Hybrid Columnar Compression',
-                  'SecureFile Compression (user)',
-                  'Backup LOW Compression')
+                 'SecureFile Compression (user)',
+                 'Backup LOW Compression')
     and currently_used='TRUE'
 group by host
 order by 1;
