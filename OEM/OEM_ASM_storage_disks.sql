@@ -2,7 +2,7 @@
 -- ASM storage
 --
 
-define dbname = MDW
+define db = FAS
 
 select NVL(d.db_name, 'UNKNOWN'),
        disk_group,
@@ -11,12 +11,13 @@ select NVL(d.db_name, 'UNKNOWN'),
        round(total_size)/8 "disk size po 8-mi",
        member_disk_count
   from SYSMAN.MGMT_ASM_DISKGROUP_ECM dg
-       LEFT JOIN SYSMAN.MGMT_ASM_CLIENT_ECM d
+       LEFT JOIN (
+          select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
+          ) d
          on (d.diskgroup = dg.disk_group)
-  where d.db_name is NULL
+  where d.db_name like '&db%'
 order by db_name, disk_group
 ;
-
 
 -- metric
 AND m.metric_name = 'DiskGroup_Usage'
@@ -46,13 +47,24 @@ select disk_group,
   where disk_group like 'INEP_%'
 order by disk_group;
 
+-- ASM disky
+set pages 999
+SELECT
+    distinct disk_group
+FROM
+    cm$mgmt_asm_disk_ecm
+  where path like '/dev/mapper/asm_vplex%'
+    and disk_group like '%D01'
+order by 1;
+
+
 -- CM view
 CM$MGMT_ASM_CLUSTER_ECM
 CM$MGMT_ASM_DISKGROUP_ECM
 CM$MGMT_ASM_INIT_PARAMS_ECM
 CM$MGMT_ASM_DG_ATTR_ECM
 CM$MGMT_ASM_DISK_ECM
-CM$MGMT_DB_ASM_DISK_ECM
+CM$MGMT_DB_ASM_DISK_ECM -- prázdné
 CM$MGMT_HAS_MANAGED_ASM_ECM
 CM$MGMT_ASM_INSTANCE_ECM
 MGMT$CS_ASM_DISKGRP_SETTINGS
@@ -60,4 +72,3 @@ CM$MGMT_ASM_FLEX_ENABLED_ECM
 CM$MGMT_ASM_CLIENT_ECM
 CM$MGMT_ASM_PATCHES_ECM
 --
-

@@ -1,6 +1,8 @@
 --
 -- Licence usage
 --
+-- MGMT$DB_FEATUREUSAGE
+--
 
 -- enable
 Enterprise Manager 12c For Oracle Database: How to Enable the Metric "Feature Usage" to Get Data from the Repository View SYSMAN.MGMT$DB_FEATUREUSAGE (Doc ID 1970236.1)
@@ -14,6 +16,7 @@ select count(*) from MGMT$DB_FEATUREUSAGE;
 ----------
       7855
     167476
+    199343
 
 
 

@@ -87,7 +87,7 @@ select dbusername,action_name,unified_audit_policies,return_code, count(*)
  group by dbusername,action_name,unified_audit_policies,return_code
 order by count(*) ;
 
--- workaround
+-- workarounds
 AUDIT_SYS_OPERATIONS = FALSE
 AUDIT_TRAIL=NONE
 
@@ -112,7 +112,7 @@ select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
  -- where policy_name like '%DWH'
   and policy_name like 'CS%'
-  and AUDIT_OPTION like 'INSERT%'
+--  and AUDIT_OPTION like 'INSERT%'
 --order by policy_name
  ;
 

@@ -1,7 +1,7 @@
 /* ASH */
 
 select 
- * 
+-- * 
 --event, count(*) cnt
 --sample_time, count(*)
 --  SQL_ID, COUNT(*) cnt
@@ -24,14 +24,15 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
+    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
     FROM GV$ACTIVE_SESSION_HISTORY a
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-02-02 01:10:00'
---                           AND TIMESTAMP'2018-02-02 01:12:00'
-                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
---                         and SQL_ID = 'gr4r4pmvx1sj7'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-03-05 05:04:00'
+                           AND TIMESTAMP'2018-03-05 05:07:00'
+--                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
+                         and SQL_ID = '5vd1txs4gsb06'
 --                         and event in ('gc current block 2-way')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
@@ -216,4 +217,4 @@ SELECT  trunc(ash.SAMPLE_TIME, 'MI'), ash.event, count (*)
 
 -- mutex sleep
 select * from V$MUTEX_SLEEP_HISTORY
-order by sleep_timestamp
+order by sleep_timestamp;
