@@ -17,6 +17,7 @@ select count(*) from MGMT$DB_FEATUREUSAGE;
       7855
     167476
     199343
+    199708
 
 
 
@@ -47,19 +48,19 @@ select hostname||'.'||domain as server
 -- Compression
 select
     host,
-    target_guid,
     database_name,
     NAME,
     currently_used, last_usage_date, last_sample_date
   FROM MGMT$DB_FEATUREUSAGE
  WHERE 1=1
---   and database_name = 'CPTINT'
+   and database_name = 'WDNZ'
  -- AND name like '%Compression%'
     AND name in ('Hybrid Columnar Compression',
                   'SecureFile Compression (user)',
                   'Backup LOW Compression')
     and currently_used='TRUE'
 ;
+
 
 -- Advanced Security
 select database_name, NAME AS advsec, currently_used
