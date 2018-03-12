@@ -1,0 +1,74 @@
+(.*username>)(.*)(<.*username>)
+$1REMOVED$3
+(.*encrypted>)(.*)(<.*-encrypted>)
+$1REMOVED$3
+(.*pass)(.*>)(.*)(<.*pass)(.*>)
+$1$2REMOVED$4$5
+(WLS_USER=)(.*)([\n\r\s]*)
+$1REMOVED$3
+(WLS_PW=)(.*)([\n\r\s]*)
+$1REMOVED$3
+(\.*listen-)(.*>)(.*)(<.*listen-.*)(.*>)
+$1$2REMOVED$4$5
+<cluster-address>.*<\/cluster-address>
+<cluster-address>REMOVED</cluster-address>
+<shell-command>.*<\/shell-command>
+<shell-command>REMOVED</shell-command>
+<constructor-arg index="0" value=".*" \/>
+<constructor-arg index="0" value="REMOVED" />
+<bean id=".*" class
+<bean id="REMOVED" class
+<property name="url" value=".*" \/>
+<property name="url" value="REMOVED" />
+-Dweblogic.management.server=.*-
+-Dweblogic.management.server=REMOVED-
+(\.*user)(.*>)(.*)(<.*user)(.*>)
+$1$2REMOVED$4$5
+<wls:principal>.*<\/wls:principal>
+<wls:principal>REMOVED</wls:principal>
+<wls:group-base-dn>.*<\/wls:group-base-dn>
+<wls:group-base-dn>REMOVED</wls:group-base-dn>
+(username=)([^\r\n\s<]*)
+$1REMOVED
+(UserName=)([^\r\n\s<]*)
+$1REMOVED
+(password=\s)([^\r\n\s<]*)
+$1REMOVED
+(passw=)([^\r\n\s<]*)
+$1REMOVED
+(password=)([^\r\n\s<]*)
+$1REMOVED
+(.jdbcString=)([^\r\n\s<]*)
+$1REMOVED
+(.admin.port=)([^\r\n\s<]*)
+$1REMOVED
+(<property.*proxyPassword)(.*)(<\/property>)
+$1REMOVED$3
+<name>user<\/name>\n<value>.*<\/value>
+<name>user</name>\n<value>REMOVED</value>
+(<properties>mail.user=)(.*)(<properties>)
+$1REMOVED$3
+(username=")(.*")
+$1REMOVED
+(password=")(.*")
+$1REMOVED"
+(user=)([^\n\r\s;]*)
+$1REMOVED
+(.*Password=")(.*)
+$1"REMOVED"
+(LOGIN=)([^\r\n ]*)
+$1REMOVED
+([_]PASS=)([^\r\n ]*)
+$1REMOVED
+(PASSWD=)([^\r\n ]*)
+$1REMOVED
+(SUPERVISOR=)([^\r\n ]*)
+$1REMOVED
+(username )([^\r\n ]*)
+$1REMOVED
+(password )([^\r\n ]*)
+$1REMOVED
+(PASS=)([^\r\n ]*)
+$1REMOVED
+(<property.*password.*>)(.*)(<\/property>)
+$1REMOVED$3

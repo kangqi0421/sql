@@ -1,0 +1,12 @@
+eclipse\/plugins\/com.m7.nitrox.kodo
+\/sample\/
+\/samples\/
+\/demo\/
+\/demos\/
+\/gnome\/
+\/staroffice
+javaee-tutorial
+templates
+tomcat
+patch_storage
+LMSCollection\/bin\/output

@@ -213,4 +213,21 @@ Insert into TEMPLATE_PARAM_VALUE values ('2','C','pre_sql_scripts','${CLONE_DIR}
 Insert into TEMPLATE_PARAM_VALUE values ('2','C','post_sql_scripts','${TODAY_FMT}/${target_db}_nastav_hesla.sql','N');
 Insert into TEMPLATE_PARAM_VALUE values ('2','C','app_supp_email','jsrba@csas.cz,rtods@csas.cz,fas-alfa@csas.cz','N');
 
+-- SnapVX Restore
+REM INSERTING into CLONING_METHOD_STEP
+SET DEFINE OFF;
+Insert into CLONING_METHOD_STEP values ('8','STEP010_prepare.sh','10','Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP020_pre_sql_scripts.sh','20','Pre-klonovací skripty','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP050_shutdown_db.sh','50','Drop database','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP080_umount_asm_dg.sh','80','Umount s force ASM diskgroup','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP100_restore_snapshot.sh','100','SnapVX restore sg from snapshot','N','Y');
+Insert into CLONING_METHOD_STEP values ('8','STEP109_mount_asm_dg.sh','109','Mount ASM DG','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP190_restart_db.sh','190','Finální restart databaze pro overeni funkcnosti','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP205_emcli_stop_blackout.sh','205','EM agent stop blackout','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP220_rman_resync.sh','220','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP300_app_sql_scripts.sh','300','Desc','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP305_restore_appl_passwords.sh','305','Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP310_grant_dba.sh','310','Grant DBA','Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP320_autoextend_on.sh','320',NULL,'Y','N');
+Insert into CLONING_METHOD_STEP values ('8','STEP400_arm_audit.sh','400',NULL,'Y','Y');
 

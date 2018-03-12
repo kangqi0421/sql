@@ -1,0 +1,17 @@
+ORACLEPRODUCT=Oracle WebCenter
+
+INCLUDEPRODUCT=SOA/SOA10g.txt
+INCLUDEPRODUCT=SOA/SOA11g.txt
+INCLUDEPRODUCT=SOA/SOABEA.txt
+INCLUDEPRODUCT=WLSBasic/WLSBasic.txt
+
+SEARCHFILE=app.yml|LISTING
+SEARCHFILE=futuretense.ini|LISTING
+SEARCHFILE=futuretense_xcel.ini|LISTING
+SEARCHFILE=satellite.properties|LISTING
+SEARCHFILE=config.cfg|LISTING
+SEARCHFILE=webcenter-config.xml|LISTING
+SEARCHFILE=wcs_properties.json|LISTING
+SEARCHFILE=host.properties|LISTING
+SEARCHFILE=fatwire_settings.properties|LISTING
+SEARCHFILE=fatwire_views.properties|LISTING

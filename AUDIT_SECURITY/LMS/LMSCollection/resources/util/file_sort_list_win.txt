@@ -1,0 +1,18 @@
+samples
+WINDOWS
+dmconfig.dl
+RECYCLER
+Recycle
+Program Files
+Documents and Settings
+workshop4WP
+gnome
+staroffice
+AppData
+All Users
+javaee-tutorial
+templates
+\demo\
+tomcat
+patch_storage
+LMSCollection\bin\output

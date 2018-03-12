@@ -20,9 +20,57 @@ select count(*) from MGMT$DB_FEATUREUSAGE;
     199708
 
 
+-- OEM rozdíl proti OLI
+select distinct
+    host,
+    database_name,
+    NAME,
+    currently_used, last_usage_date, last_sample_date,
+    APP_NAME
+  FROM MGMT$DB_FEATUREUSAGE u
+       LEFT JOIN OLI_DATABASE d
+         ON (u.database_name = d.dbname)
+ WHERE 1=1
+--    AND database_name = 'KNXTA'
+    AND (
+        name like '%Compression%'
+--     OR name like '%Datapump%'
+        )
+     AND name not in  ('Backup BASIC Compression')
+    and currently_used='TRUE'
+    and last_usage_date > sysdate - interval '1' month
+    and host not in (
+        select hostname||'.'||domain as server
+          from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
+         where current_prod_id = 3)
+    -- vyjimky
+    and host not in ('avlog.vs.csin.cz')
+order by database_name;
+
+
 
 -- Advanced Compression
 -- porovnat s OLI_OWNER tabulkou
+select distinct
+    host,
+    database_name,
+    NAME,
+    currently_used, last_usage_date, last_sample_date
+  FROM MGMT$DB_FEATUREUSAGE
+ WHERE 1=1
+--    AND database_name = 'KNXTA'
+    AND (
+        name like '%Compression%'
+--     OR name like '%Datapump%'
+        )
+     AND name not in  ('Backup BASIC Compression')
+    and currently_used='TRUE'
+    and last_usage_date > sysdate - interval '1' month
+order by database_name;
+
+
+
+
 select
     host
     -- max(last_usage_date), max(last_sample_date)
@@ -54,7 +102,7 @@ select
   FROM MGMT$DB_FEATUREUSAGE
  WHERE 1=1
    and database_name = 'WDNZ'
- -- AND name like '%Compression%'
+    AND name like '%Compression%'
     AND name in ('Hybrid Columnar Compression',
                   'SecureFile Compression (user)',
                   'Backup LOW Compression')

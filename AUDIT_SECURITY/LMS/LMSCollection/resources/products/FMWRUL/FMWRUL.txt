@@ -1,0 +1,27 @@
+ORACLEPRODUCT=Oracle FMW Restricted Use Components
+
+SEARCHFILE=domain.xml|LISTING
+SEARCHFILE=composite.xml|LISTING
+SEARCHFILE=AIAInstallProperties.xml|LISTING
+SEARCHFILE=AIACreateInstance.xml|LISTING
+SEARCHFILE=startWebLogic.*|LISTING
+SEARCHFILE=startWLS.*|LISTING
+SEARCHFILE=startManagedWebLogic.*|LISTING
+SEARCHFILE=startNodeManager.*|LISTING	
+SEARCHFILE=startup.properties|LISTING
+SEARCHFILE=*jdbc.xml|LISTING
+SEARCHFILE=*jms.xml|LISTING
+SEARCHFILE=Module-*.xml|LISTING
+SEARCHFILE=deployments.xml|LISTING
+SEARCHFILE=startwlevs.*|LISTING
+SEARCHFILE=jrockit_optfile.txt|LISTING
+SEARCHFILE=weblogic-ejb-jar.xml|LISTING
+SEARCHFILE=weblogic-application.xml|LISTING
+SEARCHFILE=weblogic.xml|LISTING
+SEARCHFILE=web.xml|LISTING
+SEARCHFILE=installSvc.cmd|LISTING
+
+SEARCHFILE=weblogic.log|TAIL
+SEARCHFILE=access.log|LISTING
+SEARCHFILE=wl-domain.log|TAIL	
+SEARCHFILE=wlst_*.log|TAIL

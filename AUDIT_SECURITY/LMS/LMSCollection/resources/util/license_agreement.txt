@@ -1,0 +1,84 @@
+Terms for Oracle License Management Services ("LMS") Software
+
+If you have an Oracle license agreement for your use of the Oracle software programs that are under review or audit by Oracle and/or that you wish to measure, monitor, or manage (collectively, "Programs") - such as an Oracle Master Agreement, Oracle License and Services Agreement, Oracle PartnerNetwork Agreement, Oracle distribution agreement, or other Oracle license agreement for the Programs (each a "Master Agreement") - then the Master Agreement applies to your use of the Oracle software provided with these terms ("Software") and the License Agreement displayed below does not apply to you.  When a Master Agreement applies, (a) notwithstanding anything to the contrary in the Master Agreement, your use of the Software shall be limited to measuring, monitoring and/or managing your usage of the Programs and Oracle's liability for the Software shall be no more than the amount that applies under the Master Agreement for the Programs; and (b) you acknowledge that using the Software, in and of itself, does not constitute an audit under the terms of your Master Agreement.
+
+If a Master Agreement does not apply then the License Agreement displayed below applies to your use of the Software.
+
+By selecting "Accept License Agreement" (or the equivalent) or by typing the required acceptance text you indicate your acceptance of these terms and your agreement, as an authorized representative of your company or organization (if being acquired for use by an entity) or as an individual, to comply with the license terms that apply to the Software.  If you are not willing to be bound by these terms, do not indicate your acceptance and do not download, install, or use the Software.
+
+
+License Agreement
+
+PLEASE SCROLL DOWN AND READ ALL OF THE FOLLOWING TERMS AND CONDITIONS OF THIS LICENSE AGREEMENT ("Agreement") CAREFULLY.  THIS AGREEMENT IS A LEGALLY BINDING CONTRACT BETWEEN YOU AND ORACLE AMERICA, INC. THAT SETS FORTH THE TERMS AND CONDITIONS THAT GOVERN YOUR USE OF THE SOFTWARE. 
+
+YOU MUST ACCEPT AND ABIDE BY THESE TERMS AND CONDITIONS AS PRESENTED TO YOU - ANY CHANGES, ADDITIONS OR DELETIONS BY YOU TO THESE TERMS AND CONDITIONS WILL NOT BE ACCEPTED BY US AND WILL NOT MAKE PART OF THIS AGREEMENT.
+
+Definitions
+"We," "Us," and "Our" refers to Oracle America, Inc.  "Oracle" refers to Oracle Corporation and its affiliates.  
+
+"You" and "Your" refers to the individual or entity that wishes to use the Software (as defined below) provided by Oracle. 
+
+"Software" refers to the tool(s), script(s) and/or software product(s) and any applicable documentation provided to You by Oracle which You wish to access and use to measure, monitor and/or manage Your usage of separately-licensed Oracle software. 
+
+Rights Granted
+We grant You a non-exclusive, non-transferable limited right to use the Software, subject to the terms of this Agreement, for the limited purpose of measuring, monitoring and/or managing Your usage of separately-licensed Oracle software.  You may allow Your agents and contractors (including, without limitation, outsourcers) to use the Software for this purpose and You are responsible for their compliance with this Agreement in such use.  You (including Your agents, contractors and/or outsourcers) may not use the Software for any other purpose.  You acknowledge that using the Software, in and of itself, does not constitute an audit under the terms of any other agreement that you may have with Oracle.
+
+Ownership and Restrictions
+Oracle and Oracle's licensors retain all ownership and intellectual property rights to the Software. The Software may be installed on one or more servers; provided, however, that You may only make one copy of the Software for backup or archival purposes.
+
+Third party technology that may be appropriate or necessary for use with the Software is specified in the Software documentation, notice files or readme files.  Such third party technology is licensed to You under the terms of the third party technology license agreement specified in the Software documentation, notice files or readme files and not under the terms of this Agreement.
+
+You may not:
+-	use the Software for Your own internal data processing or for any commercial or production purposes, or use the Software for any purpose except the purpose stated herein; 
+-	remove or modify any Software markings or any notice of Oracle's or Oracle's licensors' proprietary rights;
+-	make the Software available in any manner to any third party for use in the third party's business operations, without Our prior written consent ;
+-	use the Software to provide third party training or rent or lease the Software or use the Software for commercial time sharing or service bureau use;
+-	assign this Agreement or give or transfer the Software or an interest in them to another individual or entity;
+-	cause or permit reverse engineering (unless required by law for interoperability), disassembly or decompilation of the Software (the foregoing prohibition includes but is not limited to review of data structures or similar materials produced by Software);
+-	disclose results of any Software benchmark tests without Our prior written consent; 
+-	use any Oracle name, trademark or logo without Our prior written consent .
+
+Disclaimer of Warranty
+ORACLE DOES NOT GUARANTEE THAT THE SOFTWARE WILL PERFORM ERROR-FREE OR UNINTERRUPTED.   TO THE EXTENT NOT PROHIBITED BY LAW, THE SOFTWARE ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND AND THERE ARE NO WARRANTIES, EXPRESS OR IMPLIED, OR CONDITIONS, INCLUDING WITHOUT LIMITATION, WARRANTIES OR CONDITIONS OF MERCHANTABILITY, NONINFRINGEMENT OR FITNESS FOR A PARTICULAR PURPOSE, THAT APPLY TO THE SOFTWARE.
+
+No Right to Technical Support
+You acknowledge and agree that Oracle's technical support organization will not provide You with technical support for the Software licensed under this Agreement.  
+
+End of Agreement
+You may terminate this Agreement by destroying all copies of the Software. We have the right to terminate Your right to use the Software at any time upon notice to You, in which case You shall destroy all copies of the Software. 
+
+Entire Agreement
+You agree that this Agreement is the complete agreement for the Software and supersedes all prior or contemporaneous agreements or representations, written or oral, regarding such Software. If any term of this Agreement is found to be invalid or unenforceable, the remaining provisions will remain effective and such term shall be replaced with a term consistent with the purpose and intent of this Agreement. 
+
+Limitation of Liability
+IN NO EVENT SHALL ORACLE BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA OR DATA USE, INCURRED BY YOU OR ANY THIRD PARTY.  ORACLE'S ENTIRE LIABILITY FOR DAMAGES ARISING OUT OF OR RELATED TO THIS AGREEMENT, WHETHER IN CONTRACT OR TORT OR OTHERWISE, SHALL IN NO EVENT EXCEED ONE THOUSAND U.S. DOLLARS (U.S. $1,000).
+
+Export
+Export laws and regulations of the United States and any other relevant local export laws and regulations apply to the Software.  You agree that such export control laws govern Your use of the Software (including technical data) provided under this Agreement, and You agree to comply with all such export laws and regulations (including "deemed export" and "deemed re-export" regulations).  You agree that no data, information, and/or Software (or direct product thereof) will be exported, directly or indirectly, in violation of any export laws, nor will they be used for any purpose prohibited by these laws including, without limitation, nuclear, chemical, or biological weapons proliferation, or development of missile technology.
+
+Other
+1.	This Agreement is governed by the substantive and procedural laws of the State of California, USA. You and We agree to submit to the exclusive jurisdiction of, and venue in, the courts of San Francisco or Santa Clara counties in California in any dispute arising out of or relating to this Agreement. 
+
+2.	You may not assign this Agreement or give or transfer the Software or an interest in them to another individual or entity.  If You grant a security interest in the Software, the secured party has no right to use or transfer the Software.
+
+3.	Except for actions for breach of Oracle's proprietary rights, no action, regardless of form, arising out of or relating to this Agreement may be brought by either party more than two years after the cause of action has accrued.
+
+4.	Oracle may audit Your use of the Software.  You agree to cooperate with Oracle's audit and provide reasonable assistance and access to information.  Any such audit shall not unreasonably interfere with Your normal business operations.  You agree that Oracle shall not be responsible for any of Your costs incurred in cooperating with the audit.    
+
+5.	The relationship between You and Us is that of licensee/licensor. Nothing in this Agreement shall be construed to create a partnership, joint venture, agency, or employment relationship between the parties.  The parties agree that they are acting solely as independent contractors hereunder and agree that the parties have no fiduciary duty to one another or any other special or implied duties that are not expressly stated herein.  Neither party has any authority to act as agent for, or to incur any obligations on behalf of or in the name of the other.  
+
+6.	This Agreement may not be modified and the rights and restrictions may not be altered or waived except in a writing signed by authorized representatives of You and of Us.  
+
+7.	Any notice required under this Agreement shall be provided to the other party in writing.
+
+8.	In order to assist You with the measurement, monitoring or management of Your usage of separately-licensed Oracle software, Oracle may have access to and collect Your information, which may include personal information, and data residing on Oracle, customer or third-party systems on which the Software are used and/or to which Oracle is provided access to perform any associated services.  Oracle treats such information and data in accordance with the terms of the Oracle Services Privacy Policy, which is available at http://www.oracle.com/html/services-privacy-policy.html, and treats such data as confidential in accordance with the terms of your Oracle master agreement.  The Services Privacy Policy is subject to change at Oracle's discretion; however, Oracle will not materially reduce the level of protection specified in the Services Privacy Policy in effect at the time the information was collected during the period that Oracle retains such information.  
+
+Contact Information
+Should You have any questions concerning Your use of the Software or this Agreement, please contact Oracle License Management Services at: http://www.oracle.com/us/corporate/license-management-services/index.html
+
+Oracle America, Inc.
+500 Oracle Parkway, 
+Redwood City, CA 94065
+
+
+Last updated 19 January 2016

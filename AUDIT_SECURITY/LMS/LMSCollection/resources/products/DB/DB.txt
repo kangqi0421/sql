@@ -1,0 +1,5 @@
+ORACLEPRODUCT=Database
+
+INCLUDEPRODUCT=LMSCPU/LMSCPUQ.txt
+
+RUNCMD=../resources/util/DB/db_main|SCRIPT

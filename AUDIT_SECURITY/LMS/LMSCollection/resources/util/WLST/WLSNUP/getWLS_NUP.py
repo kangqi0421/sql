@@ -1,0 +1,219 @@
+# getWLS_NUP.py v18.1
+# This script will:
+# * connect WLST to the WLS Domain 
+# * get a list of users who can access the Domain
+# * get a count of the number of authorized users for each Group
+#
+
+from weblogic.management.security.authentication import UserReaderMBean
+from weblogic.management.security.authentication import GroupReaderMBean
+from weblogic.management.security.authentication import GroupMemberListerMBean
+from weblogic.management.security.authentication import GroupUserListerMBean
+ 
+
+from java.io import File
+from java.io import FileOutputStream
+import os
+import sha
+
+
+NUP_script_version = "18.1.2"
+
+def getNUP_Info():
+
+	NUP_ERRORS = File(os.environ["LMSCT_TMP"] + os.sep + 'logs' + os.sep + 'WLS_errors.log')
+	fosNUPerr = FileOutputStream(NUP_ERRORS,true)
+
+	NUP_WARNINGS = File(os.environ["LMSCT_TMP"] + os.sep + 'logs' + os.sep + 'WLS_warnings.log')
+	fosNUPwarn = FileOutputStream(NUP_WARNINGS,true)
+
+	NUP_COLLECTED = File(os.environ["LMSCT_TMP"] + os.sep + 'logs' + os.sep + 'WLS_collected.log')
+	fosNUPcol = FileOutputStream(NUP_COLLECTED,true)
+
+	print '==================================='
+	print '       WLS NUP Measurement'
+	print '==================================='
+
+	targetMachine = sys.argv[1]
+
+	while 1:
+		print
+		print 'Please enter administrative credentials for the WebLogic domain.'  
+		print
+		try: 
+			connect()
+			break
+		except WLSTException, ex:
+			WLST_return = str(ex)
+			
+			if WLST_return.find('authenticated') >= 0:
+				print '\n\nWLS: LMS-03000: ERROR: WLSNUP script failed to authenticate user.  Invalid userID or password.'
+				quitWLST = raw_input('Please press enter to try to connect again with new credentials or q to quit:')
+				
+				if quitWLST.strip() == 'q':
+					Failed_output = File(os.environ["LMSCT_TMP"] + os.sep + 'WLSNUP' + os.sep + targetMachine + '_OracleWLS_NUP.txt')
+					fosFailedOut = FileOutputStream(Failed_output)
+					theInterpreter.setOut(fosNUPerr)
+					print 'WLS: LMS-03000: ERROR: WLSNUP script failed to authenticate user.  Invalid userID or password.'
+					theInterpreter.setOut(fosFailedOut)
+					print 'WLS: LMS-03000: ERROR: WLSNUP script failed to authenticate user.  Invalid userID or password.'
+					print
+					print 'End of getWLS_NUP'
+					fosNUPerr.close()
+					fosNUPwarn.close()
+					fosNUPcol.close()
+					fosFailedOut.close()
+					return
+			elif WLST_return.find('performing') >= 0:
+				print '\n\nWLS: LMS-03001: ERROR: WLSNUP script failed to connect to URL.  Please check the URL and port and try again.'
+				quitWLST = raw_input('Please press enter to try to connect again with new credentials or q to quit:')
+				
+				if quitWLST.strip() == 'q':
+					Failed_output = File(os.environ["LMSCT_TMP"] + os.sep + 'WLSNUP' + os.sep + targetMachine + '_OracleWLS_NUP.txt')
+					fosFailedOut = FileOutputStream(Failed_output)				
+					theInterpreter.setOut(fosNUPerr)
+					print 'WLS: LMS-03001: ERROR: WLSNUP script failed to connect to URL.  Please check the URL and port and try again.'
+					theInterpreter.setOut(fosFailedOut)
+					print 'WLS: LMS-03001: ERROR: WLSNUP script failed to connect to URL.  Please check the URL and port and try again.'
+					print
+					print 'End of getWLS_NUP'
+					fosNUPerr.close()
+					fosNUPwarn.close()
+					fosNUPcol.close()
+					fosFailedOut.close()
+					return	
+		
+	## We need to only get  NUP from WebLogic 9.X and later
+	ver=cmo.getConfigurationVersion()
+	
+	verElements = ver.split('.')
+	if eval(verElements[0]) < 9 :
+		print 'Failed to connect. NUP measurement not supported on WebLogic Version' + ver
+		theInterpreter.setOut(fosNUPerr)
+		print 'WLS: LMS-03002: ERROR: WLSNUP script failed to connect to URL, this version of WebLogic is not supported by the WLST NUP script.'
+		theInterpreter.setOut(fosFailedOut)
+		print 'WLS: LMS-03002: ERROR: WLSNUP script failed to connect to URL, this version of WebLogic is not supported by the WLST NUP script.'
+
+		print
+		print 'End of getWLS_NUP'
+		fosNUPerr.close()
+		fosNUPwarn.close()
+		fosNUPcol.close()
+		fosFailedOut.close()	
+		return 
+	else:
+		print "WebLogic Version " + ver
+		
+	##domainName = cmo.getName()
+	fBaseName = targetMachine + '_' + domainName + '_OracleWLS_NUP.txt'
+	
+	print 'Reading users for the domain, ' + domainName + ', the time to complete this command will depend on the number of users.'
+	
+
+	NUP_output = File(os.environ["LMSCT_TMP"] + os.sep + 'WLSNUP' + os.sep + fBaseName)
+	print 'Saving output to ' + str(NUP_output)
+
+	fosNUPOut = FileOutputStream(NUP_output)
+	theInterpreter.setOut(fosNUPOut)
+	
+	print  
+	print 'WLST Input Information' 
+	print 'Target Machine: ' + targetMachine
+	print 'MW_HOME: ' + os.environ["MW_HOME"]
+	print 'Domain Name: ' + domainName 
+
+
+	## Loop through each security realm and each authentication provider and get the user names
+	try:
+		securityRealms=cmo.getSecurityConfiguration().getRealms()
+		for r in securityRealms:
+			authenticationProviders = r.getAuthenticationProviders()
+			providerCount = 0
+			
+			for i in authenticationProviders:
+				if isinstance(i,GroupReaderMBean):
+					groupReader = i
+					groupCursor =  i.listGroups("*",0)
+					groupCount = 0
+					print 'Security Realm:'+r.getName()+' Provider:'+i.getName() + ' groups and users are: '
+					while groupReader.haveCurrent(groupCursor):
+						currGrpName = groupReader.getCurrentName(groupCursor)
+						usergroup = None
+						usrCount = 0;
+						print '\tGroup: ' + currGrpName + ' Users are: '
+						if isinstance(i,GroupUserListerMBean):
+							usergroup = i.listAllUsersInGroup(currGrpName,"*",0)
+							for user in usergroup:
+								encryptedUser = sha.new(user).hexdigest()
+								if ( user == 'weblogic' or user == 'OracleSystemUser' or user == 'alsb-system-user' ):
+									print '\t\t\tWLSNUP_SHA1:default_' + encryptedUser
+								else:
+									print '\t\t\tWLSNUP_SHA1:' + encryptedUser
+								##print '\t\t\tWLSNUP_SHA1:' + encryptedUser
+								usrCount = usrCount + 1
+						elif isinstance(i,GroupMemberListerMBean):
+							members = i.listGroupMembers(currGrpName,"*",0)
+							while i.haveCurrent(members):
+								user=i.getCurrentName(members)
+								if i.userExists(user):
+									encryptedUser = sha.new(user).hexdigest()
+									if ( user == 'weblogic' or user == 'OracleSystemUser' or user == 'alsb-system-user' ):
+										print '\t\t\tWLSNUP_SHA1:default_' + encryptedUser
+									else:
+										print '\t\t\tWLSNUP_SHA1:' + encryptedUser									
+									##print '\t\t\tWLSNUP_SHA1:' + encryptedUser
+									usrCount = usrCount + 1
+								i.advance(members)
+							i.close(members)
+						print '\tTotal Users in Group ' + currGrpName + ' are: ' + str(usrCount) + '\n\n'
+						groupReader.advance(groupCursor)
+						groupCount = groupCount + 1
+					groupReader.close(groupCursor)
+					print 'Total Groups in Authentication Provider ' + i.getName()+' are: '+ str(groupCount)
+					providerCount = providerCount + 1
+
+			print 'Total Authentication Providers in Security Realm ' +r.getName()+' are: '+ str(providerCount)
+		disconnect()
+	except WLSTException, ex:
+		print 'WLST Failed.  Could not get NUP Information from Domain ' + domainName + ':' + str(ex)
+		print 'End of getWLS_NUP'
+
+	print
+			
+	theInterpreter.setOut(fosNUPcol)
+	print 'WLS: LMS-03200: COLLECTED: NUP measurement running on ' + targetMachine + ' Domain ' + domainName
+
+
+	theInterpreter.setOut(fosNUPOut)
+	print 
+	print 'End of getWLS_NUP'
+	fosNUPOut.close()
+	fosNUPerr.close()
+	fosNUPwarn.close()
+	fosNUPcol.close()
+	theInterpreter.setOut(prev)
+
+	
+
+
+## getWLS_nup 
+##
+
+prev = theInterpreter.getOut()
+getNUP_Info()
+
+while 1:
+	print '\n\nWould you like to connect to another domain?'
+	quitDomains = raw_input('Please press enter to connect to a new domain or q to quit:')
+	if quitDomains.strip() == 'q':
+		break
+	else :
+		getNUP_Info()
+
+
+theInterpreter.setOut(prev)
+
+print 
+print 'End of getWLS_NUP'
+
+exit()

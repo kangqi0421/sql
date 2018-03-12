@@ -1,0 +1,3 @@
+ORACLEPRODUCT=LMS CPUQ
+
+RUNCMD=../resources/util/LMSCPU/cpuq_main|SCRIPT

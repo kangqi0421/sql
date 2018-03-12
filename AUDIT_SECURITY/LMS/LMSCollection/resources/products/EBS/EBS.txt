@@ -1,0 +1,5 @@
+ORACLEPRODUCT=EBS
+
+INCLUDEPRODUCT=DB/DB.txt
+
+RUNCMD=../resources/util/DB/db_main|SCRIPT

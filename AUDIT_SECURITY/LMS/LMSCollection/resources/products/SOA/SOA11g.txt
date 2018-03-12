@@ -1,0 +1,25 @@
+ORACLEPRODUCT=SOA 11g
+
+INCLUDEPRODUCT=WLS/WLSOracle.txt
+
+SEARCHFILE=domain.xml|LISTING
+SEARCHFILE=install*.out|BUNDLE
+SEARCHFILE=installActions*.log|BUNDLE
+SEARCHFILE=installProfile*.log|BUNDLE
+SEARCHFILE=oraInstall*.log|BUNDLE
+SEARCHFILE=oraInstall*.log|BUNDLE
+SEARCHFILE=server.xml|BUNDLE
+SEARCHFILE=*.bpel|LISTING
+SEARCHFILE=*.wsdl|LISTING
+
+SEARCHFILE=orabpel.jar|LISTING
+SEARCHFILE=alsb.jar|LISTING
+SEARCHFILE=oracle-bam-common.jar|LISTING
+SEARCHFILE=wsm-pm.ear|LISTING
+SEARCHFILE=oracle.soa.workflow.jar|LISTING
+SEARCHFILE=oracle.soa.b2b.jar|LISTING
+SEARCHFILE=oracle.soa.common.adapters.jar|LISTING
+SEARCHFILE=rules.jar|LISTING
+SEARCHFILE=bpm-infra.jar|LISTING
+SEARCHFILE=soa-infra.jar|LISTING
+SEARCHFILE=aia.jar|LISTING
