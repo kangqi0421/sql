@@ -1,5 +1,5 @@
 --
--- OLIAPI view
+-- OLIAPI CA CMDB view
 --
 
 -- TODO: založit ownera OLI_API
@@ -28,6 +28,12 @@ Description=CA Servicedesk database
 Trace=No
 Server=cadb.csint.cz,5441
 Database=mdb
+
+-- CA CMDB casdgw DB link
+
+isql casd zAPI_Oracle_licence Heslo123.
+
+select count(*) from dbo.zAPI_Oracle_licence_apps;
 
 
 -- CMDB
