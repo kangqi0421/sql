@@ -335,6 +335,90 @@ ORDER BY timestamp, dbname, instance_name, host_name, metric_name
 return msg;
 
 
+5) server OS metriky
+
+// daily agg
+msg.payload = [];
+msg.topic = 'server';
+msg.query = `
+WITH SERVER_METRIC
+AS (
+  SELECT
+   rollup_timestamp,
+   m.target_guid,
+   METRIC_COLUMN,
+   ROUND(AVERAGE, 2) VALUE
+ FROM
+    SYSMAN.MGMT$METRIC_DAILY m
+WHERE
+  m.target_type like 'host'
+  AND m.metric_name in ('Load', 'DiskActivitySummary')
+  AND m.metric_column in (
+        'cpuUtil',
+        'usedLogicalMemoryPct',
+        'totiosmade',
+        'maxavserv')
+)
+select
+   to_char(rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
+   s.host_name as HOST_NAME,
+   p.property_value ENV_STATUS,
+   decode(s.virtual, 'Yes', 'true', 'No', 'false') virtual,
+   total_cpu_cores CPU_CORES,
+   NVL(CPU_UTIL, 0) CPU_UTIL,
+   NVL(MEMORY_UTIL, 0) MEMORY_UTIL,
+   NVL(IOPS, 0) IOPS,
+   NVL(AVG_SRV_TIME, 0) AVG_SRV_TIME
+  FROM SERVER_METRIC
+    PIVOT (MIN(VALUE) FOR METRIC_COLUMN IN (
+        'cpuUtil' AS cpu_util,
+        'usedLogicalMemoryPct' AS memory_util,
+        'totiosmade' AS iops,
+        'maxavserv' avg_srv_time)
+          ) m
+    JOIN MGMT$OS_HW_SUMMARY s
+      ON (m.target_guid = s.target_guid)
+    JOIN sysman.MGMT_TARGET_PROPERTIES p
+      ON (p.target_guid = m.target_guid)
+WHERE
+       p.property_name = 'orcl_gtp_lifecycle_status'
+  AND  p.PROPERTY_VALUE is not NULL
+  AND  m.rollup_timestamp > sysdate - interval '2' DAY
+  -- AND  host_name = 'tordb02.vs.csin.cz'
+ORDER BY
+    TIMESTAMP, HOST_NAME
+`;
+return msg;
+
+// daily agg
+var res = [];
+var tagNames = ['HOST_NAME', 'ENV_STATUS', 'VIRTUAL'];
+for (var p in msg.payload) {
+    var m = msg.payload[p];
+
+    var vals = {};
+    vals['cpu_cores'] = m.CPU_CORES;
+    vals['cpu_util'] = m.CPU_UTIL;
+    vals['memory_util'] = m.MEMORY_UTIL;
+    vals['iops'] = m.IOPS;
+    vals['avg_srv_tim'] = m.AVG_SRV_TIME;
+
+    var tags = {};
+    for (var i in tagNames) {
+         tags[tagNames[i].toLowerCase()] = m[tagNames[i]];
+    }
+
+    res.push({
+        measurement: 'server_1d',
+        fields: vals,
+        tags: tags,
+        timestamp: new Date(m.TIMESTAMP)
+    });
+}
+msg.payload = res;
+return msg;
+
+
 ## online data
 
 ## Stat 12c SYSMETRIC

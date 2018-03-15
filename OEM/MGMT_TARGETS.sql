@@ -9,6 +9,13 @@ DB target:
 HOST target
   - MGMT$OS_HW_SUMMARY, MGMT_ECM_HW;
 
+LifeCycle:
+       p.PROPERTY_VALUE ENV_STATUS,
+..
+    JOIN sysman.mgmt_target_properties p
+      ON (p.target_guid = d.entity_guid)
+ where p.property_name = 'orcl_gtp_lifecycle_status'
+
 -- ALL targets
 SELECT
 --  t.*

@@ -1,4 +1,0 @@
---
--- MGMT$DB_USERS
---
-
