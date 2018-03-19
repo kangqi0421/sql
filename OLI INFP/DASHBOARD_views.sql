@@ -35,6 +35,20 @@ COMMIT;
 
 connect DASHBOARD/abcd1234
 
+-- Sync JOB
+
+exec dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_session => TRUE);
+
+'DASHBOARD.OMS_OLI_REFRESH_DATA'
+    - oracle_sql:
+        service_name: "{{ infp.service_name }}"
+        sql: |
+          call dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_session => TRUE)
+      environment: "{{ infp_env }}"
+      register: sql_result
+
+JOB ACTION:
+"DASHBOARD"."REFRESH_OLI_DBHOST_PROPERTIES"
 
 -- nové verze view, zatím nenasazeny
 -- přehodit na VM ?
