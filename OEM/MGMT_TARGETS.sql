@@ -7,7 +7,9 @@ DB target:
   - sysman.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
 
 HOST target
-  - MGMT$OS_HW_SUMMARY, MGMT_ECM_HW;
+  - MGMT$OS_HW_SUMMARY
+  - MGMT_ECM_HW
+  - CM$MGMT_ECM_HW_VIRTUAL
 
 LifeCycle:
        p.PROPERTY_VALUE ENV_STATUS,
@@ -137,7 +139,7 @@ WHERE 1=1
 
 select * from MGMT$OS_HW_SUMMARY;
 select * from sysman.MGMT_ECM_HW;
-
+select * from CM$MGMT_ECM_HW_VIRTUAL;
 
 -- VMWare DEV/TEST
 -- seznam
@@ -153,6 +155,28 @@ select * from sysman.MGMT_ECM_HW;
          and VIRTUAL like 'Yes'
          AND system_config = 'x86_64'
 ORDER BY host_name
+;
+
+-- AIX pool info Shared Pool ID
+SELECT * FROM (
+        SELECT
+        s1.TARGET_NAME,
+        s2.NAME        ,
+        s2.VALUE
+FROM
+        CM$MGMT_ECM_HW_VIRTUAL s2        ,
+        MGMT$ECM_CURRENT_SNAPSHOTS s1gen1,
+        MGMT$TARGET s1
+WHERE
+        (
+                s1gen1.TARGET_GUID     = s1.TARGET_GUID
+            AND s1gen1.ECM_SNAPSHOT_ID = s2.ECM_SNAPSHOT_ID (+)
+            AND s1.TARGET_TYPE         = 'host'
+            AND s1gen1.SNAPSHOT_TYPE   = 'll_host_config'
+        )
+    AND name in
+    ('Active CPUs in Pool','Shared Pool ID','Online Virtual CPUs','Active Physical CPUs in system')
+)
 ;
 
 

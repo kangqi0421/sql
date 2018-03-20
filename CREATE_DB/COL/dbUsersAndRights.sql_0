@@ -1,0 +1,139 @@
+﻿SET ECHO ON
+SET FEEDBACK ON
+WHENEVER SQLERROR CONTINUE
+
+define DatabaseSchema = "&1"
+
+SET ECHO OFF
+Prompt
+Prompt Creating Oracle schema: &DatabaseSchema
+SET ECHO ON
+
+CREATE USER "&DatabaseSchema"
+    PROFILE "PROF_APPL"
+    IDENTIFIED BY "tallyman_123456"
+    DEFAULT TABLESPACE "TALLYMAN"
+    TEMPORARY TABLESPACE "TEMP"
+    ACCOUNT UNLOCK ;
+
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_INDX ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_HISTORY ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_HISTORY_INDX ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_TEMP ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_TEMP_INDX ;
+ALTER USER "&DatabaseSchema" QUOTA UNLIMITED ON TALLYMAN_BLOB ;
+
+--GRANT CREATE ANY INDEX TO "&DatabaseSchema" ;
+--GRANT ALTER ANY INDEX TO "&DatabaseSchema" ;
+--GRANT DROP ANY INDEX TO "&DatabaseSchema" ;
+
+GRANT CREATE TABLE TO "&DatabaseSchema" ;
+--GRANT CREATE ANY TABLE TO "&DatabaseSchema" ;
+--GRANT ALTER ANY TABLE TO "&DatabaseSchema" ;
+--GRANT DROP ANY TABLE TO "&DatabaseSchema" ;
+
+GRANT CREATE VIEW TO "&DatabaseSchema" ;
+--GRANT CREATE ANY VIEW TO "&DatabaseSchema" ;
+--GRANT DROP ANY VIEW TO "&DatabaseSchema" ;
+
+--GRANT CREATE ANY SEQUENCE TO "&DatabaseSchema" ;
+--GRANT CREATE DATABASE LINK TO "&DatabaseSchema" ;
+--GRANT EXECUTE ANY PROCEDURE TO "&DatabaseSchema" ;
+
+GRANT JAVADEBUGPRIV TO "&DatabaseSchema" ;
+GRANT JAVAIDPRIV TO "&DatabaseSchema" ;
+GRANT JAVASYSPRIV TO "&DatabaseSchema" ;
+GRANT JAVAUSERPRIV TO "&DatabaseSchema" ;
+GRANT JAVA_ADMIN TO "&DatabaseSchema" ;
+GRANT JAVA_DEPLOY TO "&DatabaseSchema" ;
+
+GRANT CONNECT TO "&DatabaseSchema" ;
+--GRANT RESOURCE TO "&DatabaseSchema" ;
+
+--GRANT SELECT ANY DICTIONARY TO "&DatabaseSchema" ;
+--GRANT SELECT ANY SEQUENCE TO "&DatabaseSchema" ;
+--GRANT SELECT ANY TABLE TO "&DatabaseSchema" ;
+--GRANT INSERT ANY TABLE TO "&DatabaseSchema" ;
+--GRANT UPDATE ANY TABLE TO "&DatabaseSchema" ;
+--GRANT DELETE ANY TABLE TO "&DatabaseSchema" ;
+
+SET ECHO OFF
+Prompt
+Prompt #####################################################
+Prompt ####################   WARNING   ####################
+Prompt #####################################################
+Prompt # The next 4 grants that the script will attempt to
+Prompt # run may fail if &_USER does not have
+Prompt # sufficient rights to grant them. The grants are
+Prompt # only needed if the EAI server is to be used.
+Prompt # If this is the case, the following grants should
+Prompt # be executed as the SYS user.
+Prompt #   GRANT ALL PRIVILEGES ON sys.dba_pending_transactions TO &_USER WITH GRANT OPTION ;
+Prompt #   GRANT ALL PRIVILEGES ON sys.pending_trans$ TO &_USER WITH GRANT OPTION ;
+Prompt #   GRANT ALL PRIVILEGES ON sys.dba_2pc_pending TO &_USER WITH GRANT OPTION ;
+Prompt #   GRANT ALL PRIVILEGES ON sys.dbms_system TO &_USER WITH GRANT OPTION ;
+Prompt #####################################################
+Prompt
+SET ECHO ON
+
+--GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO "&DatabaseSchema" ;
+--GRANT SELECT ON SYS.PENDING_TRANS$ TO "&DatabaseSchema" ;
+--GRANT SELECT ON SYS.DBA_2PC_PENDING TO "&DatabaseSchema" ;
+--GRANT EXECUTE ON SYS.DBMS_SYSTEM TO "&DatabaseSchema" ;
+
+-- doplneno 28.11.2017 jb
+grant execute on SYS.DBMS_ALERT to "&DatabaseSchema" ;
+grant execute on SYS.DBMS_LOCK to "&DatabaseSchema" ;
+grant execute on SYS.DBMS_PIPE to "&DatabaseSchema" ;
+grant execute on SYS.DBMS_SCHEDULER to "&DatabaseSchema" ;
+grant execute on SYS.DBMS_SYSTEM to "&DatabaseSchema" ;
+grant execute on TALLYMAN_LOCKED.DBMS_FLASHBACK_PUBLIC to "&DatabaseSchema" ;
+grant select on TALLYMAN_LOCKED.ALL_DB_PIPES to "&DatabaseSchema" ;
+grant select on TALLYMAN_LOCKED.ALL_USER_SESSION to "&DatabaseSchema" ;
+-- konec doplneni 28.11.217 jb
+-- doplneno 4.12.2017 jb
+grant read, write on directory CS_TALLYMAN_OPERATIONS to "&DatabaseSchema" ;
+-- konec doplneni 4.12.2017
+-- doplneno 7.12.2017 jb
+grant create job to "&DatabaseSchema" ;
+  -- setting chain privileges for job
+BEGIN
+  DBMS_RULE_ADM.GRANT_SYSTEM_PRIVILEGE (DBMS_RULE_ADM.CREATE_RULE_OBJ, '&DatabaseSchema');
+  DBMS_RULE_ADM.GRANT_SYSTEM_PRIVILEGE (DBMS_RULE_ADM.CREATE_RULE_SET_OBJ, '&DatabaseSchema');
+  DBMS_RULE_ADM.GRANT_SYSTEM_PRIVILEGE (DBMS_RULE_ADM.CREATE_EVALUATION_CONTEXT_OBJ, '&DatabaseSchema');
+END;
+/
+-- konec doplneni 7.12.2017
+grant TALLYMAN_ROLE to "&DatabaseSchema" ;
+
+create or replace synonym &DatabaseSchema..DBMS_FLASHBACK_PUBLIC for TALLYMAN_LOCKED.DBMS_FLASHBACK_PUBLIC;
+create or replace synonym &DatabaseSchema..ALL_DB_PIPES for TALLYMAN_LOCKED.ALL_DB_PIPES;
+create or replace synonym &DatabaseSchema..ALL_USER_SESSION for TALLYMAN_LOCKED.ALL_USER_SESSION;
+
+
+-- ACL setting for schema
+-- first run commands from 01_CgpService_run_on_db_server_unix
+-- set certifikates:  02_SSL_unix_config.txt
+BEGIN
+  -- create ACL configuration file
+  DBMS_NETWORK_ACL_ADMIN.CREATE_ACL
+    (acl         => 'webservices.xml',
+     description => 'Webservices called by Tallyman',
+     principal   => '&DatabaseSchema',  -- 'TALLYMAN' -- production
+     is_grant    => true,
+     privilege   => 'connect');
+
+  -- add privilege 'resolve'
+  DBMS_NETWORK_ACL_ADMIN.ADD_PRIVILEGE
+    (acl       => 'webservices.xml',
+     principal => '&DatabaseSchema',  -- 'TALLYMAN' -- production
+     is_grant  => true,
+     privilege => 'resolve');
+END;
+/
+
+SET ECHO OFF
+Prompt Finished creating database &DatabaseSchema
+Prompt
+SET ECHO ON

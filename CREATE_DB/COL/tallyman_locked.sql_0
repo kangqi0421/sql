@@ -1,0 +1,88 @@
+﻿SET ECHO ON
+SET FEEDBACK ON
+WHENEVER SQLERROR CONTINUE
+
+SET ECHO OFF
+Prompt
+Prompt Creating Oracle schema: TALLYMAN_LOCKED
+SET ECHO ON
+
+create user TALLYMAN_LOCKED
+  identified by "n_aRr79Xw9SjLUK#"
+  default tablespace USERS
+  temporary tablespace TEMP
+  profile PROF_APPL
+  password expire
+  account lock;
+
+grant execute on DBMS_FLASHBACK to TALLYMAN_LOCKED with grant option;
+grant select on GV_$DB_PIPES to TALLYMAN_LOCKED with grant option;
+grant select on GV_$SESSION to TALLYMAN_LOCKED with grant option;
+
+create or replace view tallyman_locked.all_db_pipes as
+select p."INST_ID",p."OWNERID",p."NAME",p."TYPE",p."PIPE_SIZE"
+from sys.gv_$db_pipes p
+where p.ownerid = sys_context('USERENV', 'SESSION_USERID') OR p.ownerid is null;
+
+create or replace view tallyman_locked.all_user_session as
+select "INST_ID","SADDR","SID","SERIAL#","AUDSID","PADDR","USER#","USERNAME","COMMAND","OWNERID","TADDR","LOCKWAIT","STATUS","SERVER","SCHEMA#","SCHEMANAME","OSUSER","PROCESS","MACHINE","PORT","TERMINAL","PROGRAM","TYPE","SQL_ADDRESS","SQL_HASH_VALUE","SQL_ID","SQL_CHILD_NUMBER","SQL_EXEC_START","SQL_EXEC_ID","PREV_SQL_ADDR","PREV_HASH_VALUE","PREV_SQL_ID","PREV_CHILD_NUMBER","PREV_EXEC_START","PREV_EXEC_ID","PLSQL_ENTRY_OBJECT_ID","PLSQL_ENTRY_SUBPROGRAM_ID","PLSQL_OBJECT_ID","PLSQL_SUBPROGRAM_ID","MODULE","MODULE_HASH","ACTION","ACTION_HASH","CLIENT_INFO","FIXED_TABLE_SEQUENCE","ROW_WAIT_OBJ#","ROW_WAIT_FILE#","ROW_WAIT_BLOCK#","ROW_WAIT_ROW#","TOP_LEVEL_CALL#","LOGON_TIME","LAST_CALL_ET","PDML_ENABLED","FAILOVER_TYPE","FAILOVER_METHOD","FAILED_OVER","RESOURCE_CONSUMER_GROUP","PDML_STATUS","PDDL_STATUS","PQ_STATUS","CURRENT_QUEUE_DURATION","CLIENT_IDENTIFIER","BLOCKING_SESSION_STATUS","BLOCKING_INSTANCE","BLOCKING_SESSION","FINAL_BLOCKING_SESSION_STATUS","FINAL_BLOCKING_INSTANCE","FINAL_BLOCKING_SESSION","SEQ#","EVENT#","EVENT","P1TEXT","P1","P1RAW","P2TEXT","P2","P2RAW","P3TEXT","P3","P3RAW","WAIT_CLASS_ID","WAIT_CLASS#","WAIT_CLASS","WAIT_TIME","SECONDS_IN_WAIT","STATE","WAIT_TIME_MICRO","TIME_REMAINING_MICRO","TIME_SINCE_LAST_WAIT_MICRO","SERVICE_NAME","SQL_TRACE","SQL_TRACE_WAITS","SQL_TRACE_BINDS","SQL_TRACE_PLAN_STATS","SESSION_EDITION_ID","CREATOR_ADDR","CREATOR_SERIAL#","ECID"
+from sys.gv_$session
+where username = sys_context('USERENV', 'SESSION_USER');
+
+create or replace PACKAGE tallyman_locked.dbms_flashback_public
+AS
+/**
+ * This package contains procedures and functions
+ * from dbms_flashback which are supposed to be
+ * available to public
+ *
+ * @author Jiri Srba, Tomas Horacek
+ * @version $Revision: $
+ */
+
+  /**
+   * This function returns the current SCN as an Oracle number datatype.
+   */
+  FUNCTION get_system_change_number RETURN NUMBER;
+END;
+/
+
+CREATE OR REPLACE PACKAGE BODY tallyman_locked.dbms_flashback_public
+AS
+  FUNCTION get_system_change_number RETURN NUMBER
+  AS
+  BEGIN
+    RETURN dbms_flashback.get_system_change_number;
+  END;
+END;
+/
+
+– Create the role 
+create role TALLYMAN_ROLE;
+– Grant/Revoke object privileges 
+grant execute on SYS.OUTLN_EDIT_PKG to TALLYMAN_ROLE;
+grant execute on SYS.OUTLN_PKG to TALLYMAN_ROLE;
+--grant select on CS_SB_LOAN_TRN_TYPES to TALLYMAN_ROLE;
+--grant select on TALLYMAN_OFFLINE.CS_SB_LOAN_TRN_TYPES to TALLYMAN_ROLE;
+– Grant/Revoke system privileges 
+grant alter session to TALLYMAN_ROLE;
+grant create any outline to TALLYMAN_ROLE;
+grant create cluster to TALLYMAN_ROLE;
+grant create indextype to TALLYMAN_ROLE;
+grant create job to TALLYMAN_ROLE;
+grant create materialized view to TALLYMAN_ROLE;
+grant create operator to TALLYMAN_ROLE;
+grant create procedure to TALLYMAN_ROLE;
+grant create sequence to TALLYMAN_ROLE;
+grant create session to TALLYMAN_ROLE;
+grant create synonym to TALLYMAN_ROLE;
+grant create table to TALLYMAN_ROLE;
+grant create trigger to TALLYMAN_ROLE;
+grant create type to TALLYMAN_ROLE;
+grant create view to TALLYMAN_ROLE;
+grant query rewrite to TALLYMAN_ROLE;
+
+SET ECHO OFF
+Prompt Finished creating database TALLYMAN_LOCKED
+Prompt
+SET ECHO ON

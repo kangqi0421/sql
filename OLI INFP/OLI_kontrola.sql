@@ -1,3 +1,7 @@
+--
+-- OLI checks
+--
+
 -- databaze z OEM, ktere chybi v OLI
 -- OEM
 select d.database_name dbname
@@ -23,7 +27,7 @@ ORDER by 1;
 select upper(d.instance_name)
     FROM dashboard.MGMT$DB_DBNINSTANCEINFO d
       JOIN dashboard.MGMT$TARGET t ON d.target_guid = t.target_guid
-  MINUS      
+  MINUS
 select i.inst_name
 FROM
     OLI_OWNER.DBINSTANCES i
@@ -40,8 +44,6 @@ select
   -- AND target_name like 'ECRS%'
 ORDER by 1;
 
--- ALL db v OLI
-select count(*) from OLI_OWNER.DATABASES;
 
 -- RAC check
 SELECT
@@ -66,10 +68,7 @@ FROM
      JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
      join OLI_OWNER.LICENSED_ENVIRONMENTS l on (s.lic_env_id = l.lic_env_id)
      join OLI_OWNER.DATACENTERS d on (d.datacenter_id = l.datacenter_id)
-     ;
-     
-minus ;
-
+minus
 SELECT
   i.INST_NAME
 FROM

@@ -1,0 +1,17 @@
+-- run on db server
+
+-- create to store certificates
+mkdir /etc/oracle/wallet
+
+-- change owner
+chown oracle:dba /etc/oracle/wallet
+
+-- create wallet 
+/oracle/product/db/12.1.0.2/bin/orapki wallet create -wallet /etc/oracle/wallet -pwd Tallyman123/ -auto_login
+
+-- add certificates to wallet root and middle use files from zip
+/oracle/product/db/12.1.0.2/bin/orapki wallet add -wallet /etc/oracle/wallet -trusted_cert -cert "/etc/oracle/wallet/00_CSEROOT.cer" -pwd Tallyman123/
+/oracle/product/db/12.1.0.2/bin/orapki wallet add -wallet /etc/oracle/wallet -trusted_cert -cert "/etc/oracle/wallet/01_CSE2CA.cer" -pwd Tallyman123/
+
+-- change owner of files in wallet dir
+chown oracle:dba /etc/oracle/wallet/*

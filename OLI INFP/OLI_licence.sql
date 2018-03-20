@@ -8,15 +8,15 @@ select * from OLI_OWNER.PRODUCTS
   and db_product = 'Y'
 order by PROD_ID;
 
-- 3 Advanced Compression
+- 38: Enterprise Edition
+- 3: Advanced Compression
 
 
 -- Licence summary
-select hostname||'.'||domain as server
-    from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
-  where current_prod_id = 3
+select hostname||'.'||domain as server, l.*
+    from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY l
+  where current_prod_id = 38
  order by 1;
-
 
 
 --> INSERT do LICENSE_ALLOCATIONS

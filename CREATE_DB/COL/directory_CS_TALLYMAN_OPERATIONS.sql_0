@@ -1,0 +1,2 @@
+set echo on
+create or replace directory CS_TALLYMAN_OPERATIONS as '/srv/data/tst/tallyman/tallyman/remote/db' ;

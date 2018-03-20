@@ -28,6 +28,8 @@ asmca -silent -createDiskGroup \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
   -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
 
+## DWH PoC
+asmca -silent -createDiskGroup -diskGroupName DWHDDP_DATA -diskList '/dev/mapper/asm_*DWHDDP_DATA*' -redundancy EXTERNAL -au_size 64 -compatible.asm '12.2' -compatible.advm '12.2' -compatible.rdbms '12.2'
 
 ## asmcmd compatible
 
