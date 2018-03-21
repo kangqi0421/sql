@@ -47,12 +47,13 @@ pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespac
 - pouze aktuální data bez historie
 
 ```
+// pouze online hodnoty
 msg.payload = [];
 msg.topic = 'tbs';
 msg.query = `
 select
      TO_CHAR(t.collection_timestamp,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-     d.entity_name as DBNAME,
+     d.database_name as DBNAME,
      d.host_name,
      p.PROPERTY_VALUE ENV_STATUS,
      tablespace_name,
@@ -60,13 +61,11 @@ select
      round(tablespace_used_size/power(1024,2)) AS USED_MB,
      'MB' as UNIT
   from    mgmt$db_tablespaces t
-    JOIN sysman.EM_MANAGEABLE_ENTITIES d
-      ON (t.target_guid = d.entity_guid)
-    JOIN sysman.mgmt_target_properties p
-      ON (p.target_guid = d.entity_guid)
+     JOIN mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
+     JOIN sysman.mgmt_target_properties p ON (p.target_guid = d.target_guid)
  where p.property_name = 'orcl_gtp_lifecycle_status'
-    AND d.entity_name = 'MDWTB'
-    --and tablespace_name = 'SYSTEM'
+   AND t.collection_timestamp > sysdate - interval '2' day
+   AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
 ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 `;
 return msg;
@@ -135,7 +134,7 @@ AS (
 )
 SELECT
    to_char(rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
-   d.entity_name DBNAME,
+   d.database_name DBNAME,
    t.host_name as HOST_NAME,
    p.property_value ENV_STATUS,
    ALLOCATED_GB,
@@ -147,16 +146,14 @@ FROM DB_METRIC
           ) m
     JOIN MGMT$TARGET t
       ON (m.target_guid = t.target_guid)
-    JOIN sysman.EM_MANAGEABLE_ENTITIES d
-      ON (m.target_guid = d.entity_guid)
+    JOIN mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
     JOIN MGMT_TARGET_PROPERTIES p
       ON (p.target_guid = m.target_guid)
 WHERE
-       d.category_prop_3 = 'DB'
-  AND  p.property_name = 'orcl_gtp_lifecycle_status'
+       p.property_name = 'orcl_gtp_lifecycle_status'
   AND  p.property_value is not NULL
-  AND  m.rollup_timestamp > sysdate - interval '2' DAY
-  AND  d.entity_name = 'MDWP'
+  AND  m.rollup_timestamp > sysdate - interval '31' DAY
+  -- AND  d.database_name = 'PDBP'
 ORDER BY
     TIMESTAMP, DBNAME, HOST_NAME
 `;

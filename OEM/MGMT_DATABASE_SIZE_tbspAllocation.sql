@@ -10,6 +10,7 @@ FROM mgmt$db_tablespaces group by target_guid
 
 
 -- pouze DB
+-- EM_MANAGEABLE_ENTITIES nepouzivat !!!
 SELECT
     d.entity_name dbname,
     round(m.value) as database_size_gb
