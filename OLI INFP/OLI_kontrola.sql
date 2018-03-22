@@ -2,6 +2,8 @@
 -- OLI checks
 --
 
+- procedura OLI_OWNER.CHECKS
+
 -- databaze z OEM, ktere chybi v OLI
 -- OEM
 select d.database_name dbname

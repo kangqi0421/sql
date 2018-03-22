@@ -95,6 +95,7 @@ GRANT SELECT ON DASHBOARD.EM_INSTANCE TO OLI_OWNER with GRANT option;
 -- nahradit za OLAPI_APPS_DB_SERVERS_FARM_FLG
 --
 -- TODO: MEM_ALLOC_SIZE_MB zamenit za db_mem_size_mb., nacitat jako SGA a PGA
+-- tohle upravit dle aktualho stavu v OEM
 CREATE OR REPLACE FORCE VIEW "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG"
 AS
 SELECT DISTINCT    a.app_name,

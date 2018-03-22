@@ -33,3 +33,16 @@ select username, sql_id_tempseg, sum(bs)/power(1024,2) GB
   from temp
 group by username, sql_id_tempseg
  order by 3 desc;
+
+
+/* TEMP as BIGFILE
+- pro RAC nepoužívat
+
+create bigfile temporary tablespace bigtemp;
+alter database default temporary tablespace bigtemp;
+drop tablespace temp;
+create bigfile temporary tablespace temp;
+alter database default temporary tablespace temp;
+drop tablespace bigtemp;
+
+*/

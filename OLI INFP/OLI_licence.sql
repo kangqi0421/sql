@@ -10,6 +10,8 @@ order by PROD_ID;
 
 - 38: Enterprise Edition
 - 3: Advanced Compression
+- 4: Advanced Security
+-
 
 
 -- Licence summary
@@ -17,6 +19,11 @@ select hostname||'.'||domain as server, l.*
     from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY l
   where current_prod_id = 38
  order by 1;
+
+-- Lic Alloc
+select * from   OLI_OWNER.LICENSE_ALLOCATIONS
+  where lic_env_id in (509, 510, 350, 363)
+    and prod_id = 33;
 
 
 --> INSERT do LICENSE_ALLOCATIONS
@@ -106,7 +113,7 @@ select * from OLI_OWNER.LICENSED_ENVIRONMENTS
 
 
 -- OLI capture
-
+-- nahradit za VIEW ?
 
 INTO TABLE OLI_OWNER.LIC_CAPTURE_FEATURE_USAGE
 
