@@ -47,6 +47,20 @@ select
 ORDER by 1;
 
 
+-- OLI server bez SERVERu v CMDB
+-- servery v OLI, ktere neexistuji v CMDB
+select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.SERVERS s
+  where not exists (select 1 from LICENSE_ALLOCATIONS l where l.lic_env_id = s.lic_env_id)
+minus
+select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.CA_SERVERS
+;
+
+
+-- servery bez alokace licencí
+select * from  OLI_OWNER.SERVERS s
+ where not exists (select 1 from LICENSE_ALLOCATIONS l where l.lic_env_id = s.lic_env_id)
+ ;
+
 -- RAC check
 SELECT
   db.dbname, count(*)

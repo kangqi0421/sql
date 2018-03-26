@@ -65,7 +65,10 @@ commit;
 ORACLE-01-ANT
 ORACLE-01-BUD
 
-
+-- update CSI
+update OLI_OWNER.LICENSE_ALLOCATIONS
+  set csi_id = 133
+  where lic_env_id in (509, 510, 350, 363);
 
 -- Licence summary
 -- LICENSE_COSTS_FULL

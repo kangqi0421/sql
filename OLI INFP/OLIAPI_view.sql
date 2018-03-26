@@ -30,10 +30,20 @@ Server=cadb.csint.cz,5441
 Database=mdb
 
 -- CA CMDB casdgw DB link
-
 isql casd zAPI_Oracle_licence Heslo123.
 
 select count(*) from dbo.zAPI_Oracle_licence_apps;
+
+
+--
+-- CA servers
+--
+ca_servers
+ca_relation - VMWare clustery
+
+select hostname, virt_platform_display_name
+  from ca_servers
+ WHERE hostname in ('todwsrc1', 'tbneldb01');
 
 
 -- CMDB
