@@ -5,6 +5,10 @@
 DB target:
   - MGMT$DB_DBNINSTANCEINFO
   - sysman.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
+12.2 - filtr upraven na
+where TARGET_TYPE in ('rac_database', 'oracle_database')
+  and TYPE_QUALIFIER3 != 'RACINST'
+
 
 HOST target
   - MGMT$OS_HW_SUMMARY

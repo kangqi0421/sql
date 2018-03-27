@@ -144,3 +144,13 @@ select count(*) from INT_OWNER.TEMP_DIR_LIST ;
 -- reload JVM
 
 exec DBMS_JAVA.GRANT_PERMISSION('INT_OWNER','SYS:java.io.FilePermission','/srv/data/prod/ccd/cont/remote/fint/import/ctlp/int_owner/temp','read');
+
+
+-- WBLSYS
+DBEIM OOBJCSOPSFILES  JAVA SOURCE 1 0 0 Note: OOBJCSOPSFILES uses or overrides a deprecated API.  ERROR 0
+DBEIM OOBJCSOPSFILES  JAVA SOURCE 2 0 0 Note: Recompile with -Xlint:deprecation for details.  ERROR 0
+DBEIM DIRUTILS  JAVA SOURCE 1 0 0 Note: Some input files use or override a deprecated API.  ERROR 0
+DBEIM DIRUTILS  JAVA SOURCE 2 0 0 Note: Recompile with -Xlint:deprecation for details.  ERROR 0
+DBEIM DIRUTILS  JAVA SOURCE 3 0 0 Note: DIRUTILS uses unchecked or unsafe operations. ERROR 0
+DBEIM DIRUTILS  JAVA SOURCE 4 0 0 Note: Recompile with -Xlint:unchecked for details.  ERROR 0
+

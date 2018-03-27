@@ -78,8 +78,7 @@ WHERE m.sganame = 'Total SGA (MB)'
 COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
   'OEM data pro target db instance včetně CPU MEM SIZE';
 
-CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE"
-AS
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE" ("EM_GUID", "TARGET_NAME", "DBNAME", "LOG_MODE", "CHARACTERSET", "SL_MIN", "DBVERSION", "ENV_STATUS", "RAC", "SLA", "CONNECT_DESCRIPTOR", "SERVER_NAME", "PORT", "HOST_NAME", "DB_SIZE_MB", "DB_LOG_SIZE_MB", "ASM_DISKGROUP") AS
   select t.target_guid em_guid,
        t.target_name,
        database_name dbname,
@@ -151,13 +150,11 @@ AS
              from MGMT_ASM_CLIENT_ECM)
         group by db_name
         ) dg on (dg.db_name = d.database_name)
-WHERE t.TYPE_QUALIFIER3 = 'DB'
-  -- and database_name = 'CPTZ'
+WHERE -- t.TYPE_QUALIFIER3 = 'DB'  -- nefunguje kvuli 12.2. verzi db
+      t.TARGET_TYPE in ('rac_database', 'oracle_database')
+  and TYPE_QUALIFIER3 != 'RACINST'
+  --and database_name = 'CPTZ'
 ;
---
--- COMMENT ON VIEW "DASHBOARD"."EM_DATABASE"  IS
---  'OEM data pro target databaze vcetne db size, fra size';
-
 
 -- OLI data pro REST
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."OLI_DATABASE"
