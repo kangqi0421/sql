@@ -1,4 +1,9 @@
 
+-- DWH bigfile
+create bigfile undo tablespace UNDOTBS2 datafile
+  size 10G autoextend on next 1G maxsize 406G;
+alter system set undo_tablespace = UNDOTBS2 ;
+
 -- inst id #1
 CREATE UNDO TABLESPACE "UNDOTBS1_TEMP" DATAFILE  SIZE 20G;
 alter system set undo_tablespace = UNDOTBS1_TEMP scope=both sid='MCISTB1';

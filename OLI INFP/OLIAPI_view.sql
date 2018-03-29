@@ -11,13 +11,20 @@ grant execute on job
 grant select, insert, update, delete nad OLI tabulkami ?
 FIXME: převest na volání PL/SQL API od Davida Krcha
 
-
 select * from all_views
 where view_name like 'OLAPI%';
 
 -- základní data do CMDB
 select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
+-- Sync OLI
+SyncOLI používá 3 pohledy:
+OLAPI_APPS_DB_SERVERS_FARM_FLG
+OLAPI_ACQUIRED_LICENSES
+OLAPI_LICENCE_USAGE_DETAIL
+
+-- Sync JOBs
+OLI_OWNER.SYNCHRO_CA.RELOAD_ALL > OLI_OWNER.SYNCHRO_CA.RELOAD_ALL
 
 -- Oracle Gateway
 /etc/odbc.ini
@@ -58,9 +65,6 @@ http://caservicedesk/reportextracts/SyncLogs/SyncOLI_APPS_DB_SRVS_FARM_FLG.csv
 select * from OLI_OWNER.OLAPI_ACQUIRED_LICENSES;
 select * from OLI_OWNER.OLAPI_LICENCE_USAGE_DETAIL;
 
--- již se nepoužívá, mělo by být nahraženo za moje
-select * from OLI_OWNER.OLAPI2_APPS_DB_SRVS_FARM_FLG;
-
 
 -- kontroly:
 
@@ -89,6 +93,13 @@ select * from OLI_OWNER.OLAPI_APPLICATIONS;
 select * from OLI_OWNER.OLAPI_APP_DB;
 select * from OLI_OWNER.OLAPI_LICENSED_ENVIRONMENTS;
 
+
+-- granty na OLI_CA_INTERFACE /OLI_QG0_INTERFACE
+GRANT SELECT ON OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG TO  OLI_CA_INTERFACE;
+
+GRANT SELECT ON OLI_OWNER.OLAPI_DATABASES TO  OLI_CA_INTERFACE;
+GRANT SELECT ON OLI_OWNER.OLAPI_DATABASES TO  OLI_QG0_INTERFACE;
+
 -- granty na DASHBOARD view WITH GRANT option
 GRANT SELECT ON DASHBOARD.MGMT$DB_DBNINSTANCEINFO TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.MGMT$TARGET_PROPERTIES TO OLI_OWNER with GRANT option;
@@ -114,7 +125,7 @@ SELECT DISTINCT    a.app_name,
                    I.EM_GUID INST_EM_GUID,
                    I.INST_NAME,
                    I.INST_ROLE,
-                   I.PERCENT_ON_SERVER,
+                   NULL as I.PERCENT_ON_SERVER,
                    I.DBINST_ID,
                    I.CA_ID as DBINST_CMDB_CI_ID,
                    D.DBNAME,
@@ -165,3 +176,26 @@ SELECT DISTINCT    a.app_name,
 ;
 
 select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
+
+
+-- SYNCHRO_CA
+
+  procedure reload_all AS
+  BEGIN
+    reload_applications;
+    reload_databases;
+    reload_servers;
+  END reload_all;
+
+
+ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
+ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 164
+
+
+     UPDATE ca_servers cs
+         SET (virt_platform_resource_name,virt_platform_display_name,virt_platform_ci_id)=
+            (SELECT cv.resource_name cv_resource_name, cv.display_name cv_display_name, cv.cmdb_ci_id cv_cmdb_ci_id
+                FROM ca_relations cr, ca_virt_platforms cv
+                WHERE (cs.cmdb_ci_id=cr.child_cmdb_ci_id and cr.rel_type='hosts')
+                      and (cr.parent_cmdb_ci_id=cv.cmdb_ci_id)
+           );
