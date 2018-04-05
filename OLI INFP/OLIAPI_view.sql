@@ -117,15 +117,14 @@ GRANT SELECT ON DASHBOARD.EM_INSTANCE TO OLI_OWNER with GRANT option;
 --
 -- TODO: MEM_ALLOC_SIZE_MB zamenit za db_mem_size_mb., nacitat jako SGA a PGA
 -- tohle upravit dle aktualho stavu v OEM
-CREATE OR REPLACE FORCE VIEW "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG"
-AS
-SELECT DISTINCT    a.app_name,
+CREATE OR REPLACE VIEW "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG" ("APP_NAME", "APP_CA_ID", "DB_EM_GUID", "INST_EM_GUID", "INST_NAME", "INST_ROLE", "PERCENT_ON_SERVER", "DBINST_ID", "DBINST_CMDB_CI_ID", "DBNAME", "DB_CMDB_CI_ID", "RAC", "DB_VERSION", "ENV_STATUS", "LICDB_ID", "SERVER_ID", "SERVER_CA_ID", "HOSTNAME", "DOMAIN", "FARM", "DBINSTANCES_CK", "LOG_MODE", "CHARACTERSET", "SL_MIN", "SLA", "DSN", "DB_SIZE_MB", "DB_LOG_SIZE_MB", "CPU", "MEM_ALLOC_SIZE_MB") AS
+  SELECT DISTINCT    a.app_name,
                    A.CA_ID app_ca_id,
                    d.EM_GUID DB_EM_GUID,
                    I.EM_GUID INST_EM_GUID,
                    I.INST_NAME,
                    I.INST_ROLE,
-                   NULL as I.PERCENT_ON_SERVER,
+                   ci.calc_percent as PERCENT_ON_SERVER,
                    I.DBINST_ID,
                    I.CA_ID as DBINST_CMDB_CI_ID,
                    D.DBNAME,
@@ -162,6 +161,7 @@ SELECT DISTINCT    a.app_name,
           oli_owner.APP_DB AD,
           oli_owner.databases d,
           oli_owner.DBINSTANCES i,
+          OLI_OWNER.COST_CALC_DBINSTANCES ci,
           oli_owner.servers s,
           oli_owner.licensed_environments le,
           DASHBOARD.EM_DATABASE em,
@@ -171,9 +171,11 @@ SELECT DISTINCT    a.app_name,
           AND D.LICDB_ID = I.LICDB_ID
           AND i.server_id = s.server_id
           AND le.lic_env_id = s.lic_env_id
+          and i.dbinst_id=ci.dbinst_id
           AND d.em_guid = em.em_guid(+)
-          AND i.em_guid = emi.em_guid(+)
+          AND i.em_guid = emi.em_guid(+);
 ;
+
 
 select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
 
@@ -187,9 +189,17 @@ select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
     reload_servers;
   END reload_all;
 
+exec OLI_OWNER.SYNCHRO_CA.reload_servers;
 
 ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
 ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 164
+
+ERROR at line 1:
+ORA-01427: single-row subquery returns more than one row
+ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
+ORA-06512: at line 1
+
+exec OLI_OWNER.SYNCHRO_CA.reload_all;
 
 
      UPDATE ca_servers cs
