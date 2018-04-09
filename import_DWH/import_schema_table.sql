@@ -29,6 +29,7 @@ select username
 )
 ;
 
+
 -- zmena VARCHAR
 select --d.*,
    'alter table '||o.owner||'.'||o.object_name||

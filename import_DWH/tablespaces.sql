@@ -1,5 +1,8 @@
 -- DWH tablespaces
 
+
+-- pustit pres skript import_dwh.sh
+-- nezapomenout na resize no BIGFILE datafiles
 conn system/s
 
 define maxsize = 32767
