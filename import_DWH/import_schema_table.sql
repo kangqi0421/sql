@@ -14,7 +14,8 @@ SELECT 'insert into IMPORT_SCHEMA (username) values ('
       || ');'
   FROM dba_users@EXPORT_IMPDP
  WHERE ORACLE_MAINTAINED = 'N'
-  and username not in ('ARM_CLIENT','ARM_CLSYS', 'ZELA', 'XDB', 'WMSYS', 'OJVMSYS','CTXSYS', 'DBSNMP')
+  and username not in ('ARM_CLIENT','ARM_CLSYS', 'ZELA', 'XDB', 'WMSYS',
+    'OJVMSYS','CTXSYS', 'DBSNMP')
 ORDER by 1
 ;
 
