@@ -2,14 +2,24 @@
 -- OLIAPI CA CMDB view
 --
 
--- TODO: založit ownera OLI_API
+-- TODO: založit ownera OLI_API ? -> zneužijeme dashboard
 --
 
 grant execute on job
-  call dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_session => TRUE)
+
+call dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_session => TRUE)
 
 grant select, insert, update, delete nad OLI tabulkami ?
-FIXME: převest na volání PL/SQL API od Davida Krcha
+
+
+GRANT EXECUTE ON OLI_OWNER.OLI_API TO  DASHBOARD;
+CREATE OR REPLACE SYNONYM DASHBOARD.OLI_API for OLI_OWNER.OLI_API;
+
+connect dashboard/abcd1234
+call OLI_API.delete_database('RMDTESTP');
+
+
+-- OLAP views
 
 select * from all_views
 where view_name like 'OLAPI%';
@@ -181,6 +191,7 @@ select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
 
 
 -- SYNCHRO_CA
+--// OLI_OWNER.SYNCHRO_CA.reload_servers //--
 
   procedure reload_all AS
   BEGIN

@@ -1,7 +1,7 @@
 /* ASH */
 
 select 
--- * 
+ * 
 --event, count(*) cnt
 --sample_time, count(*)
 --  SQL_ID, COUNT(*) cnt
@@ -24,16 +24,16 @@ select
 --      sample_time, sql_id, sql_plan_hash_value, count(*), round(sum(PGA_ALLOCATED)/1048576)
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
-    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
-    FROM GV$ACTIVE_SESSION_HISTORY a
---    FROM dba_hist_active_sess_history a
+--    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
+--    FROM GV$ACTIVE_SESSION_HISTORY a
+    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-03-05 05:04:00'
-                           AND TIMESTAMP'2018-03-05 05:07:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-04-09 13:23:00'
+                           AND TIMESTAMP'2018-04-09 14:00:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
-                         and SQL_ID = '5vd1txs4gsb06'
---                         and event in ('gc current block 2-way')
+--                         and SQL_ID = '5vd1txs4gsb06'
+--                         and event in ('enq: TM - contention')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
@@ -41,7 +41,7 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
---                         and SESSION_ID in (309)  and SESSION_SERIAL# in (44715)
+                         and SESSION_ID in (1644)  --and SESSION_SERIAL# in (44715)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
@@ -72,10 +72,10 @@ select
 --  session_state, event order by count(*) desc
   --program
   --instance_number, session_id order by count(*) desc
-  --blocking_session
+--group by blocking_session
 --ORDER by count(*) DESC  
 --ORDER by session_id
-ORDER BY sample_time -- desc  --, inst_id
+--ORDER BY sample_time -- desc  --, inst_id
 ;
 
 -- min snapshot time

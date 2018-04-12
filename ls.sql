@@ -3,8 +3,10 @@
 -- File name:   ls.sql
 -- Purpose:     List datafiles of given &1 TABLESPACE
 --
--- Changes:     - added support for ASM and Filesystems
---              - ASM files are sorted by file id, filesystem is sorted by suffix number at file name
+-- Changelog:
+--     - Add BIGFILE, zmena MB na GB
+--     - added support for ASM and Filesystems
+--     - ASM files are sorted by file id, filesystem is sorted by suffix number at file name
 --
 --------------------------------------------------------------------------------
 
@@ -20,6 +22,7 @@ from v$session where sid = (select sid from v$mystat where rownum = 1);
 
 --// formatovani sloupcu //--
 col tablespace_name for a30
+col file_id for 9999
 col file_name for a65
 
 --// dynamicky generovane SQL //--
@@ -49,18 +52,22 @@ set termout on
 
 --// aktualni velikosti datafiles //--
 SELECT
-    tablespace_name
-	, file_id
-	, file_name
-	, round(bytes/1048576, 2) "MB"
-	, autoextensible
-  , (INCREMENT_BY * (select value from v$parameter where name = 'db_block_size'))/1048576 "inc MB"
-  , round(maxbytes/1048576, 2) "max MB"
- FROM (select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by from dba_data_files
+    t.tablespace_name,
+    t.bigfile as BIG,
+    file_id,
+    file_name,
+    round(bytes/power(1024,3)) "GB",
+    autoextensible,
+    (INCREMENT_BY * t.block_size)/1048576 "inc_MB",
+    round(maxbytes/power(1024,3)) "max_GB"
+ FROM (select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by
+          from dba_data_files
        union all
-       select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by from dba_temp_files
-      )
-     WHERE upper(tablespace_name) like upper('&1')
+       select tablespace_name, file_id, file_name, autoextensible, bytes, maxbytes, increment_by
+          from dba_temp_files
+      ) d
+      inner join dba_tablespaces t on (d.tablespace_name = t.tablespace_name)
+     WHERE upper(t.tablespace_name) like upper('&1')
    ORDER BY tablespace_name
 &_IF_ASM , file_id  -- pro ASM setrid dle file_id
 &_IF_FS  , SUBSTR (file_name, INSTR (file_name, '/', -1, 1) + 1) -- pro filesystem setrid dle cisla koncovky file_name
@@ -68,17 +75,18 @@ SELECT
 
 prompt
 prompt DB: dba_data_files JOIN dba_free_space:
-SELECT   f.tablespace_name,
-    f.total_max_size                                  "max size [MB]",
-    f.total_size                                      "alloc space [MB]",
-    -- f.total_size - NVL (s.free_space, 0)           "alloc space [MB]",
-	 (f.total_max_size - f.total_size) + NVL (s.free_space, 0) "free space [MB]",
+SELECT
+    f.tablespace_name,
+    f.total_max_size                                  "max size [GB]",
+    f.total_size                                      "alloc space [GB]",
+    -- f.total_size - NVL (s.free_space, 0)           "alloc space [GB]",
+	 (f.total_max_size - f.total_size) + NVL (s.free_space, 0) "free space [GB]",
     round((f.total_size - NVL (s.free_space, 0))/f.total_max_size*100) "Space Used (%)"
   FROM
     (
       SELECT   tablespace_name,
-               round(SUM (bytes/1048576)) total_size,
-               round(SUM (bytes_total/1048576)) total_max_size
+               round(SUM (bytes/power(1024,3))) total_size,
+               round(SUM (bytes_total/power(1024,3))) total_max_size
         FROM
           (
             SELECT   tablespace_name, BYTES,
@@ -93,7 +101,7 @@ SELECT   f.tablespace_name,
   INNER JOIN
     (
       SELECT   tablespace_name,
-          round(SUM (BYTES/1048576)) free_space
+          round(SUM (BYTES/power(1024,3))) free_space
         FROM dba_free_space
         GROUP BY tablespace_name
     ) s
