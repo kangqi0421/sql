@@ -98,8 +98,10 @@ order by name
 --
 -- zmena hesla na puvodni
 --
--- ALTER USER &user profile default;
--- ALTER USER &user IDENTIFIED BY "xxx";
--- ALTER USER &user profile PROF_DBA;
+/*
 
+ALTER USER &user profile default;
+ALTER USER &user IDENTIFIED BY "xxx";
+ALTER USER &user profile PROF_DBA;
 
+*/
