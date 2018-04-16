@@ -66,15 +66,10 @@ SELECT
    -- and REGEXP_LIKE(o.hostname, '^[dt][pb][a-z]{3}db\d{2}')
 ;
 
---
-SELECT
-    CASE
-      WHEN OS LIKE 'AIX%' THEN 'AIX'
-      WHEN OS LIKE 'HP-UX%'  THEN 'HP-UX'
-      WHEN OS LIKE '%Windows%' THEN 'Microsoft Windows Server'
-      WHEN OS LIKE 'RHEL%'  THEN 'Linux'
-      WHEN OS LIKE 'CentOS%'  THEN 'Linux'
-      WHEN OS LIKE 'SOLARIS%'  THEN 'SOLARIS'
-      ELSE OS
-    END "OS"
-  FROM OLI_OWNER.SERVERS;
+-- OLI server bez SERVERu v CMDB
+-- servery v OLI, ktere neexistuji v CMDB
+select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.SERVERS s
+  where not exists (select 1 from LICENSE_ALLOCATIONS l where l.lic_env_id = s.lic_env_id)
+minus
+select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.CA_SERVERS
+;

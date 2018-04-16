@@ -26,16 +26,37 @@ select * from   OLI_OWNER.LICENSE_ALLOCATIONS
     and prod_id = 33;
 
 
+## přidání serveru
+
+Enterprise Edition - používat pouze volbu "Enterprise Edition"
+
+Diagnostics Pack  PP  8 8 -
+Enterprise Edition  PP  8 8 -
+Partitioning  PP  8 8 -
+Real Application Clusters PP  8 8 -
+Tuning Pack PP  8 8 -
+
+Lic. Environment - nazev serveru
+CSI: 18314601
+Active: Y
+Licence count: 8
+
+-- AIX
+-- tabulka s CPU poolem + hodnotu CPU
+https://linux.vs.csin.cz/server_list/?t=aixmspp
+
+
 --> INSERT do LICENSE_ALLOCATIONS
 
 --
 -- fyzický server
 --
-select lic_env_id from servers
-  where hostname like 'pordb06%';
+select lic_env_id, hostname, domain
+  from servers
+  where hostname like 'dbtest1%';
 
-define LIC_ENV_ID = 4095
-define PP = 14
+define LIC_ENV_ID = 510
+define PP = 4
 
 -- Diagnostics Pack
 Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
