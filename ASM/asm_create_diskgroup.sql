@@ -19,14 +19,14 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=EPMDA_DATA
-AU_SIZE=4
-COMPATIBLE="12.1"
+DG=DWHPOC_DATA
+AU_SIZE=64
+COMPATIBLE="12.2"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
-    -diskList "/dev/mapper/asm_*${DG}1'" \
+    -diskList "/dev/mapper/asm_hitG800_01*DWHDDP_DATA1" \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
-  -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE}
+  -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE} -compatible.advm ${COMPATIBLE}
 
 ## DWH PoC
 asmca -silent -createDiskGroup -diskGroupName DWHDDP_DATA -diskList '/dev/mapper/asm_*DWHDDP_DATA*' -redundancy EXTERNAL -au_size 64 -compatible.asm '12.2' -compatible.advm '12.2' -compatible.rdbms '12.2'

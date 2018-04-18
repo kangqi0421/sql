@@ -1,11 +1,11 @@
--- tohle nefunguje
--- alter system set NLS_LENGTH_SEMANTICS=CHAR scope=spfile;
+
+-- force no logging
+ALTER DATABASE NO FORCE LOGGING;
 
 -- import dblink
 alter system reset cpu_count;
 alter system set resource_manager_plan = '';
 
-ALTER DATABASE NO FORCE LOGGING;
 
 -- ORA-02049: timeout: distributed transaction waiting for lock
 alter system set distributed_lock_timeout = 1000000 scope=spfile;
