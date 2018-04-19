@@ -39,7 +39,7 @@ select gc_interval_partition_mgr.get_retention('SYSMAN', 'EM_METRIC_VALUES') fro
 -- MGMT / CM metriky
 select * from dba_objects
   where object_name like 'CM$MGMT%'
-  like 'MGMT$DB_%'
+  -- like 'MGMT$DB_%'
 and owner = 'SYSMAN'
 ;
 
