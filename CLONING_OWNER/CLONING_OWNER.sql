@@ -10,6 +10,11 @@ sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
 connect CLONING_OWNER/abcd1234
 
+-- INFTA sequence
+
+ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 100000;
+SELECT CLONING_TASK_TASK_ID_SEQ.NEXTVAL FROM dual;
+ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 1;
 
 -- source target info
 select licdb_id, dbname, clone_source_licdb_id, clone_source_alias_id from oli_owner.databases
