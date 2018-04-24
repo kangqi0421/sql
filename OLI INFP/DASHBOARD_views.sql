@@ -17,13 +17,8 @@ grant CSCONNECT, select any table to PATOCKA:
 
 
 db linky:
-- INFTA - změněno na PUBLIC
-CREATE PUBLIC DATABASE LINK "OEM_PROD" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMSP';
-CREATE PUBLIC DATABASE LINK "OEM_TEST" CONNECT TO CONS IDENTIFIED BY Abcd1234 USING 'OMST';
-
--- private db linky
-DROP DATABASE LINK "OEM_PROD";
 CREATE DATABASE LINK "OEM_PROD" CONNECT TO DASHBOARD IDENTIFIED BY abcd1234 USING 'OMSP';
+CREATE DATABASE LINK "OEM_TEST" CONNECT TO DASHBOARD IDENTIFIED BY abcd1234 USING 'OMST';
 
 --
 create user DASHBOARD identified by abcd1234 profile DEFAULT;
@@ -49,6 +44,18 @@ exec dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_sessio
 
 JOB ACTION:
 "DASHBOARD"."REFRESH_OLI_DBHOST_PROPERTIES"
+
+-- pridat do ansible ?
+exec DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
+
+-- refresh ALL
+DECLARE
+  v_number_of_failures NUMBER(12) := 0;
+BEGIN
+  DBMS_MVIEW.REFRESH_ALL_MVIEWS(v_number_of_failures,'C','', TRUE, FALSE);
+END;
+/
+
 
 -- nové verze view, zatím nenasazeny
 -- přehodit na VM ?
@@ -222,16 +229,6 @@ FROM
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
 ;
 
--- pridat do ansible ?
-exec DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
-
--- refresh ALL
-DECLARE
-  v_number_of_failures NUMBER(12) := 0;
-BEGIN
-  DBMS_MVIEW.REFRESH_ALL_MVIEWS(v_number_of_failures,'C','', TRUE, FALSE);
-END;
-/
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
@@ -267,63 +264,55 @@ FROM
 connect DASHBOARD/abcd1234
 
 -- pridat refresh mview do procky pro refresh
-CREATE OR REPLACE FORCE VIEW MGMT_TARGETS AS select  * from MGMT_TARGETS@OEM_PROD;
+CREATE OR REPLACE FORCE VIEW MGMT_TARGETS
+AS
+ select * from SYSMAN.MGMT_TARGETS@OEM_PROD
+ union
+ select target_name, target_type, type_meta_ver, category_prop_1, category_prop_2, category_prop_3, category_prop_4, category_prop_5, target_guid, load_timestamp, timezone_delta, timezone_region, display_name, owner, type_display_name, service_type, host_name, emd_url, last_load_time, is_group, broken_reason, broken_str, last_rt_load_time, last_updated_time, monitoring_mode, rep_side_avail, last_e2e_load_time, is_propagating, discovered_name, manage_status, is_active, promote_status, dynamic_property_status, org_id, oracle_home, oracle_config_home, unique_id, is_ready, is_ready_for_job, is_cloud_service
+ from SYSMAN.MGMT_TARGETS@OEM_TEST;
 
-CREATE OR REPLACE FORCE VIEW MGMT$TARGET AS select  * from MGMT$TARGET@OEM_PROD;
+CREATE OR REPLACE FORCE VIEW MGMT$TARGET
+AS
+ select  * from MGMT$TARGET@OEM_PROD
+ union
+  select * from SYSMAN.MGMT$TARGET@OEM_TEST;
 
-CREATE OR REPLACE FORCE VIEW MGMT$TARGET_PROPERTIES AS select  * from MGMT$TARGET_PROPERTIES@OEM_PROD;
+CREATE OR REPLACE FORCE VIEW MGMT$TARGET_PROPERTIES AS
+select  * from SYSMAN.MGMT$TARGET_PROPERTIES@OEM_PROD
+union
+select  * from SYSMAN.MGMT$TARGET_PROPERTIES@OEM_TEST;
 
 CREATE OR REPLACE FORCE VIEW MGMT$DB_FEATUREUSAGE AS select * from MGMT$DB_FEATUREUSAGE@OEM_PROD;
-CREATE OR REPLACE FORCE VIEW MGMT_ASM_CLIENT_ECM AS select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_PROD;
 
-CREATE OR REPLACE FORCE VIEW MGMT$TARGET_FLAT_MEMBERS
-AS select  * from MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
-;
+CREATE OR REPLACE FORCE VIEW MGMT_ASM_CLIENT_ECM AS
+select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_PROD
+union
+select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_TEST;
 
-drop view MGMT$TARGET_ASSOCIATIONS;
-CREATE OR REPLACE FORCE VIEW MGMT$TARGET_ASSOCIATIONS
-AS select  * from MGMT$TARGET_ASSOCIATIONS@OEM_PROD
-;
 
-drop view mgmt$target_type;
-CREATE OR REPLACE FORCE VIEW mgmt$target_type
-AS select  * from mgmt$target_type@OEM_PROD
-;
-
-drop view mgmt$os_hw_summary;
-CREATE OR REPLACE FORCE VIEW mgmt$os_hw_summary
-AS select  * from mgmt$os_hw_summary@OEM_PROD
-;
-
-drop view mgmt$metric_daily;
-CREATE OR REPLACE FORCE VIEW mgmt$metric_daily
-AS select  * from mgmt$metric_daily@OEM_PROD
-;
-
-drop view mgmt$METRIC_HOURLY;
-CREATE OR REPLACE FORCE VIEW mgmt$METRIC_HOURLY
-AS select  * from mgmt$METRIC_HOURLY@OEM_PROD
-;
-
-drop view MGMT$DB_CPU_USAGE;
 CREATE OR REPLACE FORCE VIEW MGMT$DB_CPU_USAGE
-AS select  * from MGMT$DB_CPU_USAGE@OEM_PROD
+AS
+select  * from SYSMAN.MGMT$DB_CPU_USAGE@OEM_PROD
+union
+select  * from SYSMAN.MGMT$DB_CPU_USAGE@OEM_TEST
 ;
 
 
-
-DROP VIEW MGMT$DB_DBNINSTANCEINFO ;
-CREATE OR REPLACE FORCE VIEW "MGMT$DB_DBNINSTANCEINFO"
-AS select  * from MGMT$DB_DBNINSTANCEINFO@oem_prod
+CREATE OR REPLACE FORCE VIEW MGMT$DB_DBNINSTANCEINFO
+AS
+select  * from SYSMAN.MGMT$DB_DBNINSTANCEINFO@oem_prod
+union
+select  * from SYSMAN.MGMT$DB_DBNINSTANCEINFO@oem_test
 ;
 
-DROP VIEW MGMT$METRIC_CURRENT ;
 CREATE OR REPLACE FORCE VIEW MGMT$METRIC_CURRENT
 AS
-select  * from MGMT$METRIC_CURRENT@oem_prod
+select  * from SYSMAN.MGMT$METRIC_CURRENT@oem_prod
+union
+select  * from SYSMAN.MGMT$METRIC_CURRENT@oem_test
 ;
 
-DROP VIEW MGMT$DB_INIT_PARAMS ;
+
 CREATE OR REPLACE FORCE VIEW "MGMT$DB_INIT_PARAMS"
 AS
 select * from MGMT$DB_INIT_PARAMS@oem_prod
@@ -336,10 +325,11 @@ SELECT * FROM CM$MGMT_ASM_CLIENT_ECM@oem_prod
 ;
 
 
-DROP VIEW CM$MGMT_DB_SGA_ECM ;
 CREATE OR REPLACE FORCE VIEW "CM$MGMT_DB_SGA_ECM"
 AS
-SELECT * FROM CM$MGMT_DB_SGA_ECM@oem_prod
+SELECT * FROM SYSMAN.CM$MGMT_DB_SGA_ECM@oem_prod
+union
+SELECT * FROM SYSMAN.CM$MGMT_DB_SGA_ECM@oem_test
 ;
 
 DROP VIEW MGMT_ASM_DISKGROUP_ECM ;
@@ -349,6 +339,33 @@ SELECT * FROM SYSMAN.MGMT_ASM_DISKGROUP_ECM@oem_prod
 /
 
 CREATE OR REPLACE FORCE VIEW "MGMT$DB_SGA" AS SELECT * FROM MGMT$DB_SGA@OEM_PROD;
+
+
+-- nevyužité ?
+CREATE OR REPLACE FORCE VIEW MGMT$TARGET_FLAT_MEMBERS
+AS select  * from MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
+;
+
+CREATE OR REPLACE FORCE VIEW MGMT$TARGET_ASSOCIATIONS
+AS select  * from MGMT$TARGET_ASSOCIATIONS@OEM_PROD
+;
+
+CREATE OR REPLACE FORCE VIEW mgmt$target_type
+AS select  * from mgmt$target_type@OEM_PROD
+;
+
+CREATE OR REPLACE FORCE VIEW mgmt$os_hw_summary
+AS select  * from mgmt$os_hw_summary@OEM_PROD
+;
+
+CREATE OR REPLACE FORCE VIEW mgmt$metric_daily
+AS select  * from mgmt$metric_daily@OEM_PROD
+;
+
+CREATE OR REPLACE FORCE VIEW mgmt$METRIC_HOURLY
+AS select  * from mgmt$METRIC_HOURLY@OEM_PROD
+;
+
 
 -- GC view
 CREATE OR REPLACE FORCE VIEW "GC_TARGET_IDENTIFIERS" AS SELECT * FROM SYSMAN.GC_TARGET_IDENTIFIERS@OEM_PROD;
