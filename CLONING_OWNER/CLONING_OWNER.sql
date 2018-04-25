@@ -84,6 +84,13 @@ impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloni
 drop user cloning_owner cascade;
 create user cloning_owner identified by abcd1234 profile PROF_APPL
   default tablespace users quota unlimited on users ;
+-- password reuse
+alter user cloning_owner profile default;
+alter user cloning_owner identified by abcd1234;
+alter user cloning_owner profile PROF_APPL;
+
+grant cs_appl_accounts to cloning_owner;
+
 
 grant create view, create synonym to CLONING_OWNER;
 
