@@ -440,6 +440,7 @@ select
       when METRIC_NAME = 'SQL Service Response Time' then 'response_time'
       when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu'
       when METRIC_NAME = 'CPU Usage Per Txn' then 'cpu'
+      when METRIC_NAME = 'User Calls Per Sec' then 'cpu'
       when METRIC_NAME = 'Host CPU Utilization (%)' then 'cpu'
       when METRIC_NAME = 'Redo Generated Per Sec' then 'redo'
       when METRIC_NAME = 'Session Count' then 'session'
@@ -458,7 +459,6 @@ select
       when METRIC_NAME = 'I/O Megabytes per Second' then 'io'
       when METRIC_NAME = 'Total Parse Count Per Sec' then 'parsing'
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'parsing'
       when METRIC_NAME = 'Queries parallelized Per Sec' then 'pq'
     else 'other' end as METRIC_TYPE,
     case
@@ -468,6 +468,7 @@ select
       when METRIC_NAME = 'SQL Service Response Time' then 'SQL_Service_Response_Time'
       when METRIC_NAME = 'CPU Usage Per Sec' then 'cpu_usage'
       when METRIC_NAME = 'CPU Usage Per Txn' then 'cpu_usage_txn'
+      when METRIC_NAME = 'User Calls Per Sec' then 'user_calls'
       when METRIC_NAME = 'Host CPU Utilization (%)' then 'Host_CPU_Utilization'
       when METRIC_NAME = 'Redo Generated Per Sec' then 'Redo_Generated'
       when METRIC_NAME = 'Session Count' then 'Session_Count'
@@ -477,15 +478,14 @@ select
       when METRIC_NAME = 'DB Block Changes Per Sec' then 'db_block_changes'
       when METRIC_NAME = 'DB Block Gets Per Sec' then 'db_block_gets'
       when METRIC_NAME = 'Logical Reads Per Sec' then 'Logical_Reads'
-      when METRIC_NAME = 'Total Table Scans Per Sec' then 'Total_Table_Scans'
-      when METRIC_NAME = 'Full Index Scans Per Sec' then 'Full_Index_Scans'
+      when METRIC_NAME = 'Total Table Scans Per Sec' then 'total_table_scans'
+      when METRIC_NAME = 'Full Index Scans Per Sec' then 'full_index_scans'
       when METRIC_NAME = 'Current Open Cursors Count' then 'Current_Open_Cursors'
       when METRIC_NAME = 'Temp Space Used' then 'Temp_Space_Used'
       when METRIC_NAME = 'Disk Sort Per Sec' then 'Disk_Sort'
       when METRIC_NAME = 'I/O Requests per Second' then 'IO_Requests'
       when METRIC_NAME = 'I/O Megabytes per Second' then 'IO_Megabytes'
       when METRIC_NAME = 'Total Parse Count Per Sec' then 'Total_Parse'
-      when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
       when METRIC_NAME = 'Hard Parse Count Per Sec' then 'Hard_Parse'
       when METRIC_NAME = 'Queries parallelized Per Sec' then 'Queries_parallelized'
     else 'other' end as METRIC
@@ -502,6 +502,7 @@ where
     'SQL Service Response Time',
     'CPU Usage Per Sec',
     'CPU Usage Per Txn',
+    'User Calls Per Sec',
     'Host CPU Utilization (%)',
     'Redo Generated Per Sec',
     'Session Count',
