@@ -1,20 +1,22 @@
-  CREATE TABLE "LOAD_TABLE"
-   (	"TABLE_OWNER" VARCHAR2(60 CHAR) NOT NULL ENABLE,
-	"TABLE_NAME" VARCHAR2(60 CHAR) NOT NULL ENABLE,
-	"RUN_ID" NUMBER NOT NULL ENABLE,
-	"LOAD_SQL" CLOB
-   )  ;
+connect system/s
 
-  ALTER TABLE "LOAD_TABLE" ADD CONSTRAINT "LOAD_TABLE_PK" PRIMARY KEY ("TABLE_OWNER", "TABLE_NAME", "RUN_ID");
+CREATE TABLE SYSTEM.LOAD_TABLE(
+  	"TABLE_OWNER" VARCHAR2(60 CHAR) NOT NULL ENABLE,
+	  "TABLE_NAME" VARCHAR2(60 CHAR) NOT NULL ENABLE,
+	  "RUN_ID" NUMBER NOT NULL ENABLE,
+	  "LOAD_SQL" CLOB
+    );
+
+ALTER TABLE SYSTEM.LOAD_TABLE ADD CONSTRAINT "LOAD_TABLE_PK" PRIMARY KEY ("TABLE_OWNER", "TABLE_NAME", "RUN_ID");
 
 
-  CREATE TABLE "LOAD_TABLE_LOG"
-   (	"LOG_DT" TIMESTAMP (6),
+CREATE TABLE SYSTEM.LOAD_TABLE_LOG(
+  "LOG_DT" TIMESTAMP (6),
 	"LOG_INFO" VARCHAR2(4000 BYTE)
-   )  ;
+  );
 
 
-create or replace PACKAGE "LOAD_TAB" is
+create or replace PACKAGE SYSTEM.LOAD_TAB is
 
     procedure load_serial(p_table_owner in varchar2, p_table_name in varchar2, p_start_id in number, p_end_id in number);
 
@@ -22,7 +24,7 @@ create or replace PACKAGE "LOAD_TAB" is
         p_table_owner in varchar2
       , p_table_name in varchar2
       , p_db_link in varchar2 := 'EXPORT_IMPDP'
-      , p_parallel_level number := 16
+      , p_parallel_level number := 32
       , p_do_truncate in boolean := true
     );
 
@@ -31,7 +33,7 @@ end load_tab;
 /
 
 
-create or replace PACKAGE BODY "LOAD_TAB" is
+create or replace PACKAGE BODY SYSTEM.LOAD_TAB is
 
 
     procedure do_log(p_info in LOAD_TABLE_LOG.log_info%type) is
@@ -44,10 +46,10 @@ create or replace PACKAGE BODY "LOAD_TAB" is
 
   procedure load_serial(p_table_owner in varchar2, p_table_name in varchar2, p_start_id in number, p_end_id in number) is
     l_dummy varchar2(61);
+
   begin
 
-
-	l_dummy := dbms_assert.schema_name(p_table_owner);
+	  l_dummy := dbms_assert.schema_name(p_table_owner);
     l_dummy := dbms_assert.sql_object_name(p_table_owner||'.'||p_table_name);
 
     do_log('p_table_owner: '||p_table_owner||' p_table_name:'||p_table_name||' p_start_id: '||p_start_id||' p_end_id:'||p_end_id);
@@ -72,27 +74,22 @@ create or replace PACKAGE BODY "LOAD_TAB" is
 
 
 procedure load_part(
-	p_table_owner in varchar2
+  	p_table_owner in varchar2
   , p_table_name in varchar2
-  , p_db_link in varchar2 := 'IMP_LINK'
-  , p_parallel_level number := 8
+  , p_db_link in varchar2 := 'EXPORT_IMPDP'
+  , p_parallel_level number := 32
   , p_do_truncate in boolean := true
   ) is
 
-
   	l_task_name varchar2(120 char);
-
     l_sql_stmt clob;
-
     l_cols varchar2(32676);
-
     l_cnt number;
-
     l_dummy varchar2(61);
   begin
 
 
-	l_dummy := dbms_assert.schema_name(p_table_owner);
+	  l_dummy := dbms_assert.schema_name(p_table_owner);
     l_dummy := dbms_assert.sql_object_name(p_table_owner||'.'||p_table_name);
     l_dummy := dbms_assert.simple_sql_name(p_db_link);
 
@@ -141,7 +138,7 @@ procedure load_part(
       ||d.subobject_name||'') ('||l_cols||')'')||to_clob('' select '||l_cols||' from "''||d.owner||''"."''||d.object_name||''"@'||p_db_link||'''
       ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0,ROWID) = ''||d.object_id)
       as insert_sql
-    from all_objects@'||p_db_link||' d
+    from dba_objects@'||p_db_link||' d
     where d.owner = :p_table_owner and d.object_name = :p_table_name
     	and d.object_type like ''TABLE SUBPARTITION%''';
 
@@ -171,7 +168,7 @@ procedure load_part(
           ||d.subobject_name||'') ('||l_cols||')'')||to_clob('' select '||l_cols||' from "''||d.owner||''"."''||d.object_name||''"@'||p_db_link||'''
           ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0,ROWID) = ''||d.object_id)
           as insert_sql
-        from all_objects@'||p_db_link||' d
+        from dba_objects@'||p_db_link||' d
         where d.owner = :p_table_owner and d.object_name = :p_table_name
             and d.object_type like ''TABLE PARTITION%''';
 
