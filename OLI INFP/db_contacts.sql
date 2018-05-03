@@ -1,6 +1,18 @@
  -- OLI CONTACTS
  -- pouze dočasně, bude nahraženo přímo za kontakty v OLI
 
+
+OLI_OWNER.CA_SRC_APPLICATIONS
+- Z CA dostávám 3 kontakty – VA, SOM a AS + email
+
+select
+--    *
+    "as", "as_email", "serv_mode"
+   from OLI_OWNER.CA_SRC_APPLICATIONS
+  where resource_name like 'SAS_CPS';
+
+
+
 -- DB per server, kontakty
 SELECT hostname,
        a.app_name, d.dbname, 'DBO_'||d.dbname||'_'||d.licdb_id "qg0 CI",
