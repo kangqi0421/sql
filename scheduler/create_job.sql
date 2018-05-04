@@ -17,13 +17,25 @@ END;
 -- DROP JOB
 begin
   dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_JOB', force=>True);
-end;
-/
-
-begin
   dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_CLEANUP_JOB', force=>True);
 end;
 /
+
+
+BEGIN
+   FOR rec IN (
+     SELECT owner ||'.'|| job_name name
+            FROM dba_scheduler_jobs
+           WHERE     owner = 'DWA_OWNER'
+                 --AND state = 'DISABLED'
+                 --AND job_name LIKE 'MIGR$%'
+                 )
+   LOOP
+      DBMS_SCHEDULER.drop_job (job_name => rec.name, force=>True);
+   END LOOP;
+END;
+/
+
 
 -- TEST job, sleep 10 sec
 begin
