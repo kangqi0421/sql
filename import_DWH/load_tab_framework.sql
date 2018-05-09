@@ -33,7 +33,7 @@ end load_tab;
 /
 
 
-create or replace PACKAGE BODY SYSTEM.LOAD_TAB is
+create or replace PACKAGE BODY        LOAD_TAB is
 
 
     procedure do_log(p_info in LOAD_TABLE_LOG.log_info%type) is
@@ -44,12 +44,13 @@ create or replace PACKAGE BODY SYSTEM.LOAD_TAB is
     end;
 
 
-  procedure load_serial(p_table_owner in varchar2, p_table_name in varchar2, p_start_id in number, p_end_id in number) is
+  procedure load_serial(p_table_owner in varchar2, p_table_name in varchar2, p_start_id in number, p_end_id in number)
+  AS
     l_dummy varchar2(61);
 
   begin
 
-	  l_dummy := dbms_assert.schema_name(p_table_owner);
+  l_dummy := dbms_assert.schema_name(p_table_owner);
     l_dummy := dbms_assert.sql_object_name(p_table_owner||'.'||p_table_name);
 
     do_log('p_table_owner: '||p_table_owner||' p_table_name:'||p_table_name||' p_start_id: '||p_start_id||' p_end_id:'||p_end_id);
@@ -62,26 +63,25 @@ create or replace PACKAGE BODY SYSTEM.LOAD_TAB is
     ) loop
 
 
-      do_log(substr(i.load_sql, 1, 2000));
+      do_log(i.load_sql);
 
+      -- dbms_output.put_line(i.load_sql);
       execute immediate i.load_sql;
       commit;
     end loop;
-
-
   end;
 
 
 
 procedure load_part(
-  	p_table_owner in varchar2
+    p_table_owner in varchar2
   , p_table_name in varchar2
   , p_db_link in varchar2 := 'EXPORT_IMPDP'
   , p_parallel_level number := 32
   , p_do_truncate in boolean := true
   ) is
 
-  	l_task_name varchar2(120 char);
+    l_task_name varchar2(120 char);
     l_sql_stmt clob;
     l_cols varchar2(32676);
     l_cnt number;
@@ -89,22 +89,22 @@ procedure load_part(
   begin
 
 
-	  l_dummy := dbms_assert.schema_name(p_table_owner);
+  l_dummy := dbms_assert.schema_name(p_table_owner);
     l_dummy := dbms_assert.sql_object_name(p_table_owner||'.'||p_table_name);
     l_dummy := dbms_assert.simple_sql_name(p_db_link);
 
 
-  	l_task_name := '"'||p_table_owner||'"."'||p_table_name||'"';
+    l_task_name := '"'||p_table_owner||'"."'||p_table_name||'"';
 
 
     begin
-    	dbms_parallel_execute.drop_task(l_task_name);
-  	exception when dbms_parallel_execute.task_not_found then
-    	null;
-	  end;
+      dbms_parallel_execute.drop_task(l_task_name);
+    exception when dbms_parallel_execute.task_not_found then
+      null;
+    end;
 
 
-  	dbms_parallel_execute.create_task(l_task_name);
+    dbms_parallel_execute.create_task(l_task_name);
 
 
     delete from load_table t where t.table_owner = p_table_owner and t.table_name = p_table_name;
@@ -132,15 +132,15 @@ procedure load_part(
     select
       d.owner as table_owner
     , d.object_name as table_name
-    ,	row_number() over(partition by d.owner, d.object_name order by d.subobject_name) as run_id
+    , row_number() over(partition by d.owner, d.object_name order by d.subobject_name) as run_id
       ,
         to_clob(''insert /*+ append */ into "''||d.owner||''"."''||d.object_name||''" subpartition (''
       ||d.subobject_name||'') ('||l_cols||')'')||to_clob('' select '||l_cols||' from "''||d.owner||''"."''||d.object_name||''"@'||p_db_link||'''
-      ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0,ROWID) = ''||d.object_id)
+      ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0, ROWID) = ''||d.object_id)
       as insert_sql
     from dba_objects@'||p_db_link||' d
     where d.owner = :p_table_owner and d.object_name = :p_table_name
-    	and d.object_type like ''TABLE SUBPARTITION%''';
+      and d.object_type like ''TABLE SUBPARTITION%''';
 
     do_log(substr(l_sql_stmt, 1, 2000));
 
@@ -162,11 +162,11 @@ procedure load_part(
         select
           d.owner as table_owner
         , d.object_name as table_name
-        ,	row_number() over(partition by d.owner, d.object_name order by d.subobject_name) as run_id
+        , row_number() over(partition by d.owner, d.object_name order by d.subobject_name) as run_id
           ,
             to_clob(''insert /*+ append */ into "''||d.owner||''"."''||d.object_name||''" partition (''
           ||d.subobject_name||'') ('||l_cols||')'')||to_clob('' select '||l_cols||' from "''||d.owner||''"."''||d.object_name||''"@'||p_db_link||'''
-          ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0,ROWID) = ''||d.object_id)
+          ||'' WHERE TBL$OR$IDX$PART$NUM ("''||d.owner||''"."''||d.object_name||''"@'||p_db_link||', 0, 3, 0, ROWID) = ''||d.object_id)
           as insert_sql
         from dba_objects@'||p_db_link||' d
         where d.owner = :p_table_owner and d.object_name = :p_table_name
@@ -190,32 +190,33 @@ procedure load_part(
     do_log(substr(l_sql_stmt, 1, 2000));
 
 
-    dbms_parallel_execute.create_chunks_by_SQL(task_name => l_task_name
-        , sql_stmt => l_sql_stmt
-        , by_rowid => false
+    dbms_parallel_execute.create_chunks_by_SQL(
+        task_name => l_task_name,
+        sql_stmt => l_sql_stmt,
+        by_rowid => false
     );
 
 
-    do_log(substr(l_sql_stmt, 1, 2000));
-    l_sql_stmt := 'begin load_tab.load_serial('''||p_table_owner||''', '''||p_table_name||''', :start_id, :end_id); end;';
+    do_log(l_sql_stmt);
+    l_sql_stmt := 'begin load_tab.load_serial('||DBMS_ASSERT.enquote_literal(p_table_owner)
+      ||','||DBMS_ASSERT.enquote_literal(p_table_name)
+      ||', :start_id, :end_id); end;';
 
-
-
-
-
-
+    -- grant DROP ANY TABLE
     if nvl(p_do_truncate, true) then
         do_log('truncate table '||l_task_name);
         execute immediate 'truncate table '||l_task_name;
     end if;
 
 
- 	dbms_parallel_execute.run_task(
-    		task_name => l_task_name
-  		, sql_stmt => l_sql_stmt
-	    , language_flag => dbms_sql.native
-    	, parallel_level => p_parallel_level
-	 );
+  dbms_parallel_execute.run_task(
+        task_name => l_task_name
+      , sql_stmt => l_sql_stmt
+      , language_flag => dbms_sql.native
+      , parallel_level => p_parallel_level
+   );
+
+     dbms_output.put_line(DBMS_PARALLEL_EXECUTE.TASK_STATUS(l_task_name));
 
 
   end;
@@ -223,4 +224,3 @@ procedure load_part(
 
 end load_tab;
 /
-

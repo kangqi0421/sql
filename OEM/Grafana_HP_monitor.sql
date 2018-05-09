@@ -47,7 +47,7 @@ pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespac
 - pouze aktuální data bez historie
 
 ```
-// pouze online hodnoty
+// pouze online hodnoty bez historie
 msg.payload = [];
 msg.topic = 'tbs';
 msg.query = `
@@ -65,7 +65,7 @@ select
      JOIN sysman.mgmt_target_properties p ON (p.target_guid = d.target_guid)
  where p.property_name = 'orcl_gtp_lifecycle_status'
    AND t.collection_timestamp > sysdate - interval '2' day
-   AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
+   -- AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
 ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 `;
 return msg;
@@ -111,7 +111,7 @@ return msg;
 ```
 
 
-2) DATABASE SIZE
+2) database size
 
 - pouze daily aggregace, hourly neexistují
 
@@ -152,7 +152,7 @@ FROM DB_METRIC
 WHERE
        p.property_name = 'orcl_gtp_lifecycle_status'
   AND  p.property_value is not NULL
-  AND  m.rollup_timestamp > sysdate - interval '31' DAY
+  AND  m.rollup_timestamp > sysdate - interval '2' DAY
   -- AND  d.database_name = 'PDBP'
 ORDER BY
     TIMESTAMP, DBNAME, HOST_NAME
@@ -281,8 +281,6 @@ return msg;
 
 4) DB INSTANCE metriky: CPU, MEM, IO, Transactions
 
--- daily agg
-
 msg.payload = [];
 msg.topic = 'cpu';
 msg.query = `
@@ -326,9 +324,34 @@ WHERE 1=1
            'transactions_ps', 'logons', 'opencursors')
   AND   m.rollup_timestamp > sysdate - interval '2' day
   AND   m.average is NOT NULL
-  AND   d.database_name LIKE 'MDWZ'
+  -- AND   d.database_name LIKE 'MDWZ'
 ORDER BY timestamp, dbname, instance_name, host_name, metric_name
 `;
+return msg;
+
+var res = [];
+var tagNames = ['DBNAME', 'INSTANCE_NAME', 'HOST_NAME', 'ENV_STATUS',];
+for (var p in msg.payload) {
+    var m = msg.payload[p];
+
+    var vals = {};
+    vals[m.METRIC_NAME + '_' + 'avg'] = Math.round(m.AVG*100)/100;
+    vals[m.METRIC_NAME + '_' + 'min'] = Math.round(m.MIN*100)/100;
+    vals[m.METRIC_NAME + '_' + 'max'] = Math.round(m.MAX*100)/100;
+
+    var tags = {};
+    for (var i in tagNames) {
+         tags[tagNames[i].toLowerCase()] = m[tagNames[i]];
+    }
+
+    res.push({
+        measurement: m.METRIC_TYPE + '_1d',
+        fields: vals,
+        tags: tags,
+        timestamp: new Date(m.TIMESTAMP)
+    });
+}
+msg.payload = res;
 return msg;
 
 
@@ -386,6 +409,7 @@ ORDER BY
     TIMESTAMP, HOST_NAME
 `;
 return msg;
+
 
 // daily agg
 var res = [];

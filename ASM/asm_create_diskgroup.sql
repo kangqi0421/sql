@@ -44,6 +44,12 @@ do
   asmcmd lsattr -l -G $each
 done
 
+## asmcmd dropdg
+
+ASMCMD> mount DLKZ_FRA
+ASMCMD> dropdg -r DLKZ_FRA
+
+
 ## asmcmd mkdg
 AU_SIZE=4M
 COMPATIBLE="12.1"

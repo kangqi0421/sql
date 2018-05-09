@@ -41,6 +41,9 @@ select path, header_status from v$asm_disk
 ---
 alter diskgroup CMTD_D01 add disk '/dev/mapper/asm_449_003*_CMTD_D01p1';
 
+alter diskgroup RDBPKA_D01
+  drop disk RDBPKA_D01_0004,RDBPKA_D01_0008,RDBPKA_D01_0017,RDBPKA_D01_0024;
+
 
 
 -- migrace disků
