@@ -1,27 +1,35 @@
 
 
 -- status
-select * from DBA_PARALLEL_EXECUTE_TASKS;
+select * from DBA_PARALLEL_EXECUTE_TASKS
+  order by job_prefix desc;
 
 SELECT *
   FROM dba_parallel_execute_chunks
- WHERE task_name = 'TEST'
-   and start_ts > sysdate - interval '4' hour
-   and status = 'PROCESSED_WITH_ERROR'
-order by end_ts desc;
+ WHERE 1 = 1
+   and task_name = 'IMPORT_TASK$_157225'
+   and start_ts > sysdate - interval '1' hour
+--   and status = 'PROCESSED_WITH_ERROR'
+--group by error_code   
+  order by end_ts desc
+;
 
-select * from load_table;
+select * from load_table
+ -- where run_id = 14438164
+  ;
+  
+
+select * from LOAD_TABLE_LOG order by log_dt desc
+;
 
 
-alter system set resumable_timeout = 172800 scope=memory;
-
-
+  
 --
 ORA-32795: cannot insert into a generated always identity column
 
 
-select * from   dba_scheduler_jobs
-  where owner = 'SYSTEM';
+-- resume TASK 
+exec DBMS_PARALLEL_EXECUTE.RESUME_TASK ('TEST');
 
 
 declare
