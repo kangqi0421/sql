@@ -29,8 +29,8 @@ select
     FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-04-09 13:23:00'
-                           AND TIMESTAMP'2018-04-09 14:00:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-05-10 04:10:00'
+                           AND TIMESTAMP'2018-05-10 04:30:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
 --                         and SQL_ID = '5vd1txs4gsb06'
 --                         and event in ('enq: TM - contention')
@@ -41,7 +41,7 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
-                         and SESSION_ID in (1644)  --and SESSION_SERIAL# in (44715)
+                         and SESSION_ID in (34)  --and SESSION_SERIAL# in (17855)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
@@ -75,7 +75,7 @@ select
 --group by blocking_session
 --ORDER by count(*) DESC  
 --ORDER by session_id
---ORDER BY sample_time -- desc  --, inst_id
+ORDER BY sample_time -- desc  --, inst_id
 ;
 
 -- min snapshot time

@@ -18,12 +18,17 @@ alter system set parallel_servers_target = 400;
 
 select * from v$pq_sysstat;
 
+select * from   v$session
+  where event like 'resmgr:pq queued';
+
+
 select px.sid, px.serial#,px.qcsid,px.qcserial#,px.qcinst_id,px.degree,px.req_degree,
-  2  s.username, s.sql_id, s.sql_child_number, s.event, s.state
-  3  from v$px_session px, v$session s
-  4  where s.sid = px.sid
-  5    and s.serial# = px.serial#
-  6  order by px.qcsid;
+ s.username, s.sql_id, s.sql_child_number, s.event, s.state
+ from v$px_session px, v$session s
+ where s.sid = px.sid
+   and s.serial# = px.serial#
+ order by px.qcsid;
 
+-- statement queue
+SQL> alter system set "_parallel_statement_queuing"=FALSE
 
-  cd $O

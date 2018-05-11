@@ -9,7 +9,7 @@ from gv$session s inner join gv$process p
        ON (s.inst_id = p.inst_id and s.paddr=p.addr)
   where 1=1
   --  AND EVENT like 'row cache lock'
-  and s.username = 'CPSLDATA_APP'
+  and s.username = 'EXTR_OWNER'
   --and osuser = 'oracle'
   -- AND sql_id = 'azu104ujtd6yp'
   -- vsechny blokovane session
@@ -17,10 +17,6 @@ from gv$session s inner join gv$process p
   --select blocking_session from v$session
   --where EVENT like 'enq: TX - row lock contention'
   --and final_blocking_session_status = 'VALID')
-  and sql_id in (
-  '8jd6fk9uzvrsf',
-'5wf6skq504ahy',
-'8jd6fk9uzvrsf',
-'5wf6skq504ahy',
-'5wf6skq504ahy')
+  -- and sql_id in (
+  -- '8jd6fk9uzvrsf')
 ;
