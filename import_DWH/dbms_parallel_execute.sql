@@ -7,20 +7,29 @@ select * from DBA_PARALLEL_EXECUTE_TASKS
 SELECT *
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_157225'
-   and start_ts > sysdate - interval '1' hour
---   and status = 'PROCESSED_WITH_ERROR'
+   and task_name = 'IMPORT_TASK$_157665'
+   and start_ts > sysdate - interval '2' day
+   and status = 'PROCESSED_WITH_ERROR'
+   and error_code in (-14300, -14401)
 --group by error_code   
   order by end_ts desc
 ;
 
 select * from load_table
- -- where run_id = 14438164
+ where run_id in (SELECT start_id
+  FROM dba_parallel_execute_chunks
+ WHERE 1 = 1
+   and task_name = 'IMPORT_TASK$_157665'
+   and start_ts > sysdate - interval '2' day
+   and status = 'PROCESSED_WITH_ERROR'
+   and error_code in (-14300, -14401)
+   )
   ;
   
 
 select * from LOAD_TABLE_LOG order by log_dt desc
 ;
+
 
 
   
@@ -31,6 +40,8 @@ ORA-32795: cannot insert into a generated always identity column
 -- resume TASK 
 exec DBMS_PARALLEL_EXECUTE.RESUME_TASK ('TEST');
 
+-- drop task
+exec DBMS_PARALLEL_EXECUTE.DROP_TASK ('IMPORT_TASK$_444741');
 
 declare
   l_task_name varchar2(120 char) := 'TEST';
@@ -72,4 +83,6 @@ begin
 
 end;
 /
+
+
 

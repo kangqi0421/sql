@@ -1,4 +1,7 @@
 
+-- zvednout PGA pro create indexu
+alter system set pga_aggregate_target = 40G;
+
 -- force no logging
 ALTER DATABASE NO FORCE LOGGING;
 
