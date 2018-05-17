@@ -210,3 +210,7 @@ BEGIN
 END;
 /
 
+-- OLI konfigurace
+
+select * FROM config_data;
+LIC_CAPTURE_USAGE_TIMEOUT : default(365)

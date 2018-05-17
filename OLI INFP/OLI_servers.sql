@@ -73,3 +73,12 @@ select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.SE
 minus
 select NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) host_name from OLI_OWNER.CA_SERVERS
 ;
+
+-- OLI kontrola proti CMDB
+select * from   OLI_OWNER.SERVERS
+  where hostname = 'astspkidb1'
+  ;
+
+select * from   OLI_OWNER.CA_SERVERS
+  where lower(hostname) like '%pkidb%'
+;
