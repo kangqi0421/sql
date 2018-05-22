@@ -16,5 +16,5 @@ create bigfile temporary tablespace TEMP
 
 -- UNDO bigfile
 create bigfile undo tablespace UNDOTBS2 datafile
-  size 10G autoextend on next 1G maxsize 406G;
+  size 200G autoextend on next 1G maxsize 400;
 alter system set undo_tablespace = UNDOTBS2 ;
