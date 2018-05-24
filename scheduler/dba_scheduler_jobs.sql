@@ -9,6 +9,23 @@
 
 
 
+-- running job
+SELECT *
+  from dba_scheduler_running_jobs
+;
+
+select * from v$session
+  where sid = 780;
+
+-- scheduler_attribute - log history
+DBMS_SCHEDULER.SET_ATTRIBUTE
+
+DBMS_SCHEDULER.SET_SCHEDULER_ATTRIBUTE('log_history','90');
+
+DBMS_SCHEDULER.PURGE_LOG(log_history => 3, which_log => 'JOB_LOG');
+
+
+
 -- failure count > 0
 SELECT   owner, job_name,  enabled,
          max_failures, failure_count
@@ -22,10 +39,6 @@ SELECT *
 --    owner, job_name, job_action, start_date, state, LAST_RUN_DURATION
   FROM dba_scheduler_jobs
 where job_name like 'ORA$AT_OS_OPT_SY_46195';
-
-SELECT *
-  from dba_scheduler_running_jobs
-;
 
 
 -- Gather Stats

@@ -12,7 +12,7 @@ select snap_interval, retention from dba_hist_wr_control;
 -- ZMENY v AWR ---
 -- snapshot po 30-ti min
 exec  DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS( interval => 30);
--- snapshot po hodinì, default
+-- snapshot po hodinÃ¬, default
 exec  DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS( interval => 60);
 
 -- retention 14 dni (20160 minut)
@@ -45,7 +45,7 @@ FETCH FIRST 2 ROWS ONLY
 ;
 
 -- SM/AWR
--- baselines, které lze pripadne odstranit
+-- baselines, kterÃ© lze pripadne odstranit
 select BASELINE_ID,START_SNAP_ID,END_SNAP_ID from SYS.WRM$_BASELINE;
 
 -- min/max
@@ -58,9 +58,10 @@ http://jhdba.wordpress.com/2009/05/19/purging-statistics-from-the-sysaux-tablesp
 -- retention stats history
 select cast(dbms_stats.get_stats_history_availability as date) from dual;
 
--- zmìna na 10 dní
+-- zmÃ¬na na 10 dnÃ­
 exec dbms_stats.alter_stats_history_retention(10);
 exec DBMS_STATS.PURGE_STATS(SYSDATE-10);
+
 
 -- table segments stats
 select round(sum(bytes/1024/1024)) MB, segment_name,segment_type from dba_segments
@@ -86,3 +87,53 @@ alter index I_WRI$_OPTSTAT_H_ST  rebuild online parallel;
 alter index I_WRI$_OPTSTAT_H_OBJ#_ICOL#_ST  rebuild online parallel;
 
 
+
+-- uklid
+wri$_optstat_opr
+
+https://jhdba.wordpress.com/2011/08/23/939/
+Statistics Space Used by SM/OPTSTAT in the SYSAUX Tablespace is not Reclaimed After Purging (Doc ID 454678.1) To BottomTo Bottom
+
+
+-- vypnutÃ­ automatiky sbÄ›ru
+exec dbms_stats.alter_stats_history_retention(-1);
+
+exec dbms_stats.alter_stats_history_retention(8);
+execute dbms_stats.purge_stats(sysdate - 7);
+
+-- purge stats
+DBMS_STATS.PURGE_STATS(DBMS_STATS.PURGE_ALL)
+
+auto stats task operations
+
+Tables WRI$_OPTSTAT_OPR and WRI$_OPTSTAT_OPR_TASK are the internal SYSAUX tables used to log the auto stats task operations (i.e DBMS_STATS package).
+
+-- delete status
+delete from WRI$_OPTSTAT_OPR where start_time < (SYSDATE - 10);
+delete from WRI$_OPTSTAT_OPR_TASKS where start_time < (SYSDATE - 10);
+
+-- vytvoÅ™it indexy ...
+alter index I_WRI$_OPTSTAT_TAB_OBJ#_ST rebuild online;
+
+alter index I_WRI$_OPTSTAT_OPR_STIME rebuild online;
+alter index I_WRI$_OPTSTAT_OPR_ID rebuild online;
+
+select segment_name, bytes/power(1024, 3)
+   from   dba_segments
+  where segment_name in (
+  'WRI$_OPTSTAT_OPR', 'I_WRI$_OPTSTAT_OPR_STIME', 'I_WRI$_OPTSTAT_OPR_ID')
+  ;
+
+
+
+- zkusit RTOZA
+execute DBMS_STATS.ALTER_STATS_HISTORY_RETENTION (9);
+execute DBMS_STATS.ALTER_STATS_HISTORY_RETENTION (8);
+...
+
+ALTER SESSION SET ddl_lock_timeout=30;
+
+truncate table WRI$_OPTSTAT_OPR;
+truncate table WRI$_OPTSTAT_OPR_TASKS;
+
+M000 ORA$AUTOTASK   MMON_SLAVE Cleanup optimizer workload infor

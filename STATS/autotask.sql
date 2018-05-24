@@ -30,6 +30,12 @@ dbms_auto_task_admin.enable('auto optimizer stats collection',NULL,NULL);
 END;
 /
 
+-- maintenance
+https://jhdba.wordpress.com/2011/08/23/939/
+
+Firstly I might as well stop the automatic mmon purging process until I have reduced data
+exec dbms_stats.alter_stats_history_retention(-1);
+
 -- vypis jobu autotasku pro automaticky sber statistik
 
 SELECT *

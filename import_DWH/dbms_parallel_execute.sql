@@ -7,10 +7,10 @@ select * from DBA_PARALLEL_EXECUTE_TASKS
 SELECT *
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_157665'
+   and task_name = 'IMPORT_TASK$_468082'
    and start_ts > sysdate - interval '2' day
    and status = 'PROCESSED_WITH_ERROR'
-   and error_code in (-14300, -14401)
+--   and error_code in (-14300, -14401)
 --group by error_code   
   order by end_ts desc
 ;
