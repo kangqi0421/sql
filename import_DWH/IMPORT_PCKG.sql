@@ -25,7 +25,7 @@ END IMPORT_PCKG;
 --  DDL for Package Body import_pckg
 --------------------------------------------------------
 
-  CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY "SYSTEM"."IMPORT_PCKG" IS
+create or replace PACKAGE BODY          "IMPORT_PCKG" IS
 
   PROCEDURE do_log (
       p_info   IN load_table_log.log_info%TYPE
@@ -61,8 +61,8 @@ END IMPORT_PCKG;
     ) LOOP
 
         do_log(rec.table_name|| ':' || rec.run_id);
-        dbms_output.put_line(rec.load_sql);
-        -- EXECUTE IMMEDIATE rec.load_sql;
+        --dbms_output.put_line(rec.load_sql);
+        EXECUTE IMMEDIATE rec.load_sql;
         COMMIT;
     END LOOP;
 
@@ -104,6 +104,7 @@ END IMPORT_PCKG;
           WHERE
               c.owner = p_table_owner
               AND c.table_name = rec.table_name
+              AND c.data_type not like 'LONG%'
               AND c.hidden_column = 'NO'
               AND c.virtual_column = 'NO'
           ORDER BY
@@ -151,7 +152,7 @@ END IMPORT_PCKG;
     where d.owner = :p_table_owner and d.object_name = :p_table_name
         and d.object_type like ''TABLE SUBPARTITION%''';
 
-        do_log(l_sql_stmt);
+        -- do_log(l_sql_stmt);
         EXECUTE IMMEDIATE l_sql_stmt
             USING p_table_owner, rec.table_name;
 
@@ -179,7 +180,7 @@ END IMPORT_PCKG;
         where d.owner = :p_table_owner and d.object_name = :p_table_name
             and d.object_type like ''TABLE PARTITION%''';
 
-        do_log(l_sql_stmt);
+        -- do_log(l_sql_stmt);
         EXECUTE IMMEDIATE l_sql_stmt
             USING p_table_owner, rec.table_name;
 
@@ -205,7 +206,7 @@ END IMPORT_PCKG;
         where d.owner = :p_table_owner and d.object_name = :p_table_name
             and d.object_type like ''TABLE''';
 
-        do_log(p_table_owner||'.'||rec.table_name);
+        -- do_log(p_table_owner||'.'||rec.table_name);
         EXECUTE IMMEDIATE l_sql_stmt
             USING p_table_owner, rec.table_name;
 
@@ -216,7 +217,8 @@ END IMPORT_PCKG;
         THEN
             do_log('truncate table ' || p_table_owner||'.'||rec.table_name);
           BEGIN
-            EXECUTE IMMEDIATE 'truncate table ' || p_table_owner||'.'||rec.table_name;
+            EXECUTE IMMEDIATE 'truncate table '
+              || DBMS_ASSERT.enquote_name(p_table_owner)||'.'||DBMS_ASSERT.enquote_name(rec.table_name);
           EXCEPTION
             WHEN OTHERS THEN
               IF sqlcode != -24005 THEN RAISE;
@@ -227,7 +229,7 @@ END IMPORT_PCKG;
     END LOOP;
   END;
 
-    PROCEDURE run (
+    PROCEDURE run_parallel (
         p_parallel_level   NUMBER := 32
     ) IS
         v_status      NUMBER;
@@ -247,7 +249,7 @@ END IMPORT_PCKG;
 
         dbms_parallel_execute.create_task(v_task_name);
 
-        v_chunk_sql := q['
+        v_chunk_sql := q'[
           select
              t.run_id start_id,
              t.run_id end_id

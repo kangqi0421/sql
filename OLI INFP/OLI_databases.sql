@@ -2,7 +2,9 @@
 define dbname = 'SYMP'
 
 -- DATABASES
-SELECT dbname, env_status, app_name, hostname, domain
+SELECT distinct app_name
+   -- dbname, env_status, app_name, hostname
+   --, domain
 FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
@@ -10,7 +12,8 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE 1 = 1
-    AND dbname like 'DLKTA%'
+   and env_status = 'Production'
+    --AND dbname like 'DLKTA%'
     -- Pouze VMWare ORACLE-02-ANT
 --    and s.lic_env_id = 3292
 --  s.domain like 'ack-prg.csin.cz'

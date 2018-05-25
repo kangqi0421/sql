@@ -1,4 +1,6 @@
-
+--
+-- DBMS_PARALLEL_EXECUTE
+--
 
 -- status
 select * from DBA_PARALLEL_EXECUTE_TASKS
@@ -30,7 +32,8 @@ select * from load_table
 select * from LOAD_TABLE_LOG order by log_dt desc
 ;
 
-
+truncate table LOAD_TABLE;
+exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('DWH_OWNER');
 
   
 --
@@ -42,6 +45,10 @@ exec DBMS_PARALLEL_EXECUTE.RESUME_TASK ('TEST');
 
 -- drop task
 exec DBMS_PARALLEL_EXECUTE.DROP_TASK ('IMPORT_TASK$_444741');
+
+exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('IMPORT_TASK$_475462');
+
+
 
 declare
   l_task_name varchar2(120 char) := 'TEST';
