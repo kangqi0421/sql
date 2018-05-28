@@ -47,7 +47,7 @@ pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespac
 - pouze aktuální data bez historie
 
 ```
-// pouze online hodnoty bez historie
+// pouze online hodnoty
 msg.payload = [];
 msg.topic = 'tbs';
 msg.query = `
@@ -64,8 +64,8 @@ select
      JOIN mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
      JOIN sysman.mgmt_target_properties p ON (p.target_guid = d.target_guid)
  where p.property_name = 'orcl_gtp_lifecycle_status'
-   AND t.collection_timestamp > sysdate - interval '2' day
-   -- AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
+   AND t.collection_timestamp > sysdate - interval '${context.global.params.oem_collection_date}' day
+   AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
 ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 `;
 return msg;

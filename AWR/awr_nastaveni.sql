@@ -58,6 +58,8 @@ http://jhdba.wordpress.com/2009/05/19/purging-statistics-from-the-sysaux-tablesp
 -- retention stats history
 select cast(dbms_stats.get_stats_history_availability as date) from dual;
 
+
+
 -- zmìna na 10 dní
 exec dbms_stats.alter_stats_history_retention(10);
 exec DBMS_STATS.PURGE_STATS(SYSDATE-10);
@@ -98,7 +100,7 @@ Statistics Space Used by SM/OPTSTAT in the SYSAUX Tablespace is not Reclaimed Af
 -- vypnutí automatiky sběru
 exec dbms_stats.alter_stats_history_retention(-1);
 
-exec dbms_stats.alter_stats_history_retention(8);
+exec dbms_stats.alter_stats_history_retention(3);
 execute dbms_stats.purge_stats(sysdate - 7);
 
 -- purge stats
@@ -135,5 +137,8 @@ ALTER SESSION SET ddl_lock_timeout=30;
 
 truncate table WRI$_OPTSTAT_OPR;
 truncate table WRI$_OPTSTAT_OPR_TASKS;
+exec dbms_stats.alter_stats_history_retention(3);
 
 M000 ORA$AUTOTASK   MMON_SLAVE Cleanup optimizer workload infor
+
+grep 'Cleanup optimizer workload information' *m00*.trc

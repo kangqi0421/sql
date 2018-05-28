@@ -9,12 +9,23 @@ select * from DBA_PARALLEL_EXECUTE_TASKS
 SELECT *
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_468082'
+   and task_name = 'IMPORT_TASK$_753462'
    and start_ts > sysdate - interval '2' day
-   and status = 'PROCESSED_WITH_ERROR'
+--   and status = 'PROCESSED_WITH_ERROR'
 --   and error_code in (-14300, -14401)
+--   and error_code = -1400
 --group by error_code   
   order by end_ts desc
+;
+
+-- ORA-01400: cannot insert NULL into
+SELECT distinct ERROR_MESSAGE
+  FROM dba_parallel_execute_chunks
+ WHERE 1 = 1
+   and task_name = 'IMPORT_TASK$_753462'
+   and start_ts > sysdate - interval '2' day
+   and status = 'PROCESSED_WITH_ERROR'
+   and error_code = -1400
 ;
 
 select * from load_table
@@ -48,7 +59,8 @@ exec DBMS_PARALLEL_EXECUTE.DROP_TASK ('IMPORT_TASK$_444741');
 
 exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('IMPORT_TASK$_475462');
 
-
+select * from load_table
+  order by run_id desc;
 
 declare
   l_task_name varchar2(120 char) := 'TEST';

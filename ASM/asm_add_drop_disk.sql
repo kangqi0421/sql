@@ -2,6 +2,40 @@
 -- ASM přidání disků
 --
 
+-- migrace disků
+nahraženo postupem na wiki
+https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
+
+select
+    'ALTER DISKGROUP '||dg.name||' ADD DISK'||CHR(10)
+  from v$asm_diskgroup dg,
+       v$parameter p
+ where dg.name = ltrim(p.value, '+')
+       and p.name = 'db_create_file_dest'
+;
+
+    'ALTER DISKGROUP '||dg.name||' ADD DISK'||CHR(10),
+
+with dg as
+(
+select
+    dg.name,
+    regexp_substr(p.value, '[A-Z]+', 1, 1) dg_short
+  from v$asm_diskgroup dg,
+       v$parameter p
+ where dg.name = ltrim(p.value, '+')
+       and p.name = 'db_create_file_dest'
+)
+select LISTAGG(''''||path||'''', ','||chr(10))
+     WITHIN GROUP (ORDER BY path)
+    from
+       v$asm_disk d,
+       dg
+ WHERE d.header_status = 'CANDIDATE'
+       and REGEXP_LIKE (path, dg.dg_short||'_'||'(DATA|D01)', 'i')
+   order by d.disk_number
+
+
 -- nové disky
 asmcmd lsdsk --candidate --suppressheader
 
@@ -46,10 +80,6 @@ alter diskgroup RDBPKA_D01
 
 
 
--- migrace disků
-
-nahraženo postupem na wiki
-https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
 
 -- kontrolni info
 select NAME, GROUP_NUMBER, state from v$asm_diskgroup;
