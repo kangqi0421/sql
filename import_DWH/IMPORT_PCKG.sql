@@ -87,6 +87,8 @@ create or replace PACKAGE BODY          "IMPORT_PCKG" IS
             table_name, partitioned FROM all_tables
         WHERE
             owner = p_table_owner
+            AND table_name not in
+              (select CONTAINER_NAME from ALL_MVIEWS)
             AND temporary = 'N'
             AND dropped = 'NO'
             AND external = 'NO'

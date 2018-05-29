@@ -6,14 +6,16 @@
 select * from DBA_PARALLEL_EXECUTE_TASKS
   order by job_prefix desc;
 
-SELECT *
+SELECT 
+    *
+--    distinct error_message
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
    and task_name = 'IMPORT_TASK$_753462'
-   and start_ts > sysdate - interval '2' day
---   and status = 'PROCESSED_WITH_ERROR'
+--    and start_ts > sysdate - interval '1' day
+   and status = 'PROCESSED_WITH_ERROR'
 --   and error_code in (-14300, -14401)
---   and error_code = -1400
+   --and error_code = -1400
 --group by error_code   
   order by end_ts desc
 ;
@@ -23,24 +25,31 @@ SELECT distinct ERROR_MESSAGE
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
    and task_name = 'IMPORT_TASK$_753462'
-   and start_ts > sysdate - interval '2' day
+--   and start_ts > sysdate - interval '2' day
    and status = 'PROCESSED_WITH_ERROR'
    and error_code = -1400
 ;
 
-select * from load_table
- where run_id in (SELECT start_id
-  FROM dba_parallel_execute_chunks
+select table_owner, table_name, load_sql, error_code, error_message
+   from load_table l
+     inner join dba_parallel_execute_chunks p on (l.run_id = p.start_id)
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_157665'
-   and start_ts > sysdate - interval '2' day
-   and status = 'PROCESSED_WITH_ERROR'
-   and error_code in (-14300, -14401)
-   )
-  ;
+   and p.task_name = 'IMPORT_TASK$_753462'
+   and p.status = 'PROCESSED_WITH_ERROR'
+   and p.error_code NOT in (-1400)
+--   and p.error_code in (-32795)
+   and table_owner = 'DAMI_OWNER'
+ order by table_owner, table_name;
   
+-- delete load_table
+delete from load_table
+  where table_name in (
+        'ETL_PROCESSES','MV_ADVISORS','MV_BRANCHES','MV_SOURCE_SYSTEM_ACCTP',
+        'CEN36450_SCX_AUM_EPR','DG_F_VIEWTRACKER','DQ_E_EG_REPO','JBO_DOCP_BASE','MB_R_PARTY_DQI')
+    and table_owner in ('DWH_OWNER', 'RUSB_OWNER');
 
-select * from LOAD_TABLE_LOG order by log_dt desc
+select * 
+  from LOAD_TABLE_LOG order by log_dt desc
 ;
 
 truncate table LOAD_TABLE;
@@ -103,5 +112,13 @@ begin
 end;
 /
 
+-- rozdělení dat per partitions
+select * from dba_tab_partitions
+  where table_owner = 'DAMI_OWNER'
+    and table_name = 'PARTY_HISTORY'
+;
 
-
+select *
+  from "DAMI_OWNER"."PARTY_HISTORY"@EXPORT_IMPDP partition (P_3000)
+ -- WHERE TBL$OR$IDX$PART$NUM ("DAMI_OWNER"."PARTY_HISTORY"@EXPORT_IMPDP, 0, 3, 0, ROWID) = 67909518
+;
