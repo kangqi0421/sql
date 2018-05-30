@@ -2,7 +2,7 @@
 -- ASM storage
 --
 
-define db = FAS
+define db = CTL
 
 select NVL(d.db_name, 'UNKNOWN'),
        disk_group,
