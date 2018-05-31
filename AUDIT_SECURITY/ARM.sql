@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=MDWZ
+DEFINE db=DLK
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
