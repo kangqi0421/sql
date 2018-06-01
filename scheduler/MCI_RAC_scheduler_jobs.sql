@@ -1,3 +1,7 @@
+--
+-- RAC class
+--
+
 -- load balance accross nodes
 col job_name for a15
 SELECT log_date, instance_id, job_name, status
@@ -16,6 +20,14 @@ select owner, job_name name, state, job_class, INSTANCE_STICKINESS, INSTANCE_ID
  WHERE    owner in --('DBMAIN','DBEIM')
 				   --('IPX')
  ;
+
+
+-- RTOP
+--
+- create job class
+- set attr
+DBMS_SCHEDULER.SET_ATTRIBUTE('SYS.ETL_L1_L1_CLASS', 'service', 'RTOZA_ETL');
+
 
 -- MCI_JOBS, redefine default job class na service MCI_JOBS
 DECLARE

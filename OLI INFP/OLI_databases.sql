@@ -2,8 +2,10 @@
 define dbname = 'SYMP'
 
 -- DATABASES
-SELECT distinct app_name
-   -- dbname, env_status, app_name, hostname
+SELECT 
+   --distinct app_name
+    dbname, env_status, app_name, 
+    NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) hostname
    --, domain
 FROM
   OLI_OWNER.DATABASES d
@@ -12,8 +14,8 @@ FROM
   JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
   JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
  WHERE 1 = 1
-   and env_status = 'Production'
-    --AND dbname like 'DLKTA%'
+--   and env_status = 'Production'
+    AND dbname like 'TS2%'
     -- Pouze VMWare ORACLE-02-ANT
 --    and s.lic_env_id = 3292
 --  s.domain like 'ack-prg.csin.cz'
@@ -88,6 +90,24 @@ update OLI_OWNER.DATABASES d
   set d.env_status = 'Test'
   where dbname like 'RDBT%';
 
+
+--
+-- delete
+--
+
+select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) ||');' as cmd
+  from OLI_OWNER.DATABASES d
+ where d.dbname like 'TS2%';
+ 
+    select licdb_id 
+       from databases
+       where upper(dbname)=upper('TS2O'); 
+       
+delete from dbinstances where licdb_id=91;       
+delete from databases where licdb_id = 91;
+
+select * from   OLI_OWNER.APP_DB
+  where app_id=80;  
 --
 -- INSERT do DATABASES
 --

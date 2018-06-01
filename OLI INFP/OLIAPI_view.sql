@@ -16,8 +16,24 @@ GRANT EXECUTE ON OLI_OWNER.OLI_API TO  DASHBOARD;
 CREATE OR REPLACE SYNONYM DASHBOARD.OLI_API for OLI_OWNER.OLI_API;
 
 connect dashboard/abcd1234
-call OLI_API.delete_database('RMDTESTP');
+call OLI_API.delete_database('TS2O');
 
+select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) ||');' as cmd
+  from OLI_OWNER.DATABASES d
+ where d.dbname like 'TS2%';
+
+call OLI_API.delete_database('TS2O');
+call OLI_API.delete_database('TS2B');
+call OLI_API.delete_database('TS2I');
+
+-- delete server ???
+tbsb2o.vs.csin.cz
+tbsb2i.vs.csin.cz
+
+-- ERROR
+delete from databases where licdb_id = 91
+Error report -
+ORA-02292: integrity constraint (OLI_OWNER.DB_APP_DATABASES_FK) violated - child record found
 
 -- OLAP views
 
