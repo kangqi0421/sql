@@ -44,10 +44,7 @@ select table_owner, table_name, load_sql, error_code, error_message
 --   and table_owner not in ('DWH_OWNER')
  order by table_owner, table_name;
  
-select * from load_table
---  where run_id = 117908916
-;
-  
+ 
 -- delete load_table
 delete from load_table
   where table_name NOT in (
@@ -61,11 +58,13 @@ select *
 ;
 
 truncate table LOAD_TABLE;
-exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('DWH_OWNER');
+exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('DAMI_OWNER');
 
-  
---
-ORA-32795: cannot insert into a generated always identity column
+exec SYSTEM.IMPORT_PCKG.import_table(67909518, 67909518);
+
+select * from load_table
+--  where run_id = 117908916
+;
 
 
 -- resume TASK 

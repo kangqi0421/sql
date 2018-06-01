@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  DDL for Package import_pckg "SYSTEM"."IMPORT_PCKG"
+--  DDL for Package IMPORT_PCKG
 --------------------------------------------------------
 
   CREATE OR REPLACE NONEDITIONABLE PACKAGE "SYSTEM"."IMPORT_PCKG" IS
@@ -20,12 +20,13 @@
 
 END IMPORT_PCKG;
 
+
 /
 --------------------------------------------------------
---  DDL for Package Body import_pckg
+--  DDL for Package Body IMPORT_PCKG
 --------------------------------------------------------
 
-create or replace PACKAGE BODY          "IMPORT_PCKG" IS
+create or replace PACKAGE BODY          "SYSTEM"."IMPORT_PCKG" IS
 
   PROCEDURE do_log (
       p_info   IN load_table_log.log_info%TYPE
@@ -47,6 +48,8 @@ create or replace PACKAGE BODY          "IMPORT_PCKG" IS
       p_start_id      IN NUMBER,
       p_end_id        IN NUMBER
   ) AS
+    l_sql_stmt    CLOB;
+
   BEGIN
 
     FOR rec IN (
@@ -62,7 +65,25 @@ create or replace PACKAGE BODY          "IMPORT_PCKG" IS
 
         do_log(rec.table_name|| ':' || rec.run_id);
         --dbms_output.put_line(rec.load_sql);
-        EXECUTE IMMEDIATE rec.load_sql;
+        BEGIN
+          EXECUTE IMMEDIATE rec.load_sql;
+          EXCEPTION
+            WHEN OTHERS THEN
+              IF sqlcode in (-14300, -14401)
+              THEN
+                -- remove sub|partition FROM v_sql
+                select regexp_replace(load_sql, '^(.*)\s(subpartition|partition)\s\(\w+\)(.*)$', '\1\3')
+                   INTO l_sql_stmt
+                   from load_table
+                  where run_id = rec.run_id;
+
+                  do_log(rec.table_name|| ': replace partition : ' || rec.run_id);
+
+                  EXECUTE IMMEDIATE l_sql_stmt;
+                  COMMIT;
+                ELSE RAISE;
+              END IF;
+        END;
         COMMIT;
     END LOOP;
 
