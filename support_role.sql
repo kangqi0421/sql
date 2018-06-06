@@ -7,7 +7,7 @@
 
 -- nahradit za OEM_MONITOR - ANO
 
-define user = cen33059
+define user = ext94865
 
 grant OEM_MONITOR to &user;
 

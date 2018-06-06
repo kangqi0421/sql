@@ -1,3 +1,6 @@
+--
+-- set init params before import
+--
 
 -- zvednout PGA pro create indexu
 alter system set pga_aggregate_target = 40G;

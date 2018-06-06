@@ -26,7 +26,7 @@ END IMPORT_PCKG;
 --  DDL for Package Body IMPORT_PCKG
 --------------------------------------------------------
 
-create or replace PACKAGE BODY          "SYSTEM"."IMPORT_PCKG" IS
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY "SYSTEM"."IMPORT_PCKG" IS
 
   PROCEDURE do_log (
       p_info   IN load_table_log.log_info%TYPE
@@ -303,4 +303,5 @@ create or replace PACKAGE BODY          "SYSTEM"."IMPORT_PCKG" IS
     END;
 
 END IMPORT_PCKG;
+
 /
