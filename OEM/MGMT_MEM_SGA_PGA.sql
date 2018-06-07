@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = todbrca1.vs.csin.cz
+define server = tordb0
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -44,19 +44,20 @@ SELECT
    host_name,
    target_name,  name, --value,
    round(value/1048576/1024) "GB",
-   ROUND(sum(value/1048576/1024) over ()) "SUM GB"
---   ROUND(sum(value/1048576/1024) over (PARTITION BY target_name)) "SUM GB"
+--   ROUND(sum(value/1048576/1024) over ()) "SUM GB"
+   ROUND(sum(value/1048576/1024) over (PARTITION BY host_name)) "SUM GB"
  FROM MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
-    AND target_name in( 'RMDTESTB','RMDTESTC','RMDTESTD')
+--    AND target_name in( 'RMDTESTB','RMDTESTC','RMDTESTD')
 --      or target_name like 'SYMDA%'
 --      )
     and host_name like '&server%'
 --     AND REGEXP_LIKE(host_name, '^z(p|b)ordb\d+.vs.csin.cz')
 --     and target_name not like '%2'
     and value > 0
-order by target_name, name;
+order by host_name, target_name, name;
+
 
 -- MGMT$DB_SGA
 select host_name, target_name, collection_timestamp, sganame, sgasize

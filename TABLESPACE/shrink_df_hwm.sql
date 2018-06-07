@@ -1,6 +1,18 @@
-﻿-- aktualni stav:
+-- aktualni stav:
 
-define tablespace = DAT_DATA
+select sys_context('USERENV', 'DB_NAME') || ': ' ||
+  round ((( select sum(bytes) from v$datafile )
+        + ( select sum(bytes) from v$tempfile ))/power(1024,3), 0)
+  || ' GB'
+from dual
+/
+
+BRATB: 1284
+BRATB: 1260
+
+
+
+define tablespace = %
 
 
 select df.TABLESPACE_NAME,
@@ -30,11 +42,11 @@ GROUP BY tablespace_name ) df join
     SUM (BYTES/1048576) free
   FROM dba_free_space
   group by tablespace_name) free on (df.tablespace_name = free.tablespace_name)
- where df.TABLESPACE_NAME  in ('&tablespace')
+-- where df.TABLESPACE_NAME  in ('&tablespace')
 ;
 
 
-set pages 0 lines 32767 trims on
+set lines 32767 pages 0 trims on head off feed off
 --// resize datafile dle HWM //--
 with query as (
     select /*+ NO_MERGE MATERIALIZE */
@@ -54,8 +66,9 @@ where
     and q.tablespace_name = df.tablespace_name
     and q.file_id = df.file_id
     and q.highblock < df.user_blocks 	-- pouze pokud je shrink resize < df.bytes
-    and q.tablespace_name in ('&tablespace')
+    -- and q.tablespace_name in ('&tablespace')
 ;
+
 
 --// Segmenty z dba_extents k uvolneni pro shrink, posledn?h 5 pro kazdy datafile //--
 SELECT   *

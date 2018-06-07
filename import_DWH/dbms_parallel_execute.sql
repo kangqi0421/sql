@@ -3,7 +3,9 @@
 --
 
 -- status
-select * from DBA_PARALLEL_EXECUTE_TASKS
+select 
+     * 
+   from DBA_PARALLEL_EXECUTE_TASKS
   order by job_prefix desc;
 
 SELECT 
@@ -11,9 +13,10 @@ SELECT
 --    distinct error_message
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_1595662'
+   and task_name = 'IMPORT_TASK$_1881195'
 --    and start_ts > sysdate - interval '1' day
---   and status = 'PROCESSED_WITH_ERROR'
+   and status = 'PROCESSED_WITH_ERROR'
+--     and status in ('ASSIGNED', 'PROCESSED')
 --   and error_code in (-14300, -14401)
    --and error_code = -1400
 --   and status like 'PROC%'
@@ -57,23 +60,31 @@ select *
   from LOAD_TABLE_LOG order by log_dt desc
 ;
 
-truncate table LOAD_TABLE;
-exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('DAMI_OWNER');
+truncate table SYSTEM.LOAD_TABLE;
+exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('ALMDM_OWNER');
 
+-- spusteni serial importu jedne tabulky
 exec SYSTEM.IMPORT_PCKG.import_table(67909518, 67909518);
 
 select * from load_table
 --  where run_id = 117908916
 ;
 
+select count(*) from system.load_table;
+
 
 -- resume TASK 
-exec DBMS_PARALLEL_EXECUTE.RESUME_TASK ('TEST');
+exec DBMS_PARALLEL_EXECUTE.RESUME_TASK('TEST');
 
 -- drop task
-exec DBMS_PARALLEL_EXECUTE.DROP_TASK ('IMPORT_TASK$_1174562');
+exec DBMS_PARALLEL_EXECUTE.DROP_TASK('TEST');
 
-exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('IMPORT_TASK$_1174562');
+exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('IMPORT_TASK$_1837922');
+
+select sid, serial#, username, sql_id from v$session
+  where username = 'SYSTEM'
+    AND module = 'DBMS_SCHEDULER' 
+;
 
 select * from load_table
   order by run_id desc;

@@ -16,6 +16,30 @@ GRANT EXECUTE ON OLI_OWNER.OLI_API TO  DASHBOARD;
 CREATE OR REPLACE SYNONYM DASHBOARD.OLI_API for OLI_OWNER.OLI_API;
 
 connect dashboard/abcd1234
+
+-- add server
+set serveroutput on
+DECLARE
+   server_id PLS_INTEGER;
+BEGIN
+   server_id := OLI_API.ADD_SERVER('tpdwhdb01.vs.csin.cz');
+   dbms_output.put_line('server_id: ' || server_id);
+END;
+/
+commit;
+
+-- add db - zatím nefunguje
+set serveroutput on
+DECLARE
+   licdb_id INTEGER;
+BEGIN
+   licdb_id := OLI_API.add_database('DWHPOC', 'DWH');
+   dbms_output.put_line('licdb_id: ' || licdb_id);
+END;
+/
+commit;
+
+
 call OLI_API.delete_database('TS2O');
 
 select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) ||');' as cmd

@@ -109,10 +109,12 @@ END IMPORT_PCKG;
         WHERE
             owner = p_table_owner
             AND table_name not in
-              (select CONTAINER_NAME from ALL_MVIEWS)
+              (select CONTAINER_NAME from ALL_MVIEWS
+                  WHERE owner = p_table_owner)
             AND temporary = 'N'
             AND dropped = 'NO'
             AND external = 'NO'
+            -- AND table_name in ('ALM_ACCOUNT_BALANCES')
         order by table_name
     )
     LOOP
