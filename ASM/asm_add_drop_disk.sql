@@ -18,6 +18,7 @@ do
   export ORACLE_SID=+ASM
   ORAENV_ASK=NO . oraenv
   sqlplus / as sysasm @asm_disks_DATA.sql
+  sqlplus / as sysasm @asm_disks_FRA.sql
 done
 
 

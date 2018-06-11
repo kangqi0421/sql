@@ -8,12 +8,14 @@ select
    from DBA_PARALLEL_EXECUTE_TASKS
   order by job_prefix desc;
 
+define task = 'IMPORT_TASK$_1885016'
+
 SELECT 
     *
 --    distinct error_message
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_1881195'
+   and task_name = '&task'
 --    and start_ts > sysdate - interval '1' day
    and status = 'PROCESSED_WITH_ERROR'
 --     and status in ('ASSIGNED', 'PROCESSED')
@@ -28,7 +30,7 @@ SELECT
 SELECT distinct ERROR_MESSAGE
   FROM dba_parallel_execute_chunks
  WHERE 1 = 1
-   and task_name = 'IMPORT_TASK$_753462'
+   and task_name = '&task'
 --   and start_ts > sysdate - interval '2' day
    and status = 'PROCESSED_WITH_ERROR'
 --   and error_code = -1400
@@ -38,11 +40,11 @@ select table_owner, table_name, load_sql, error_code, error_message
    from load_table l
      inner join dba_parallel_execute_chunks p on (l.run_id = p.start_id)
  WHERE 1 = 1
-   and p.task_name = 'IMPORT_TASK$_1595662'
-   and p.status = 'PROCESSED_WITH_ERROR'
---   and p.status = 'PROCESSED'
+   and p.task_name = '&task'
+--   and p.status = 'PROCESSED_WITH_ERROR'
+   and p.status = 'ASSIGNED'
 --   and p.error_code in (-1400)
---   and p.error_code in (-32795)
+--   and p.error_code in (-2149)
 --   and table_owner = 'DWH_OWNER'
 --   and table_owner not in ('DWH_OWNER')
  order by table_owner, table_name;
@@ -54,8 +56,6 @@ delete from load_table
         'ACCOUNT_HISTORY', 'DEPOSIT_ACCOUNT_HISTORY')
     and table_owner in ('DWH_OWNER');
 
-delete from load_table where table_owner not in ('DWH_OWNER');
-
 select * 
   from LOAD_TABLE_LOG order by log_dt desc
 ;
@@ -66,20 +66,43 @@ exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('ALMDM_OWNER');
 -- spusteni serial importu jedne tabulky
 exec SYSTEM.IMPORT_PCKG.import_table(67909518, 67909518);
 
-select * from load_table
---  where run_id = 117908916
+select * from SYSTEM.load_table
+  where 1=1 
+     AND table_owner = 'INT_OWNER'
+    and table_name = 'INT_REV_NONALLOCATE_GL_TRANS'
+--    AND run_id = 117908916
 ;
 
 select count(*) from system.load_table;
 
+-- pustit pres scheduler
+-- dbms_scheduler.create_job
+
+-- scheduler
+SELECT   count(*)
+    FROM dba_scheduler_running_jobs;
+    
+SELECT   state
+    FROM dba_scheduler_jobs
+where owner = 'SYSTEM'
+  and job_name like 'DWH_IMPORT_RUN'
+ORDER BY owner, job_name;
+
+    
+SELECT   *
+    FROM dba_scheduler_job_run_details
+where owner = 'SYSTEM'
+  and job_name like 'DWH_IMPORT_RUN'    
+ORDER BY log_date DESC
+;
 
 -- resume TASK 
-exec DBMS_PARALLEL_EXECUTE.RESUME_TASK('TEST');
+exec DBMS_PARALLEL_EXECUTE.RESUME_TASK('IMPORT_TASK$_1885016');
 
 -- drop task
 exec DBMS_PARALLEL_EXECUTE.DROP_TASK('TEST');
 
-exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('IMPORT_TASK$_1837922');
+exec DBMS_PARALLEL_EXECUTE.STOP_TASK ('&task');
 
 select sid, serial#, username, sql_id from v$session
   where username = 'SYSTEM'
@@ -132,9 +155,11 @@ end;
 
 -- rozdělení dat per partitions
 select * from dba_tab_partitions
-  where table_owner = 'DAMI_OWNER'
-    and table_name = 'PARTY_HISTORY'
+  where table_owner = 'INT_OWNER'
+    and table_name = 'INT_CONTROL_FILE_ESPIS'
 ;
+
+INT_OWNER.INT_CONTROL_FILE_ESPIS
 
 select count(*)
   from "DAMI_OWNER"."PARTY_HISTORY" partition (P_3000)

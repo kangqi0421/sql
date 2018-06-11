@@ -24,7 +24,17 @@ DBMS_SCHEDULER.SET_SCHEDULER_ATTRIBUTE('log_history','90');
 
 DBMS_SCHEDULER.PURGE_LOG(log_history => 3, which_log => 'JOB_LOG');
 
+SELECT   count(*)
+    FROM dba_scheduler_running_jobs;
 
+SELECT   owner, job_name, enabled, next_run_date, state
+    FROM dba_scheduler_jobs
+where state <> 'SCHEDULED'
+ORDER BY owner, job_name;
+
+SELECT   *
+    FROM dba_scheduler_job_run_details
+ORDER BY log_date DESC
 
 -- failure count > 0
 SELECT   owner, job_name,  enabled,
