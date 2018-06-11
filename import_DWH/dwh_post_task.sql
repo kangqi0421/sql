@@ -1,18 +1,45 @@
 set lines 32767 pages 0 trims on head off feed off
 spool public.sql
 
-select 'GRANT '||privilege||' "'||owner||'"."'||
-table_name||'" to '||grantee||' '||grantable||';' as CMD
-  from (
-  select GRANTEE, OWNER, TABLE_NAME,
-  case
-    when privilege in ('READ','WRITE')  THEN privilege||' ON '||'DIRECTORY'
-    else privilege||' ON'
-  end privilege,
-  decode(grantable,'YES','WITH Grant option') grantable
-from dba_tab_privs@EXPORT_IMPDP
-  where grantee = 'PUBLIC'
-);
+
+-- FIXME: ORA-00990: missing or invalid privilege
+
+
+BEGIN
+  for rec in (
+    select GRANTEE, OWNER, TABLE_NAME,
+      case
+        when privilege in ('READ','WRITE')  THEN privilege||' ON '||'DIRECTORY'
+        else privilege||' ON'
+      end privilege,
+      decode(grantable,'YES','WITH Grant option') grantable
+    from dba_tab_privs@EXPORT_IMPDP
+       where grantee = 'PUBLIC'
+        AND (owner, table_name) in
+          (select owner, object_name from dba_objects)
+    UNION
+    SELECT grantee, owner, table_name,
+          case
+            when privilege in ('READ','WRITE')  THEN privilege||' ON '||'DIRECTORY'
+            else privilege||' ON'
+          end privilege,
+          decode(grantable,'YES','WITH Grant option') grantable
+      FROM dba_tab_privs@export_impdp
+     WHERE owner = 'SYS'
+       AND grantee in (
+          select username from dba_users
+            where oracle_maintained = 'N')
+        AND (owner, table_name) in
+          (select owner, object_name from dba_objects)
+  ) loop
+  execute immediate 'GRANT '
+      || DBMS_ASSERT.enquote_name(rec.owner)|| '.'
+      || DBMS_ASSERT.enquote_name(rec.table_name)
+      ||' TO '||rec.grantee||' '||rec.grantable;
+  end loop;
+END;
+/
+
 
 spool off
 

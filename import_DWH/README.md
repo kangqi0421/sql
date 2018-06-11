@@ -120,7 +120,7 @@ at now <<< "/dba/local/bin/import_dblink.sh DWHSRC2 DWHPOC $schemas &>import_oth
 sqlplus system/s @dwh_post_task.sql
 ```
 
-znovu přegrantovat PUBLIC
+znovu přegrantovat PUBLIC a SYS granty
 ```
 sqlplus / as sysdba @public.sql
 ```
