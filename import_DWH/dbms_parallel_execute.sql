@@ -20,7 +20,7 @@ SELECT
    and status = 'PROCESSED_WITH_ERROR'
 --     and status in ('ASSIGNED', 'PROCESSED')
 --   and error_code in (-14300, -14401)
-   --and error_code = -1400
+   and error_code = -1
 --   and status like 'PROC%'
 --group by error_code   
   order by end_ts DESC
@@ -64,16 +64,20 @@ truncate table SYSTEM.LOAD_TABLE;
 exec SYSTEM.IMPORT_PCKG.LOAD_SCHEMA('ALMDM_OWNER');
 
 -- spusteni serial importu jedne tabulky
-exec SYSTEM.IMPORT_PCKG.import_table(67909518, 67909518);
+exec SYSTEM.IMPORT_PCKG.import_table(57786922, 57786922);
+exec SYSTEM.IMPORT_PCKG.import_table(57722824, 57722824);
+--
+
+
 
 select * from SYSTEM.load_table
   where 1=1 
-     AND table_owner = 'INT_OWNER'
-    and table_name = 'INT_REV_NONALLOCATE_GL_TRANS'
+--     AND table_owner = 'INT_OWNER'
+--     and table_name = 'INT_REV_NONALLOCATE_GL_TRANS'
 --    AND run_id = 117908916
 ;
 
-select count(*) from system.load_table;
+select distinct table_owner from system.load_table;
 
 -- pustit pres scheduler
 -- dbms_scheduler.create_job
