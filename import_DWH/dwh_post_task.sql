@@ -1,6 +1,7 @@
 
 -- SYS granty
 -- nutno přes spool, protože se generuje pod SYSTEM, ale spouští pod SYS
+-- vyřešeno přes PUBLIC link i pro spuštění pod SYS
 set lines 32767 pages 0 trims on head off feed off
 
 spool public.sql
@@ -27,9 +28,11 @@ table_name||'" to '||grantee||' '||grantable||';' as CMD
           decode(grantable,'YES','WITH Grant option') grantable
       FROM dba_tab_privs@export_impdp
      WHERE owner = 'SYS'
-       AND grantee in (
-          select username from dba_users
-            where oracle_maintained = 'N')
+       and grantee not in (select role from dba_roles where oracle_maintained = 'Y')
+       -- AND grantee in (
+       --    select username from dba_users where oracle_maintained = 'N'
+       --    UNION
+       --    select 'SYSTEM' from dual)
 )
 WHERE (owner, table_name) in
      (select owner, object_name from dba_objects)

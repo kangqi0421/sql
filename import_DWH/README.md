@@ -137,24 +137,38 @@ at now <<< "/dba/local/bin/import_dblink.sh DWHSRC2 DWHPOC $schemas &>import_oth
 
 ## SYSTEM tables
 
-
-
+definice SYSTEM tabulek:
 ```
-cat > tables.par <<EOC
-TABLES=ETL_OWNER.ACCOUNT_OPENING_BALANCES
-TABLES=ETL_OWNER.ETL_MIGRATION_OBJECTS
-TABLES=ETL_OWNER.ETL_MIGRATION_OBJECT_LOGS
-TABLES=ETL_OWNER.ETL_OBJECT_CONSOLIDATED_NAMES
-TABLES=RUSB_OWNER.CEN36450_SCX_AUM_EPR
-TABLES=RUSB_OWNER.DG_F_VIEWTRACKER
-TABLES=RUSB_OWNER.DQ_E_EG_REPO
-TABLES=RUSB_OWNER.JBO_DOCP_BASE
-TABLES=RUSB_OWNER.MB_R_PARTY_DQI
+select 'TABLES='||
+       owner ||'.'|| object_name
+  from dba_objects@export_impdp
+  where owner = 'SYSTEM'
+    and oracle_maintained = 'N'
+    and object_type like 'TABLE'
+    and object_name not like 'DUM$%'
+order by object_name;
+```
+
+import SYSTEM tabulek
+```
+cat > system_tables.par <<EOC
+TABLES=SYSTEM.ADMIN_DB_USERS_LOG
+TABLES=SYSTEM.DBA_LOG
+TABLES=SYSTEM.DB_LOGON_ACCESS
+TABLES=SYSTEM.DB_LOGON_AUDIT_CONFIG
+TABLES=SYSTEM.DB_LOGON_AUDIT_CONFIG_BCK
+TABLES=SYSTEM.DB_LOGON_OS_USER_PERMANENT
+TABLES=SYSTEM.DB_TRACED_USERS
 EOC
 
-OPTIONS=" CONTENT=ALL PARALLEL=32 NETWORK_LINK=EXPORT_IMPDP nologfile=y "
-at now <<< "impdp system/s  exclude=STATISTICS TABLE_EXISTS_ACTION=TRUNCATE parfile=tables.par $OPTIONS &> impdp_${ORACLE_SID}_system_table_$(date +%Y%m%d_%H%M%S).log"
+impdp system/s parfile=system_tables.par content=ALL NETWORK_LINK=EXPORT_IMPDP nologfile=y
 ```
+
+SYSTEM packages and triggers
+```
+sql @/dba/local/sql/SYSTEM_OBJECTS.sql
+```
+
 
 ## public granty
 
