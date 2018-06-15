@@ -25,6 +25,8 @@ done
 -- nové disky
 asmcmd lsdsk --candidate --suppressheader
 
+asmcmd lsdg -g  --discovery
+
 -- migrované asm dg
 asmcmd lsdsk --candidate --suppressheader | grep -Poi '([A-Z]+)_(D01|DATA|FRA)' | uniq
 

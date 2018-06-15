@@ -153,10 +153,9 @@ create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
 -- pipelined type - jde jen špatně přepsat v selectu ...
 
--- data
-REM INSERTING into CLONING_METHOD
-SET DEFINE OFF;
-Insert into CLONING_METHOD values ('7','GI_RESTORE','Golden Image restore from tape','Golden Image restore from tape', 'N');
+-- data CLONING_METHOD
+insert into CLONING_METHOD values (
+  '9','VSP_G800','Hitachi VSP G800: disk snapshot','Hitachi Virtual Storage Platform G800', 'Y', 'N');
 
 update CLONING_METHOD_STEP
   set step_name = 'STEP070_drop_db.sh',
@@ -166,6 +165,9 @@ update CLONING_METHOD_STEP
 
 
 -- INSERTING into CLONING_METHOD_STEP - common / local (oem)
+
+insert into CLONING_METHOD_STEP values (9,'STEP100_ansible_G800_disk_snapshot.sh',100,'Create disk SnapVX snapshot','N','Y');
+
 insert into CLONING_METHOD_STEP values
   (2,'STEP102_shutdown_cascade_snapshot.sh',102,'Shutdown HUS VM thin databases','N','Y');
 insert into CLONING_METHOD_STEP values
@@ -175,15 +177,14 @@ insert into CLONING_METHOD_STEP values
 insert into CLONING_METHOD_STEP values
   (2,'STEP107_change_asm_diskstring.sh',107,'Change asm disktring localne pro vice Thin db snapshot','N','N');
 
-
-Insert into CLONING_METHOD_STEP values (6,'STEP110_rman_duplicate_active.sh.sh',110,'RMAN duplicate from tape','N','N');
-
-
 Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',305,'Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');
 
 -- CLONING_PARAMETER
+
+select * from CLONING_PARAMETER
+  order by lower(parameter_name);
+
 REM INSERTING into CLONING_PARAMETER
-SET DEFINE OFF;
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','rman_catalog','N',NULL,'RMAN catalog connect string',NULL, 'N');
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_server','N',NULL,'TSM server pro REST API',NULL, 'N');
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_node','N',NULL,'TSM TDPO node',NULL, 'N');

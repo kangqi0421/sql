@@ -57,6 +57,19 @@ create role OLAP_USER;
 at now <<< "/dba/local/bin/import_dblink.sh DWHSRC2 DWHPOC SYSEL &>import.log"
 ```
 
+## CONTEXT
+```shell
+impdp system network_link=EXPORT_IMPDP full=y include=context:\""in ('AUDIT_CTX','RUSB_CONTEXT','DWH_DATA_ACCESS')"\" estimate=statistics
+```
+Na CONTEXT nejsou aktualne zadne grant, takze jsem je nemigroval.
+```sql
+select * from dba_tab_privs@EXPORT_IMPDP where table_name in ('AUDIT_CTX','RUSB_CONTEXT','DWH_DATA_ACCESS');
+-- no rows selected
+```
+
+## OWF_MGR
+see OWF_MGR.md
+
 ## Migrace s pouzitim pouze datapump
 
 ```shell
@@ -164,7 +177,7 @@ EOC
 impdp system/s parfile=system_tables.par content=ALL NETWORK_LINK=EXPORT_IMPDP nologfile=y
 ```
 
-SYSTEM packages and triggers
+SYSTEM packages and triggers - DDL se generuje přes SQL Developer (Cart SYSTEM_Cart.sdcart)
 ```
 sql @/dba/local/sql/SYSTEM_OBJECTS.sql
 ```
