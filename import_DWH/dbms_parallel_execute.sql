@@ -8,7 +8,7 @@ select
    from DBA_PARALLEL_EXECUTE_TASKS
   order by job_prefix desc;
 
-define task = 'IMPORT_TASK$_1885016'
+define task = 'IMPORT_TASK$_1911096'
 
 SELECT 
     *
@@ -20,7 +20,7 @@ SELECT
    and status = 'PROCESSED_WITH_ERROR'
 --     and status in ('ASSIGNED', 'PROCESSED')
 --   and error_code in (-14300, -14401)
-   and error_code = -1
+--   and error_code = -1
 --   and status like 'PROC%'
 --group by error_code   
   order by end_ts DESC

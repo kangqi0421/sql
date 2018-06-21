@@ -61,12 +61,18 @@ select path, header_status from v$asm_disk
 
 
 ---
-alter diskgroup CMTD_D01 add disk '/dev/mapper/asm_449_003*_CMTD_D01p1';
+asmcmd lsdg
+asmcmd lsdsk -k  --candidate
+
+alter diskgroup DWHPOC_DATA add disk
+'/dev/mapper/asm_hitG800_016B_DWHDDP_DATA1',
+'/dev/mapper/asm_hitG800_016D_DWHDDP_DATA1'
+;
 
 alter diskgroup RDBPKA_D01
   drop disk RDBPKA_D01_0004,RDBPKA_D01_0008,RDBPKA_D01_0017,RDBPKA_D01_0024;
 
-
+asmcmd lsop
 
 
 -- kontrolni info
