@@ -6,6 +6,12 @@
 nahraženo postupem na wiki
 https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
 
+
+-- ansible
+./asm_migrate_db.yml -e 'server=zpordb04 db=RTOZA'
+./asm_migrate_db.yml -e 'server=tordb02 db=CLMTC do_migrate=true'
+
+
 -- oraenv na DB
 for db in CLMTA CLMTC
 do

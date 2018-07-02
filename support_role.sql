@@ -7,14 +7,15 @@
 
 -- nahradit za OEM_MONITOR - ANO
 
-define user = ext94865
+define user = cen37001
 
 grant OEM_MONITOR to &user;
-
+grant execute on SYSTEM.DBAOPER to &user;
 
 -- CRM
 drop role admin_view_role;
 
+ext93480,cen37001
 
 define role=AWR_SUPPORT_ROLE
 --define role=EXT90032
