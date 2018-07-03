@@ -70,6 +70,9 @@ prompt
 
 set head on feedback on
 
+
+/*
+
 --
 -- reuse password hash
 --
@@ -79,20 +82,37 @@ set head on feedback on
 -- SELECT name, password, spare4 FROM sys.user$ WHERE name='DBEIM';
 -- ALTER USER &user IDENTIFIED BY VALUES 'S:333377748712A1D3E7708FC4F39E2A62AFF76F1766508FF96CE7DD34B6AD';
 
-/*
-set lines 999 pages 0
+spool change_pass.sql
+
+set lines 32767 pages 0 trims on head off feed off
 col name for a10
 col password for a20
-col spare4 for a99999
-SELECT
-  name,
-  -- password
-  spare4
+col spare4 for a9999
+col cmd for a999
+
+SELECT 'ALTER USER '||username|| ' profile DEFAULT;' as cmd
+   FROM sys.dba_users WHERE username in (
+'LOG','RUIAN_APP','RUIAN','MAJA','MAJA_APP','SCACHE','SCACHE_APP','RUIAN','RUIAN_APP','MAJA','MAJA_APP','SCACHE','SCACHE_APP','DISPO_APP','AUTHCODE_APP'
+)
+order by username;
+
+
+SELECT 'ALTER USER '||name|| ' IDENTIFIED BY VALUES ' || DBMS_ASSERT.enquote_literal(spare4) ||';' as cmd
    FROM sys.user$ WHERE name in (
-'ACC', 'BISADM', 'CIS', 'SVC', 'R_SBSERV', 'CDU', 'DTF', 'OPS$SBSERV'
+'LOG','RUIAN_APP','RUIAN','MAJA','MAJA_APP','SCACHE','SCACHE_APP','RUIAN','RUIAN_APP','MAJA','MAJA_APP','SCACHE','SCACHE_APP','DISPO_APP','AUTHCODE_APP'
 )
 order by name
 ;
+
+SELECT 'ALTER USER '||username|| ' profile ' || profile ||';' as cmd
+   FROM sys.dba_users WHERE username in (
+'LOG','RUIAN_APP','RUIAN','MAJA','MAJA_APP','SCACHE','SCACHE_APP','RUIAN','RUIAN_APP','MAJA','MAJA_APP','SCACHE','SCACHE_APP','DISPO_APP','AUTHCODE_APP'
+)
+order by username;
+
+spool off
+
+
 */
 
 --
@@ -104,4 +124,6 @@ ALTER USER &user profile default;
 ALTER USER &user IDENTIFIED BY "xxx";
 ALTER USER &user profile PROF_DBA;
 
+
 */
+

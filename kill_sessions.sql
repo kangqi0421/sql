@@ -10,7 +10,7 @@ from gv$session s inner join gv$process p
        ON (s.inst_id = p.inst_id and s.paddr=p.addr)
   where 1=1
   --  AND EVENT like 'row cache lock'
-  and s.username = 'SYSTEM'
+  and s.username = 'RMDREPDA_M'
   -- and action like 'UTL_RECOMP_SLAVE%'
   --and osuser = 'oracle'
   -- AND sql_id = 'azu104ujtd6yp'
