@@ -3,7 +3,7 @@
 -- SQL verze
 
 /*
-def username=SOL60210
+def username=SRBA
 
 set VERIFY OFF termout off feedback off trimspool on trimout on
 

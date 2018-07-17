@@ -33,6 +33,8 @@ UPDATE oli_owner.databases d
  where d.dbname like 'DMT%';
 
 
+'SDPO','TS0O','TS3O','TS7O','TS9O'
+
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
   where target_dbname like 'DWHTA2';
 
@@ -156,6 +158,9 @@ create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 -- data CLONING_METHOD
 insert into CLONING_METHOD values (
   '9','VSP_G800','Hitachi VSP G800: disk snapshot','Hitachi Virtual Storage Platform G800', 'Y', 'N');
+
+
+insert into CLONING_METHOD_STEP values (10,'STEP100_sb_create_snapshot.sh',100,'Starbank create disk snapshot','N','Y');
 
 update CLONING_METHOD_STEP
   set step_name = 'STEP070_drop_db.sh',
