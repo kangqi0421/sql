@@ -194,6 +194,8 @@ Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','rman_catalog','N',NULL
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_server','N',NULL,'TSM server pro REST API',NULL, 'N');
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_node','N',NULL,'TSM TDPO node',NULL, 'N');
 
+insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_inventory','N',NULL,'Ansible inventory file',NULL, 'N');
+
 
 -- delete params
 delete  from template_param_value
