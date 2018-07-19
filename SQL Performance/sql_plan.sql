@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 4a6unm1nj57g5
+DEFINE SQLID = 7db13njng0wu9
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -29,6 +29,7 @@ order by sample_time desc;
 
 @sqlid &SQLID %
 
+select count(*) from v$sql where sql_id = '&SQLID';
 select sql_id, child_number, plan_hash_value from v$sql where sql_id = '&SQLID';
 
 -- v$sql
