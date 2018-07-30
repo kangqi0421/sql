@@ -2,7 +2,50 @@
 -- OLI checks
 --
 
-- procedura OLI_OWNER.CHECKS
+-- kontorly
+-- procedura OLI_OWNER.CHECKS
+
+-- OLI capture
+-- nahradit za VIEW ?
+
+select *
+  FROM OLI_OWNER.LIC_CAPTURE_FEATURE_USAGE
+WHERE  used = 'Y'
+  and (name like '%Partitioning%'
+    or name like '%Compression%')
+;
+
+select hostname, instance_name
+  FROM OLI_OWNER.LIC_CAPTURE_FEATURE_USAGE
+WHERE used = 'Y'
+  and name like '%Compression%'
+  and hostname like 'bordb02.vs.csin.cz'
+  and last_sample_date > sysdate - interval '1' MONTH
+;
+
+--
+-- Feature Usage Stats
+--
+
+- Advanced Compression - provést revizi
+
+DBA_FEATURE_USAGE_STATISTICS
+
+-- OEM: mgmt_license.sql
+select * from MGMT$DB_FEATUREUSAGE;
+
+```
+col NAME for a25
+select name, currently_used, last_usage_date
+  from   DBA_FEATURE_USAGE_STATISTICS
+ where version in (select version from v$instance)
+  and (name like '%Partitioning%'
+    or name like '%Compression%'
+      )
+  AND currently_used = 'TRUE'
+order by name;
+```
+
 
 -- databaze z OEM, ktere chybi v OLI
 -- OEM

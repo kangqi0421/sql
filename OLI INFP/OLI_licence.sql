@@ -134,12 +134,3 @@ where lic_env_id in (1187,1188) ;
 select * from OLI_OWNER.LICENSED_ENVIRONMENTS
   where lic_env_name like 'pordb06%'
 ;
-
-
--- OLI capture
--- nahradit za VIEW ?
-
-INTO TABLE OLI_OWNER.LIC_CAPTURE_FEATURE_USAGE
-
-
-
