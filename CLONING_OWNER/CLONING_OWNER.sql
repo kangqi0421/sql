@@ -117,21 +117,6 @@ select
   where cloning_method_id = 3
 order by position  ;
 
--- CLONNING PARAMS
-asm_source_dg=${source_db}_D01
-source_spfile=+JIRKA_DATA/JIRKA/spfilejirka.ora
-
-source_spfile = +${asm_source_dg}/${source_db}/spfile${source_db}.ora
-
-control_files = '+CRMPKTST_D01/CRMPKTST/CONTROLFILE/current.257.942405711'
-
-
--- CLMZA > CLMDD
-4252: CLMDD
-source_spfile=+CLMZA_D01/CLMZA/spfile
-asm_source_dg=CLMZA_D01
-
-clone_opts=
 
 -- rozděleno na ARCHIVELOG a NOARCHIVELOG
 
@@ -153,11 +138,11 @@ grant select on cloning_owner.cloning_method to cloning_py with grant option;
 grant select on cloning_owner.cloning_relation to cloning_py;
 create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
--- pipelined type - jde jen špatně přepsat v selectu ...
 
 -- data CLONING_METHOD
-insert into CLONING_METHOD values (
-  '9','VSP_G800','Hitachi VSP G800: disk snapshot','Hitachi Virtual Storage Platform G800', 'Y', 'N');
+insert into CLONING_METHOD values ('11','TEST','Test method','Test', 'Y', 'N');
+
+insert into CLONING_METHOD_STEP values ('11','arm.yml','400',NULL,'Y','Y');
 
 
 insert into CLONING_METHOD_STEP values (10,'STEP100_sb_create_snapshot.sh',100,'Starbank create disk snapshot','N','Y');
