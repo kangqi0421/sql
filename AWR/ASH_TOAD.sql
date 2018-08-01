@@ -25,12 +25,12 @@ select
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
 --    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
---    FROM GV$ACTIVE_SESSION_HISTORY a
-    FROM dba_hist_active_sess_history a
+    FROM GV$ACTIVE_SESSION_HISTORY a
+--    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-05-10 04:10:00'
-                           AND TIMESTAMP'2018-05-10 04:30:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-07-31 12:39:00'
+                           AND TIMESTAMP'2018-07-31 12:40:00'
 --                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
 --                         and SQL_ID = '5vd1txs4gsb06'
 --                         and event in ('enq: TM - contention')
@@ -41,10 +41,11 @@ select
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
 --                         and wait_class = 'User I/O' 
-                         and SESSION_ID in (34)  --and SESSION_SERIAL# in (17855)
+--                         and SESSION_ID in (34)  --and SESSION_SERIAL# in (17855)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
+                           and action like 'JOB_RUN%'     
 --                         and program like 'oracle@csbponl (LGWR)'
 --                         and SQL_PLAN_OPERATION = 'HASH JOIN'
 --                           and sql_opname = 'UPDATE'
@@ -97,7 +98,7 @@ SELECT *
   from GV$SQL_SHARED_CURSOR where SQL_ID = 'cnb44fs1u7aka';
 
 
-select * from dba_objects where object_id in (105400);
+select * from dba_objects where object_id in (21456228);
 
 select * from dba_indexes
   where owner = 'L1_OWNER'
