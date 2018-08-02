@@ -17,8 +17,10 @@ SELECT CLONING_TASK_TASK_ID_SEQ.NEXTVAL FROM dual;
 ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 1;
 
 -- source target info
-select licdb_id, dbname, clone_source_licdb_id, clone_source_alias_id from oli_owner.databases
-  where dbname like 'DMTA2';
+select licdb_id, dbname, clone_source_licdb_id,
+       clone_source_alias_id, CLONING_METHOD_ID
+  from oli_owner.databases
+  where dbname like 'CRM%';
 
 -- DWHT update na alias 1
 UPDATE oli_owner.databases d
@@ -107,6 +109,8 @@ grant SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
 grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
 grant SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
 ```
+
+grant all on CLONING_OWNER.DB_PARAM_VALUE to OLI_OWNER;
 
 GRANT execute on OLI_OWNER.UTILS to CLONING_OWNER;
 

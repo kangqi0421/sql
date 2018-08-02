@@ -2,9 +2,9 @@
 define dbname = 'SYMP'
 
 -- DATABASES
-SELECT 
+SELECT
    --distinct app_name
-    dbname, env_status, app_name, 
+    dbname, env_status, app_name,
     NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) hostname
    --, domain
 FROM
@@ -98,16 +98,16 @@ update OLI_OWNER.DATABASES d
 select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) ||');' as cmd
   from OLI_OWNER.DATABASES d
  where d.dbname like 'TS2%';
- 
-    select licdb_id 
+
+    select licdb_id
        from databases
-       where upper(dbname)=upper('TS2O'); 
-       
-delete from dbinstances where licdb_id=91;       
+       where upper(dbname)=upper('TS2O');
+
+delete from dbinstances where licdb_id=91;
 delete from databases where licdb_id = 91;
 
 select * from   OLI_OWNER.APP_DB
-  where app_id=80;  
+  where app_id=80;
 --
 -- INSERT do DATABASES
 --
@@ -208,7 +208,13 @@ ON (s.licdb_id = d.licdb_id AND s.app_id = d.app_id)
 -- API delete databaze
 --
 
-define db=DLKTA
+define db=DWHPOC3
+
+call OLI_OWNER.OLI_API.delete_database('&db');
+commit;
+
+
+DELETE from CLONING_OWNER.DB_PARAM_VALUE  where licdb_id = l_licdb_id;
 
 -- delete db instance pro migrace
 DELETE from OLI_OWNER.DBINSTANCES
@@ -217,7 +223,7 @@ DELETE from OLI_OWNER.DBINSTANCES
     FROM
       OLI_OWNER.DATABASES d
       JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-    WHERE dbname = '&DLKTA'
+    WHERE dbname = '&db'
 );
 
 --
