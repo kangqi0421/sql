@@ -4,7 +4,8 @@ define dbname = 'SYMP'
 -- DATABASES
 SELECT
    --distinct app_name
-    dbname, env_status, app_name,
+    app_name,
+    dbname, env_status, dbversion,
     NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) hostname
    --, domain
 FROM
@@ -89,6 +90,30 @@ ORDER BY APP_NAME
 update OLI_OWNER.DATABASES d
   set d.env_status = 'Test'
   where dbname like 'RDBT%';
+
+--
+-- API add databaze
+--
+
+define db=DWHDD18Z
+
+call OLI_OWNER.OLI_API.add_database('DWHDD18Z', 'DWH');
+commit;
+
+
+-- OLI API add db
+DECLARE
+  v_licdb_id NUMBER;
+  v_db_exist NUMBER;
+BEGIN
+  select count(*) into v_db_exist from oli_owner.databases
+   where dbname = 'DWHDD18Z';
+  if v_db_exist = 0  then
+    v_licdb_id := oli_owner.oli_api.add_database('DWHDD18Z', 'DWH');
+  end if;
+END;
+/
+
 
 
 --
@@ -208,7 +233,7 @@ ON (s.licdb_id = d.licdb_id AND s.app_id = d.app_id)
 -- API delete databaze
 --
 
-define db=DWHPOC3
+define db=DWHDD18Z
 
 call OLI_OWNER.OLI_API.delete_database('&db');
 commit;

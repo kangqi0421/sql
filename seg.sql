@@ -7,7 +7,8 @@ col owner for a30
 col tablespace_name for a30
 select * from
 (select tablespace_name, owner,
-       round(sum(bytes/1048576/1024),1) "GB" from dba_segments
+       round(sum(bytes/power(1024, 3)),1) "GB"
+    from dba_segments
   where
     owner like upper('&1')
 --    NOT REGEXP_LIKE(owner, '^[A-Z]+\d{4,}$')
@@ -17,3 +18,17 @@ select * from
  -- order by owner, tablespace_name
 )
 where GB > &min_size_gb;
+
+/*
+
+// segments in CSV
+
+select sys_context('USERENV', 'DB_NAME')||';'|| owner ||';'||
+       round(sum(bytes/power(1024, 3)))
+    from dba_segments
+  where
+    owner in ('CONSOLE','JOB','LOG')
+  group by owner
+;
+
+*/

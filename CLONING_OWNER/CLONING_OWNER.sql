@@ -10,8 +10,7 @@ sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
 connect CLONING_OWNER/abcd1234
 
--- INFTA sequence
-
+-- INFTA sequence - posun pro KLON id za 100k
 ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 100000;
 SELECT CLONING_TASK_TASK_ID_SEQ.NEXTVAL FROM dual;
 ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 1;
@@ -22,24 +21,23 @@ select licdb_id, dbname, clone_source_licdb_id,
   from oli_owner.databases
   where dbname like 'CRM%';
 
--- DWHT update na alias 1
-UPDATE oli_owner.databases d
-  set d.clone_source_licdb_id = NULL,
-  set d.clone_source_alias_id = 1
- where d.dbname like 'DWHT%';
-
--- DMT update na alias 1
-UPDATE oli_owner.databases d
-  set d.clone_source_licdb_id = NULL,
-  set d.clone_source_alias_id = 2
- where d.dbname like 'DMT%';
-
-
-'SDPO','TS0O','TS3O','TS7O','TS9O'
-
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
   where target_dbname like 'DWHTA2';
 
+-- DWHT update na alias 1
+UPDATE oli_owner.databases d
+  set d.clone_source_licdb_id = NULL,
+      d.clone_source_alias_id = 1
+ where d.dbname like 'DWHT%';
+
+
+
+-- StarBank update
+UPDATE oli_owner.databases
+  set CLONING_METHOD_ID = 10
+ where dbname like 'CSPO';
+
+'SDPO','TS0O','TS3O','TS7O','TS9O'
 
 -- source alias
 SELECT * FROM source_alias;
@@ -98,7 +96,7 @@ grant cs_appl_accounts to cloning_owner;
 
 grant create view, create synonym to CLONING_OWNER;
 
-grant SELECT,references on OLI_OWNER.DATABASES  to CLONING_OWNER;
+grant ALL on OLI_OWNER.DATABASES  to CLONING_OWNER;
 grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
 grant SELECT on OLI_OWNER.SERVERS to CLONING_OWNER;
 grant SELECT on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
