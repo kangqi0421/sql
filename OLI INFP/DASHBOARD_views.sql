@@ -357,31 +357,47 @@ CREATE OR REPLACE FORCE VIEW "MGMT$DB_SGA" AS SELECT * FROM MGMT$DB_SGA@OEM_PROD
 
 -- nevyužité ?
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_FLAT_MEMBERS
-AS select  * from MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
+AS
+select  * from SYSMAN.MGMT$TARGET_FLAT_MEMBERS@OEM_PROD
+union
+SELECT * FROM SYSMAN.MGMT$TARGET_FLAT_MEMBERS@oem_test
 ;
 
+
 CREATE OR REPLACE FORCE VIEW MGMT$TARGET_ASSOCIATIONS
-AS select  * from MGMT$TARGET_ASSOCIATIONS@OEM_PROD
+AS
+select  * from MGMT$TARGET_ASSOCIATIONS@OEM_PROD
+union
+SELECT * FROM SYSMAN.MGMT$TARGET_ASSOCIATIONS@oem_test
 ;
+
 
 CREATE OR REPLACE FORCE VIEW mgmt$target_type
 AS select  * from mgmt$target_type@OEM_PROD
+union
+SELECT * FROM SYSMAN.mgmt$target_type@oem_test
 ;
 
 CREATE OR REPLACE FORCE VIEW mgmt$os_hw_summary
 AS select  * from mgmt$os_hw_summary@OEM_PROD
+union
+SELECT * FROM SYSMAN.mgmt$os_hw_summary@oem_test
 ;
 
 CREATE OR REPLACE FORCE VIEW mgmt$metric_daily
 AS select  * from mgmt$metric_daily@OEM_PROD
+union
+SELECT * FROM SYSMAN.mgmt$metric_daily@oem_test
 ;
 
 CREATE OR REPLACE FORCE VIEW mgmt$METRIC_HOURLY
 AS select  * from mgmt$METRIC_HOURLY@OEM_PROD
+union
+SELECT * FROM SYSMAN.mgmt$METRIC_HOURLY@oem_test
 ;
 
 
--- GC view
+-- GC view ORA-22804: remote operations not permitted
 CREATE OR REPLACE FORCE VIEW "GC_TARGET_IDENTIFIERS" AS SELECT * FROM SYSMAN.GC_TARGET_IDENTIFIERS@OEM_PROD;
 
 --> nelze

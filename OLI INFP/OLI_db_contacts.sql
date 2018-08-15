@@ -4,6 +4,7 @@
 
 OLI_OWNER.CA_SRC_APPLICATIONS
 - Z CA dostávám 3 kontakty – VA, SOM a AS + email
+- chybí tam apl. administrátor a jeho zástupce, kdepak je najdu ?
 
 select
 --    *
