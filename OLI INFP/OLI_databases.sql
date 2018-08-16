@@ -102,18 +102,32 @@ commit;
 
 
 -- OLI API add db
+set serveroutput on
+
 DECLARE
   v_licdb_id NUMBER;
   v_db_exist NUMBER;
 BEGIN
   select count(*) into v_db_exist from oli_owner.databases
-   where dbname = 'DWHDD18Z';
+   where dbname = 'MSDINT';
   if v_db_exist = 0  then
-    v_licdb_id := oli_owner.oli_api.add_database('DWHDD18Z', 'DWH');
+    v_licdb_id := oli_owner.oli_api.add_database('MSDINT', 'MS-DYNAMICS');
+    dbms_output.put_line('licdb_id: ' || v_licdb_id);
   end if;
 END;
 /
 
+--
+ORA-06502: PL/SQL: numeric or value error: character to number conversion error
+ORA-06512: at "OLI_OWNER.OLI_API", line 141
+
+OLI_OWNER.OLI_API:140
+    if (l_instances_skipped>0) then
+        raise_application_error(ERR_DBINST_NOT_FOUND,'Some database instance found for database '
+                               ||p_dbname||' in OEM could not be added to OLI');
+
+
+-- ||p_dbname||' in OEM could not be added to OLI (number of instances skipped:' + l_instances_skipped+')');
 
 
 --
@@ -268,3 +282,16 @@ END;
 
 select * FROM config_data;
 LIC_CAPTURE_USAGE_TIMEOUT : default(365)
+
+
+-- sync EM
+
+select INST_NAME from
+(
+select  i2.dbinst_id,CPUCOUNT,INST_NAME,count(*)
+                 from oli_owner.OMS_DBINSTANCES emi,oli_owner.dbinstances i2
+                 where emi.instance_target_guid=i2.em_guid
+                       and i2.EM_GUID is not null
+group by INST_NAME,i2.dbinst_id,CPUCOUNT
+having count(*) > 1
+) order by 1
