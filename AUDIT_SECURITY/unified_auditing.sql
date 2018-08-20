@@ -189,7 +189,7 @@ select
 -- AND UNIFIED_AUDIT_POLICIES is null
  -- and action_name like 'LOG%'
 --  and action_name like 'INSERT'
-   and dbusername='JOB_APP'
+   -- and dbusername='JOB_APP'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc

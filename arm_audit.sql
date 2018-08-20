@@ -22,7 +22,8 @@ select /*+FULL(a) */
 --     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00'
   --                         and TIMESTAMP'2017-08-22 18:10:00'
       and ARM_ACTION_NAME='LOGON'
-      and dbusername like upper('&user')
+      -- and dbusername like upper('&user')
+      and dbusername in ('CPT','CPT_APP','CPTPK','CPTPK_APP','JOB_APP')
 --    and return_code > 0
       and return_code in (1017)
 ORDER by event_timestamp DESC

@@ -80,5 +80,13 @@ select * from   OLI_OWNER.SERVERS
   ;
 
 select * from   OLI_OWNER.CA_SERVERS
-  where lower(hostname) like '%pkidb%'
+  where lower(hostname) like 'tpraddb%'
+;
+
+select * from CA_SERVERS
+  where resource_name = 'HSLV_tpraddb01.vs.vsin.cz'
+;
+
+select * from   OLI_OWNER.CA_SRC_SERVERS
+ where hostname like 'tpra%'
 ;
