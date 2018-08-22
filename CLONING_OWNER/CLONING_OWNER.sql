@@ -142,7 +142,8 @@ create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
 
 -- data CLONING_METHOD
-insert into CLONING_METHOD values ('11','TEST','Test method','Test', 'Y', 'N');
+insert into CLONING_METHOD values ('14','SB_SNAPVX_CLONE','Starbank VMAX3: SnapVX link disk snapshot'  ,'Starbank VMAX3: SnapVX link disk snapshot', 'Y', 'N');
+insert into CLONING_METHOD values ('15','SB_SNAPVX_RESTORE','Starbank VMAX3: SnapVX restore disk snapshot','Starbank VMAX3: SnapVX restore disk snapshot', 'Y', 'N');
 
 insert into CLONING_METHOD_STEP values ('11','arm.yml','400',NULL,'Y','Y');
 
