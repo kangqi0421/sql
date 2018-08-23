@@ -2,89 +2,9 @@
 define dbname = 'SYMP'
 
 -- DATABASES
-SELECT
-   --distinct app_name
-    app_name,
-    dbname, env_status, dbversion,
-    NVL2(DOMAIN, HOSTNAME||'.'||DOMAIN, HOSTNAME) hostname
-   --, domain
-FROM
-  OLI_OWNER.DATABASES d
-  join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
-  JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-  JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
- WHERE 1 = 1
---   and env_status = 'Production'
-    AND dbname like 'TS2%'
-    -- Pouze VMWare ORACLE-02-ANT
---    and s.lic_env_id = 3292
---  s.domain like 'ack-prg.csin.cz'
---    and hostname like 'dp%'
---  a.app_name in ('SB')
---  and domain like 'cc.csin.cz'
---  group by app_name,hostname
-ORDER BY APP_NAME;
 
---
-
--- server per APP
-SELECT DBNAME, hostname, app_name
-FROM
-  OLI_OWNER.DATABASES d
-  join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
-  JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-  JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
- WHERE
-  REGEXP_LIKE(hostname, 'z?(p)ordb[[:digit:]]+')
-  --s.hostname like 'tordb03'
-  --a.app_name in ('SB')
-  --and domain like 'cc.csin.cz'
-  --group by app_name,hostname
-ORDER BY hostname, dbname  ;
-
-
--- APP_NAME info data
-SELECT HOSTNAME||': '|| LISTAGG(APP_NAME,',') WITHIN GROUP (ORDER BY HOSTNAME)
-FROM
-(
--- innner join to remove duplicate values
-SELECT hostname, app_name
-      -- ,DBNAME
-FROM
-  OLI_OWNER.DATABASES d
-  join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
-  JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-  JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  JOIN OLI_OWNER.SERVERS s ON (i.SERVER_ID = s.server_id)
- WHERE s.hostname like 'tordb03'
-  group by hostname, app_name, dbname
-)
-GROUP BY HOSTNAME ORDER by 1;
-
--- OLAPI_DATABASES
-SELECT HOSTNAME||': '|| LISTAGG(APP_NAME,',') WITHIN GROUP (ORDER BY HOSTNAME)  from (
-SELECT
-  APP_NAME,
-  DBNAME,
-  INST_NAME,
-  RAC,
-  HOSTNAME, DOMAIN,
-  s.FAILOVER_SERVER_ID
-FROM
-  OLI_OWNER.OLAPI_APPLICATIONS a
-     JOIN OLI_OWNER.OLAPI_APP_DB o ON (A.APP_ID = o.APP_ID)
-     JOIN OLI_OWNER.OLAPI_DATABASES d ON (o.licdb_id = d.licdb_id)
-     JOIN OLI_OWNER.OLAPI_DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-     JOIN OLI_OWNER.OLAPI_SERVERS s ON (i.SERVER_ID = s.server_id)
-WHERE
-  --DBNAME in ('BRAP')
-  hostname like 'tordb03'
---  hostname in ('pordb03', 'pordb04')
-ORDER BY APP_NAME
-) GROUP BY HOSTNAME ORDER BY 1;
-;
+- OLI_DATABASE
+- EM_DATABASE
 
 -- update ENV status
 update OLI_OWNER.DATABASES d
@@ -147,11 +67,26 @@ delete from databases where licdb_id = 91;
 
 select * from   OLI_OWNER.APP_DB
   where app_id=80;
+
 --
 -- INSERT do DATABASES
 --
 
--- nahradit MERGE za OMS_DATABASES_MATCHING s match status na U
+-- update em_guid DATABASES
+        // db migrate: update em guid
+        UPDATE
+          OLI_OWNER.DATABASES oli
+        set em_guid = (select db_target_guid
+            from  OLI_OWNER.OMS_DATABASES_MATCHING oms
+              WHERE 1 = 1
+                -- and match_status in ('NM')
+                and oli.dbname = oms.db_name
+                and oli.env_status = oms.envstatus)
+          WHERE upper(oli.dbname) = '&dbname'
+            -- and oli.env_status = '{{ lifecycle_env }}'
+        ;
+
+
 --
 INSERT INTO OLI_OWNER.DATABASES (DBNAME, RAC, ENV_STATUS, DBVERSION, EM_GUID)
 select DB_NAME,
@@ -161,7 +96,7 @@ select DB_NAME,
        db_target_guid
   from OLI_OWNER.OMS_DATABASES_MATCHING
  WHERE match_status in ('U')
-   and db_name like '&dbname'
+   and upper(db_name) = upper('&dbname')
 ;
 --
 
@@ -172,7 +107,7 @@ USING
      from  DASHBOARD.EM_DATABASE
     where dbname like '&dbname'
   ) em
-ON (oli.dbname = em.dbname)
+ON (oli.dbname = em.dbname AND oli.env_status = em.env_status)
   when matched then
     update set oli.em_guid = em.em_guid
   WHEN NOT MATCHED THEN
@@ -189,13 +124,13 @@ select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
 
 INSERT INTO OLI_OWNER.DBINSTANCES (LICDB_ID, SERVER_ID, INST_NAME, EM_GUID)
 SELECT
-  matched_licdb_id,
-  matched_server_id,
-  instance_name,
-  INSTANCE_TARGET_GUID
+    matched_licdb_id,
+    matched_server_id,
+    instance_name,
+    INSTANCE_TARGET_GUID
   from OLI_OWNER.OMS_DBINSTANCES_MATCHING
   where match_status in ('U')
-    AND db_name like '&dbname'
+    AND db_name = '&dbname'
 ;
 
 --

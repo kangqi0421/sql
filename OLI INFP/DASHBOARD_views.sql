@@ -49,10 +49,12 @@ exec dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA', use_current_sessio
 JOB ACTION:
 "DASHBOARD"."REFRESH_OLI_DBHOST_PROPERTIES"
 
+- je to vcetne DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
+
 -- pridat do ansible ?
 exec DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
 
--- refresh ALL
+-- refresh ALL views - není potřeba
 DECLARE
   v_number_of_failures NUMBER(12) := 0;
 BEGIN
@@ -168,6 +170,7 @@ WHERE -- t.TYPE_QUALIFIER3 = 'DB'  -- nefunguje kvuli 12.2. verzi db
 ;
 
 -- OLI data pro REST
+-- APP NAME listagg by ","
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."OLI_DATABASE"
 AS
 SELECT d.licdb_id,
@@ -175,12 +178,18 @@ SELECT d.licdb_id,
        d.ca_id db_cmdb_ca_id,
        dbname,
        rac,
-       app_name,
-       env_status
-FROM
+       env_status,
+       LISTAGG(APP_NAME,',') WITHIN GROUP (ORDER BY APP_NAME) app_name
+ FROM
   OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
+ group by d.licdb_id,
+       d.EM_GUID,
+       d.ca_id,
+       dbname,
+       rac,
+       env_status
 /
 
 -- OLI data db instance pro REST
@@ -212,12 +221,12 @@ FROM
 -- API_DB
 DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
 CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
-NOLOGGING
-REFRESH COMPLETE
-START WITH (SYSDATE) NEXT SYSDATE + 6/24
+  NOLOGGING
+  REFRESH COMPLETE
+  START WITH (SYSDATE) NEXT SYSDATE + 6/24
 WITH PRIMARY KEY
   AS
-  SELECT
+SELECT
        e.dbname,
        e.dbversion,
        decode(e.rac, 'Y', 'true', 'false') is_rac,
@@ -229,8 +238,9 @@ WITH PRIMARY KEY
        round(e.db_size_mb / 1024) as db_size_gb,
        e.ASM_DISKGROUP
 FROM
-  OLI_DATABASE o
-  join EM_DATABASE e on o.DB_EM_GUID = e.em_guid
+             OLI_DATABASE o
+  inner join EM_DATABASE e
+     on  (e.dbname = o.dbname and e.env_status = o.env_status)
 ;
 
 
@@ -245,7 +255,7 @@ SELECT * from DASHBOARD.API_DB_MV
 'CATEST1', 'CATEST2', 'PWTESTA', 'TECOM1', 'TGASPER2', 'TPTESTA', 'TPTESTB'
 
 
--- puvodni varianta s VIEW
+-- puvodni varianta s VIEW namisto MVIEW
   SELECT /*+ result_cache */
        e.dbname,
        e.dbversion,
@@ -371,45 +381,6 @@ CREATE OR REPLACE FORCE VIEW mgmt$target_type
 AS select  * from mgmt$target_type@OEM_PROD
 union
 SELECT * FROM SYSMAN.mgmt$target_type@oem_test
-;
-
-CREATE OR REPLACE FORCE VIEW mgmt$os_hw_summary
-AS select  * from mgmt$os_hw_summary@OEM_PROD
-union
-SELECT * FROM SYSMAN.mgmt$os_hw_summary@oem_test
-;
-
-CREATE OR REPLACE FORCE VIEW mgmt$metric_daily
-AS select  * from mgmt$metric_daily@OEM_PROD
-union
-SELECT * FROM SYSMAN.mgmt$metric_daily@oem_test
-;
-
-CREATE OR REPLACE FORCE VIEW mgmt$METRIC_HOURLY
-AS select  * from mgmt$METRIC_HOURLY@OEM_PROD
-union
-SELECT * FROM SYSMAN.mgmt$METRIC_HOURLY@oem_test
-;
-
--- OLI
-CREATE OR REPLACE FORCE VIEW MGMT$DB_OPTIONS
-AS select  * from SYSMAN.MGMT$DB_OPTIONS@OEM_PROD
-union
-SELECT * FROM SYSMAN.MGMT$DB_OPTIONS@OEM_TEST
-;
-
-CREATE OR REPLACE FORCE VIEW "MGMT$DB_INIT_PARAMS"
-AS
-select * from MGMT$DB_INIT_PARAMS@oem_prod
-union
-select * from SYSMAN.MGMT$DB_INIT_PARAMS@OEM_TEST
-;
-
-CREATE OR REPLACE FORCE VIEW MGMT$DB_FEATUREUSAGE AS
-select * from MGMT$DB_FEATUREUSAGE@OEM_PROD
-union
-select * from SYSMAN.MGMT$DB_FEATUREUSAGE@OEM_TEST
-;
 
 
 -- GC view ORA-22804: remote operations not permitted

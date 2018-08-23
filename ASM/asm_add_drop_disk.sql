@@ -95,7 +95,7 @@ set trims on pages 0 lines 32767
 select 'DROP DISK'||CHR(10) from dual;
 
 select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
-  from v$asm_disk
+  from  V$ASM_DISK_STAT
  where 1 = 1
    and header_status = 'MEMBER' -- pouze jiz existujici
    and GROUP_NUMBER in (
@@ -105,6 +105,19 @@ select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
    and path like '/dev/mapper/asm_210873%'
 ;
 
+
+-- ansible DROP disk
+          select d.name
+             '[' ||
+              LISTAGG(dbms_assert.enquote_name(d.name), ',')
+                  WITHIN GROUP (order by d.name) ||
+              ']' as json_array
+            from  V$ASM_DISK_STAT d
+              inner join V$ASM_DISKGROUP_STAT dg on d.GROUP_NUMBER = dg.GROUP_NUMBER
+          where header_status = 'MEMBER'
+            and dg.name like 'DWH%'
+          order by d.disk_number
+          ;
 
 -- funguje pouze z ASM instance
 select * from v$asm_operation;
