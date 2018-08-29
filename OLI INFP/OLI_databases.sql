@@ -8,17 +8,16 @@ define dbname = 'SYMP'
 
 -- update ENV status
 update OLI_OWNER.DATABASES d
-  set d.env_status = 'Test'
-  where dbname like 'RDBT%';
+  set d.env_status = 'Pre-production'
+  where dbname like 'AFSZ';
 
 --
 -- API add databaze
 --
 
-define db=DWHDD18Z
+define db=DRDMTA
+define app=DRDM
 
-call OLI_OWNER.OLI_API.add_database('DWHDD18Z', 'DWH');
-commit;
 
 
 -- OLI API add db
@@ -29,9 +28,9 @@ DECLARE
   v_db_exist NUMBER;
 BEGIN
   select count(*) into v_db_exist from oli_owner.databases
-   where dbname = 'MSDINT';
+   where dbname = '&db';
   if v_db_exist = 0  then
-    v_licdb_id := oli_owner.oli_api.add_database('MSDINT', 'MS-DYNAMICS');
+    v_licdb_id := oli_owner.oli_api.add_database('&db', '&app');
     dbms_output.put_line('licdb_id: ' || v_licdb_id);
   end if;
 END;

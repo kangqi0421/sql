@@ -19,17 +19,33 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=CRMTD_FRA
-AU_SIZE=8
-COMPATIBLE="12.1"
+DG=DRDMTA_DATA
+AU_SIZE=64
+##AU_SIZE=8
+DB_COMPATIBLE="12.1"
+ASM_COMPATIBLE="12.2"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
-    -diskList "'/dev/mapper/asm_*${DG}p1" \
+    -diskList "'/dev/mapper/asm_*${DG}1" \
   -redundancy EXTERNAL -au_size ${AU_SIZE} \
-  -compatible.asm ${COMPATIBLE} -compatible.rdbms ${COMPATIBLE} # -compatible.advm ${COMPATIBLE}
+  -compatible.asm ${ASM_COMPATIBLE} -compatible.rdbms ${DB_COMPATIBLE} -compatible.advm ${ASM_COMPATIBLE}
 
-## DWH PoC
+
+DG=DRDMTA_FRA
+AU_SIZE=8
+DB_COMPATIBLE="12.1"
+ASM_COMPATIBLE="12.2"
+asmca -silent -createDiskGroup \
+  -diskGroupName $DG \
+    -diskList "'/dev/mapper/asm_*${DG}1" \
+  -redundancy EXTERNAL -au_size ${AU_SIZE} \
+  -compatible.asm ${ASM_COMPATIBLE} -compatible.rdbms ${DB_COMPATIBLE} -compatible.advm ${ASM_COMPATIBLE}
+
+
+### DWH PoC
+
 asmca -silent -createDiskGroup -diskGroupName DWHDD18Z_DATA -diskList '/dev/mapper/asm_*DATA1' -redundancy EXTERNAL -au_size 64 -compatible.asm '12.2' -compatible.advm '12.2' -compatible.rdbms '12.2'
+
 
 ## asmcmd compatible
 

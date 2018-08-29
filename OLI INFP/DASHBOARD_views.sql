@@ -218,6 +218,14 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
+-- SELECT
+select *
+   from
+--     API_DB_MV
+     EM_DATABASE
+  where dbname = 'AFSZ';
+
+
 -- API_DB
 DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
 CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
