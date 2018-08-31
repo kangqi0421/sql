@@ -55,7 +55,7 @@ select lic_env_id, hostname, domain
   from servers
   where hostname like 'p%r02db%';
 
-define LIC_ENV_ID = xxx
+define LIC_ENV_ID = 5694
 define PP = 10
 
 -- Diagnostics Pack
