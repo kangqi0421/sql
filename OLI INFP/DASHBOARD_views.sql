@@ -244,7 +244,7 @@ SELECT
        e.host_name,
        e.server_name, e.port, e.connect_descriptor,
        round(e.db_size_mb / 1024) as db_size_gb,
-       e.ASM_DISKGROUP
+       e.asm_diskgroup
 FROM
              OLI_DATABASE o
   inner join EM_DATABASE e
@@ -256,9 +256,9 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
 SELECT * from DASHBOARD.API_DB_MV
 ;
---  where dbname not in (
 
 
+-- tohle vyřadit z view, nefunguje
 --
 'CATEST1', 'CATEST2', 'PWTESTA', 'TECOM1', 'TGASPER2', 'TPTESTA', 'TPTESTB'
 

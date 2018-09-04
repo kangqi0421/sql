@@ -50,7 +50,7 @@ END;
 BEGIN
   EXECUTE IMMEDIATE
     'create bigfile undo tablespace UNDOTBS2 datafile
-       size 10G autoextend on next 1G maxsize 406G';
+       size 10G autoextend on next 1G maxsize 500G';
 EXCEPTION
   WHEN OTHERS THEN
     IF sqlcode != -1543 THEN RAISE;

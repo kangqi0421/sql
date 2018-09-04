@@ -80,7 +80,7 @@ select * from   OLI_OWNER.SERVERS
   ;
 
 select * from   OLI_OWNER.CA_SERVERS
-  where lower(hostname) like 'tpraddb%'
+  where lower(hostname) like 'dpddmdb01%'
 ;
 
 select * from CA_SERVERS
@@ -88,5 +88,5 @@ select * from CA_SERVERS
 ;
 
 select * from   OLI_OWNER.CA_SRC_SERVERS
- where hostname like 'tpra%'
+ where hostname like 'dpddmdb01%'
 ;
