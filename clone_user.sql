@@ -5,7 +5,7 @@ def export_users="'&1'"
 -- def export_users="'PMWDT1','WCRT2','WCRT2WORK'"
 def export_users="'CPT_APP','CPTPK_APP','CONSOLE_APP','JOB_APP','LOG_APP'"
 
-set long 200000 pages 0 lin 32767 trims on head off feed off verify off
+set long 2000000000 pages 0 lin 32767 trims on head off feed off verify off
 col cmd for a32767
 
 -- tablespaces
