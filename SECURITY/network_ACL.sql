@@ -1,8 +1,13 @@
 --
+-- DBA_NETWORK_ACLS
 --
+
 
 select * from DBA_NETWORK_ACLS;
 
+select * from DBA_HOST_ACLS;
+
+-- create ACLs
 BEGIN
   DBMS_NETWORK_ACL_ADMIN.create_acl (
     acl          => 'MW',
