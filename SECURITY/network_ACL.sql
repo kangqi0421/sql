@@ -2,10 +2,17 @@
 -- DBA_NETWORK_ACLS
 --
 
+-- co grantuju
+SELECT * FROM DBA_HOST_ACLS;
 
-select * from DBA_NETWORK_ACLS;
+-- komu grantuju
+select * from dba_network_acl_privileges;
 
-select * from DBA_HOST_ACLS;
+
+ SELECT host, lower_port, upper_port, acl
+     FROM dba_network_acls
+   ORDER BY 1;
+
 
 -- create ACLs
 BEGIN
@@ -26,6 +33,8 @@ END;
 -- check
 SELECT DECODE(DBMS_NETWORK_ACL_ADMIN.check_privilege('MW', 'BOS_OWNER', 'connect'),1, 'GRANTED', 0, 'DENIED', NULL) privilege FROM dual;
 
+SELECT *
+  FROM xds_acl;
 
 -- drop
 BEGIN
@@ -45,4 +54,7 @@ BEGIN
   commit;
 END;
 /
+
+--
+select acl from dba_network_acl_privileges;
 
