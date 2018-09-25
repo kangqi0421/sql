@@ -47,7 +47,7 @@ pohled1: timestamp, db_name, tablespace_name, tablespace_metric1, ..., tablespac
 - pouze aktuální data bez historie
 
 ```
-// pouze online hodnoty
+// pouze aktualni hodnoty bez historie
 msg.payload = [];
 msg.topic = 'tbs';
 msg.query = `
@@ -60,12 +60,12 @@ select
      round(tablespace_size/power(1024,2)) as SIZE_MB,
      round(tablespace_used_size/power(1024,2)) AS USED_MB,
      'MB' as UNIT
-  from    mgmt$db_tablespaces t
-     JOIN mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
+  from    sysman.mgmt$db_tablespaces t
+     JOIN sysman.mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
      JOIN sysman.mgmt_target_properties p ON (p.target_guid = d.target_guid)
  where p.property_name = 'orcl_gtp_lifecycle_status'
    AND t.collection_timestamp > sysdate - interval '${context.global.params.oem_collection_date}' day
-   AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
+   -- AND d.database_name = 'PDBP' and tablespace_name = 'SYSTEM'
 ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 `;
 return msg;
@@ -144,20 +144,21 @@ FROM DB_METRIC
         'ALLOCATED_GB' AS ALLOCATED_GB,
         'USED_GB' AS USED_GB)
           ) m
-    JOIN MGMT$TARGET t
+    JOIN sysman.MGMT$TARGET t
       ON (m.target_guid = t.target_guid)
-    JOIN mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
-    JOIN MGMT_TARGET_PROPERTIES p
+    JOIN sysman.mgmt$db_dbninstanceinfo d ON (t.target_guid = d.target_guid)
+    JOIN sysman.MGMT_TARGET_PROPERTIES p
       ON (p.target_guid = m.target_guid)
 WHERE
        p.property_name = 'orcl_gtp_lifecycle_status'
   AND  p.property_value is not NULL
-  AND  m.rollup_timestamp > sysdate - interval '2' DAY
+  AND  m.rollup_timestamp > sysdate - interval '${context.global.params.oem_collection_date}' DAY
   -- AND  d.database_name = 'PDBP'
 ORDER BY
     TIMESTAMP, DBNAME, HOST_NAME
 `;
 return msg;
+
 
 ```
 // daily agg
@@ -792,3 +793,4 @@ ORDER BY dbname
 OFFSET 0 ROWS FETCH NEXT 100 ROWS ONLY
 )
 ;
+
