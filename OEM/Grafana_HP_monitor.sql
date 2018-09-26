@@ -12,14 +12,12 @@ GRANT SELECT on SYSMAN.MGMT$METRIC_DETAILS to HP_MONITOR;
 GRANT SELECT on SYSMAN.MGMT$DB_DBNINSTANCEINFO to HP_MONITOR;
 GRANT SELECT on SYSMAN.CM$MGMT_ASM_CLIENT_ECM to HP_MONITOR;
 
+-- tohle je explicitně potřeba
+GRANT SELECT on SYSMAN.MGMT_ASM_DISK_ECM to HP_MONITOR;
+
 -- aplikační role
 INSERT INTO SYSMAN.mgmt_role_grants VALUES ('HP_MONITOR','EM_ALL_VIEWER',0,0);
 COMMIT;
-
-## Požadavky kapacitního plánování od HP
-
-
--- zkusit upravit na hodnoty kazdou hodinu, daily aggg je pres RP 31
 
 --
 -- Grafana

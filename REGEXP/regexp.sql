@@ -24,13 +24,16 @@ col EXTERNAL_NAME for a20
 select username,
        --AUTHENTICATION_TYPE, password, EXTERNAL_NAME,
        profile,
-       account_status, expiry_date
+       account_status, expiry_date,
+       last_login
 FROM dba_users
 WHERE
   REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
 -- REGEXP_LIKE(username, '^(EXT|CEN|ITA|SOL|A)\d+S')
 --WHERE REGEXP_LIKE(username, '^(EXT|CEN|ITA|SOL|A)\d+')
   --and username NOT IN ('SYS', 'SYSTEM','ARM_CLIENT','DBSNMP')  -- system default accounts
+  and oracle_maintained = 'N'
+    -- and profile not in ('PROF_DBA')
   -- AND password IS NULL -- neni jiz nastavena externi authentizaci
   --  and profile not like 'PROF_APPL'  -- mimo naše DBA účty
   and account_status = 'OPEN'

@@ -1,6 +1,6 @@
--- FAILGROUPy
-col path for a40
-select name, path, HEADER_STATUS, VOTING_FILE from v$asm_disk where GROUP_NUMBER = 3;
+--
+-- OCR migrace disků
+--
 
 set lines 180
 col path for a40
@@ -12,6 +12,8 @@ select d.name, d.path, d.HEADER_STATUS, d.failgroup, d.OS_MB
  where g.NAME = 'OCR'
 order by failgroup, name;
 
+ll /dev/mapper/asm_*OCR*1
+
 -- candidate disks
 col path for a40
 set lin 180
@@ -19,14 +21,15 @@ select path, state, header_status, OS_MB
   from v$asm_disk
  where header_status = 'CANDIDATE' order by 1;
 
-
+sqlplus / as sysasm
 
 -- ad new ORC disks
-alter diskgroup OCR add disk '/dev/mapper/asm_vplex_56E1_OCRp1' size 2054M;
+alter diskgroup OCR add disk '/dev/mapper/asm_vmax3_018B_OCRp1' size 6745M;
 
 select * from v$asm_operation;
 
 -- drop old disks
+```
 alter diskgroup OCR drop disk OCR_0000;
 select * from v$asm_operation;
 
@@ -35,7 +38,7 @@ select * from v$asm_operation;
 
 alter diskgroup OCR drop disk OCR_0002;
 select * from v$asm_operation;
---
+```
 
 crsctl query css votedisk
 
