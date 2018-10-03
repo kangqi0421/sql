@@ -1,2 +1,12 @@
 -- SYN data from OEM
-exec dbms_scheduler.run_job('DASHBOARD.OMS_OLI_REFRESH_DATA');
+
+BEGIN
+  DASHBOARD.REFRESH_OLI_DBHOST_PROPERTIES;
+END;
+/
+
+-- NOTE: jiz soucasti predchoziho jobu
+BEGIN
+DBMS_SNAPSHOT.REFRESH('DASHBOARD.API_DB_MV','C');
+END;
+/

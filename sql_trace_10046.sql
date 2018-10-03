@@ -21,6 +21,9 @@ END;
 /
 
 ---
+
+EXEC DBMS_MONITOR.session_trace_enable(session_id=> 1118, serial_num=> 48059);
+
 EXECUTE DBMS_SESSION.SESSION_TRACE_ENABLE(waits => TRUE, binds => TRUE);
 EXECUTE DBMS_SESSION.SESSION_TRACE_DISABLE();
 ---
