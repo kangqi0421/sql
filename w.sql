@@ -38,7 +38,7 @@ SELECT CASE
 /
 
 SELECT s.username u_username,
-       inst_id,
+       s.inst_id,
        decode(sid, sys_context('USERENV','SID'),
        '*''' || s.sid || ',' || s.serial# || '''*',     -- prihod hvezdicku k vlastni SID session
        ' ''' || s.sid || ',' || s.serial# || '''') u_sid,
@@ -56,7 +56,8 @@ SELECT s.username u_username,
        s.last_call_et lastcall,
        s.status,
        s.logon_time
-  FROM gv$session s INNER JOIN v$process p ON (s.paddr = p.addr)
+  FROM gv$session s INNER JOIN gv$process p
+         ON (s.paddr = p.addr and s.inst_id = p.inst_id)
  WHERE s.sid IN (&sid)
 --  and s.type <> 'BACKGROUND'
 --  and s.status = 'ACTIVE'

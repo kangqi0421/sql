@@ -3,6 +3,7 @@
 --
 How To Enable The New Unified Auditing In 12c ? (Doc ID 1567006.1)
 
+
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
 SELECT COUNT(*) FROM ARM_CLIENT.ARM_UNIAUD12TMP;
@@ -110,7 +111,7 @@ order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
 -- ALL audit policies
 select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
- -- where policy_name like '%DWH'
+ -- AND policy_name like '%DWH'
   and policy_name like 'CS%'
 --  and AUDIT_OPTION like 'INSERT%'
 --order by policy_name
@@ -246,3 +247,12 @@ BEGIN
    audit_trail_location_value => 'SYSAUX');
 END;
 /
+
+
+-- DWH
+CS_ACTIONS_FREQUENT_DWH
+
+audit policy CS_ACTIONS_FREQUENT_DWH;
+noaudit policy CS_ACTIONS_FREQUENT_DWH;
+
+select * from AUDIT_UNIFIED_ENABLED_POLICIES  where policy_name='CS_ACTIONS_FREQUENT_DWH';
