@@ -65,14 +65,24 @@ ORA-02292: integrity constraint (OLI_OWNER.DB_APP_DATABASES_FK) violated - child
 select * from all_views
 where view_name like 'OLAPI%';
 
+-- RECOhub
 -- základní data do CMDB
-select * from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
+connect OLI_RECO_SYNUSR/abcd1234abcd1234
+select count(*) from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
--- Sync OLI
+--
+-- SyncOLI
+--
+--  - přístup přes roli OLI_CA_INTERFACE
+--
 SyncOLI používá 3 pohledy:
 OLAPI_APPS_DB_SERVERS_FARM_FLG
 OLAPI_ACQUIRED_LICENSES
 OLAPI_LICENCE_USAGE_DETAIL
+
+users:
+- OLI_QG0_SYNUSR
+- OLI_CA_SYNUSR
 
 -- Sync JOBs
 OLI_OWNER.SYNCHRO_CA.RELOAD_ALL > OLI_OWNER.SYNCHRO_CA.RELOAD_ALL

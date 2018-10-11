@@ -100,7 +100,7 @@ select
     current_prod_name,
     --licdb_name,
     lic_type_name,
-    round(sum(calc_lic_cnt),1)
+    round(sum(calc_lic_cnt),1) lic_cnt
   from OLI_OWNER.LICENSE_COSTS_FULL
  where app_name like 'FASCR'
   -- and current_prod_name = 'Enterprise Edition'
