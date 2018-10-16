@@ -86,7 +86,7 @@ select dbusername,action_name,unified_audit_policies,return_code, count(*)
   from unified_audit_trail
 -- from ARM_CLIENT.ARM_AUD$12TMP
  group by dbusername,action_name,unified_audit_policies,return_code
-order by count(*) ;
+order by count(*) DESC;
 
 -- workarounds
 AUDIT_SYS_OPERATIONS = FALSE
@@ -112,6 +112,8 @@ order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
 select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
  -- AND policy_name like '%DWH'
+     -- AND policy_name in (
+        -- select policy_name from AUDIT_UNIFIED_ENABLED_POLICIES)
   and policy_name like 'CS%'
 --  and AUDIT_OPTION like 'INSERT%'
 --order by policy_name

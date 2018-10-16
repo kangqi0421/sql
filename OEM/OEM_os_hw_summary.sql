@@ -1,6 +1,6 @@
 
 --// seznam všech serverù pro platformy Windows/HP UX/AIX, cpu count, mem, domain //--
-  SELECT 
+  SELECT
          a.target_name "hostname",
          b.domain "domain",
          'Backup',  -- Production/Pre-production/Backup/Test/Development
@@ -12,7 +12,7 @@
          'YES', --HASDR YES/null
          a.category_prop_1 "platform",
          null
-    FROM SYSMAN.MGMT_TARGETS a inner join mgmt$os_hw_summary b on (A.TARGET_GUID = b.target_guid)
+    FROM SYSMAN.MGMT_TARGETS a inner join SYSMAN.mgmt$os_hw_summary b on (A.TARGET_GUID = b.target_guid)
    WHERE     a.target_type = 'host'
         and A.TARGET_NAME like '%arcdb%'
          --AND a.category_prop_1 = 'Windows'

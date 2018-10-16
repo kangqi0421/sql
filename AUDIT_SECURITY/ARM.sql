@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DLK
+DEFINE db=DWHP
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -30,11 +30,14 @@ SELECT *
 --     AND status <> 'F'
 ORDER BY sub_date DESC;
 
---// client logs on cetral ARM
+--// client logs
 select *
-  from ARM_ADMIN.arm_client_logs
- where arm_db_name = '%&db%' and sub_date > sysdate - 1/24
+  from ARM_ADMIN.ARM_CLIENT_LOGS
+ where sub_date > sysdate - 1/24
 order by sub_date desc;
+
+select * from ARM_CLIENT.ARM_LOG;
+
 
 --// zjisteni presouvaciho jobu //--
 select owner, job_name, job_action, repeat_interval, state
@@ -45,13 +48,13 @@ select owner, job_name, job_action, repeat_interval, state
 --// running jobs //--
 select * from dba_scheduler_running_jobs
 --  where owner = 'ARM_ADMIN'
-  --and job_name like '%&db'
+  WHERE job_name like '%&db%'
   ;
 
 --// scheduler job logy //--
 select * from DBA_SCHEDULER_JOB_RUN_DETAILS
   where owner = 'ARM_ADMIN'
-  --and job_name like '%&db'
+  and job_name like '%&db'
   order by log_date desc;
 
 --// re-run prenosoveho jobu //--

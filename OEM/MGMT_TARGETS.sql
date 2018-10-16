@@ -2,9 +2,15 @@
 -- mgmt_targets
 -- mgmt_target_properties
 
+-- SYSMAN views
+select * from dba_objects
+  where object_name like '%NET%'
+ and owner = 'SYSMAN'
+;
+
 DB target:
   - MGMT$DB_DBNINSTANCEINFO
-  - sysman.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
+  - SYSMAN.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
 12.2 - filtr upraven na
 where TARGET_TYPE in ('rac_database', 'oracle_database')
   and TYPE_QUALIFIER3 != 'RACINST'
@@ -60,24 +66,6 @@ select
         OR database_name like 'SK2O%'
         OR database_name like 'TS3O%'
         OR database_name like 'BRATB%'
-        OR database_name like 'BRATC%'
-        OR database_name like 'BRAEA%'
-        OR database_name like 'CRMTB%'
-        OR database_name like 'CRMTC%'
-        OR database_name like 'CRMRA%'
-        OR database_name like 'MCITINT%'
-        OR database_name like 'MCITPRS%'
-        OR database_name like 'PWTESTA%'
-        OR database_name like 'PWTESTB%'
-        OR database_name like 'CATEST1%'
-        OR database_name like 'CATEST2%'
-        OR database_name like 'CPSTINT%'
-        OR database_name like 'CPSTPRS%'
-        OR database_name like 'CPSEA%'
-        OR database_name like 'SYMPK%'
-        OR database_name like 'SYMTA%'
-        OR database_name like 'WBLINT%'
-        OR database_name like 'WBLPRS%'
      )
 ORDER by d.target_name;
 
@@ -85,7 +73,6 @@ ORDER by d.target_name;
 select * from MGMT$RAC_TOPOLOGY t
   where cluster_name = 'ordb02-cluster'
     and db_instance_name like 'DLKP%';
-
 
 -- Database Info
 select t.target_guid, t.target_name,
@@ -135,8 +122,6 @@ WHERE 1=1
         and dbversion = '12.1.0.2.0'
         and oracle_home <> '/oracle/product/db/12.1.0.2'
 
-
-
 --
 -- OS info/HW info short AIX/Linux/Win ..
 --
@@ -153,7 +138,7 @@ select * from CM$MGMT_ECM_HW_VIRTUAL;
          os_vendor,
          CPU_COUNT "CPUs",
          mem
-    FROM MGMT$OS_HW_SUMMARY
+    FROM SYSMAN.MGMT$OS_HW_SUMMARY
    WHERE    -- host_name like 'dp%db%'
      REGEXP_LIKE(host_name, '^[dt][pb][a-z]{3}db\d{2}.vs.csin.cz')
          and VIRTUAL like 'Yes'

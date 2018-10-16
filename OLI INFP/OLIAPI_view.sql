@@ -2,7 +2,7 @@
 -- OLIAPI CA CMDB view
 --
 
--- TODO: založit ownera OLI_API ? -> zneužijeme dashboard
+-- TODO: založit ownera OLI_API ? -> zneužijeme účet DASHBOARD
 --
 
 grant execute on job
@@ -69,6 +69,8 @@ where view_name like 'OLAPI%';
 -- základní data do CMDB
 connect OLI_RECO_SYNUSR/abcd1234abcd1234
 select count(*) from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
+select count(*) from  OLI_OWNER.OLIAPI_ORACLE_CMDB_CI;
+select count(*) from  OLI_OWNER.OLIAPI_POSTGRES_CMDB_CI;
 
 --
 -- SyncOLI
@@ -158,6 +160,10 @@ select * from OLI_OWNER.OLAPI_LICENSED_ENVIRONMENTS;
 -- granty na OLI_CA_INTERFACE /OLI_QG0_INTERFACE
 GRANT SELECT ON OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG TO  OLI_CA_INTERFACE;
 
+-- postgres tables
+grant select on postgres.database to OLI_OWNER with GRANT option;
+
+--
 GRANT SELECT ON OLI_OWNER.OLAPI_DATABASES TO  OLI_CA_INTERFACE;
 GRANT SELECT ON OLI_OWNER.OLAPI_DATABASES TO  OLI_QG0_INTERFACE;
 
@@ -173,6 +179,21 @@ GRANT SELECT ON DASHBOARD.CM$MGMT_DB_SGA_ECM TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.EM_DATABASE TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.EM_INSTANCE TO OLI_OWNER with GRANT option;
 
+-- grant na OLIAPI view to OLI_CA_INTERFACE - role pro pristup z CA, RecoHUB atd.
+BEGIN
+for rec in (
+    select owner, view_name from all_views
+        where owner = 'OLI_OWNER'
+      and view_name like '%API%')
+  LOOP
+    execute immediate 'GRANT SELECT ON '
+      || rec.owner ||'.'||rec.view_name
+      || ' TO OLI_CA_INTERFACE';
+  END LOOP;
+END;
+/
+
+
 -- definice OLAPI2_APPS_DB_SRVS_FARM_FLG;
 -- nahradit za OLAPI_APPS_DB_SERVERS_FARM_FLG
 --
@@ -186,6 +207,7 @@ select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
 -- SYNCHRO_CA
 --// OLI_OWNER.SYNCHRO_CA.reload_servers //--
 
+```
   procedure reload_all AS
   BEGIN
     reload_applications;
@@ -202,14 +224,88 @@ ERROR at line 1:
 ORA-01427: single-row subquery returns more than one row
 ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
 ORA-06512: at line 1
+```
 
-exec OLI_OWNER.SYNCHRO_CA.reload_all;
+
+-- RecoHUB
+
+- OLIAPI_ORACLE_CMDB_CI
+- OLIAPI_POSTGRES_CMDB_CI
 
 
-     UPDATE ca_servers cs
-         SET (virt_platform_resource_name,virt_platform_display_name,virt_platform_ci_id)=
-            (SELECT cv.resource_name cv_resource_name, cv.display_name cv_display_name, cv.cmdb_ci_id cv_cmdb_ci_id
-                FROM ca_relations cr, ca_virt_platforms cv
-                WHERE (cs.cmdb_ci_id=cr.child_cmdb_ci_id and cr.rel_type='hosts')
-                      and (cr.parent_cmdb_ci_id=cv.cmdb_ci_id)
-           );
+
+-- OLAPI_APPS_DB_SERVERS_FARM_FLG
+
+CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_ORACLE_CMDB_CI"
+AS
+SELECT DISTINCT
+                   a.app_name,
+                   A.CA_ID app_ca_id,
+                   d.licdb_id || '-' || s.server_id AS DBINSTANCES_CK,
+                   d.em_guid db_em_guid,
+                   i.em_guid inst_em_guid,
+                   D.DBNAME database_name,
+                   i.inst_name instance_name,
+                   i.inst_role instancerole,
+                   ci.calc_percent as calc_percent_on_server,
+                   i.dbinst_id,
+                   i.ca_id as dbinst_cmdb_ci_id,
+                   d.ca_id as db_cmdb_ci_id,
+                   i.licdb_id,
+                   i.server_id,
+                   s.ca_id cmdb_ci_server,
+                   s.hostname, s.domain,
+                   decode(le.farm, 'Y', 'true', 'false') farm,
+                   d.dbversion AS version,
+                   d.env_status environment,
+                   em.port tcp_port,
+                   em.connect_descriptor,
+                   decode(d.rac, 'Y', 'true', 'false') is_clustered,
+                   decode(em.log_mode, 'ARCHIVELOG', 'true', 'false') backup,
+                   em.db_size_mb,
+                   em.db_log_size_mb,
+                   emi.cpu,
+                   emi.sga_size_mb sga_size_mb
+     FROM OLI_OWNER.APPLICATIONS A,
+          OLI_OWNER.APP_DB AD,
+          OLI_OWNER.databases d,
+          OLI_OWNER.DBINSTANCES i,
+          OLI_OWNER.COST_CALC_DBINSTANCES ci,
+          OLI_OWNER.servers s,
+          OLI_OWNER.licensed_environments le,
+          DASHBOARD.EM_DATABASE em,
+          DASHBOARD.EM_INSTANCE emi
+    WHERE     A.APP_ID = AD.APP_ID
+          AND AD.LICDB_ID = D.LICDB_ID
+          AND D.LICDB_ID = I.LICDB_ID
+          AND i.server_id = s.server_id
+          AND le.lic_env_id = s.lic_env_id
+          and i.dbinst_id=ci.dbinst_id
+          AND d.em_guid = em.em_guid(+)
+          AND i.em_guid = emi.em_guid(+)
+          ;
+
+
+CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_POSTGRES_CMDB_CI"
+AS
+SELECT instance database_instance,
+       CASE
+         WHEN hostname IN ('pedb01', 'bedb01') THEN 'pedb01,bedb01'
+         WHEN hostname IN ('zpedb01', 'zbedb01') THEN 'zpedb01,zbedb01'
+         ELSE hostname
+       END
+     hostname,
+       CASE
+         WHEN hostname LIKE 'p%' THEN 'Production'
+         WHEN hostname LIKE 'b%' THEN 'Production'
+         WHEN hostname LIKE 'z%' THEN 'Pre-production'
+         WHEN hostname LIKE 't%' THEN 'Test'
+         WHEN hostname LIKE 'd%' THEN 'Development'
+       END
+     environment,
+       vip,
+       port tcp_port,
+       database database_name
+FROM postgres.database
+/
+
