@@ -6,6 +6,8 @@ How To Enable The New Unified Auditing In 12c ? (Doc ID 1567006.1)
 
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
+select COUNT(*) from ARM_CLIENT.ARM_UNIAUD12_CL_V ;
+-- OLD version
 SELECT COUNT(*) FROM ARM_CLIENT.ARM_UNIAUD12TMP;
 
 -- AUDSYS v
@@ -19,54 +21,6 @@ truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
 exec DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, last_archive_time => sysdate -1/1440) ;
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, use_last_arch_timestamp => true);
 DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
-
-
---
--- smazani odzadu
-BEGIN
-  DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(
-      audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      last_archive_time => sysdate - interval '1' day);
-  DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(
-      AUDIT_TRAIL_TYPE => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      USE_LAST_ARCH_TIMESTAMP => TRUE,
-      CONTAINER => DBMS_AUDIT_MGMT.CONTAINER_CURRENT);
-END;
-/
-
-BEGIN
-  DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(
-      audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      last_archive_time => sysdate - interval '1' hour);
-  DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(
-      AUDIT_TRAIL_TYPE => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      USE_LAST_ARCH_TIMESTAMP => TRUE,
-      CONTAINER => DBMS_AUDIT_MGMT.CONTAINER_CURRENT);
-END;
-/
-
-BEGIN
-  DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(
-      audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      last_archive_time => sysdate - interval '1' minute);
-  DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(
-      AUDIT_TRAIL_TYPE => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      USE_LAST_ARCH_TIMESTAMP => TRUE,
-      CONTAINER => DBMS_AUDIT_MGMT.CONTAINER_CURRENT);
-END;
-/
-
-
-BEGIN
-  DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(
-      audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      last_archive_time => sysdate - interval '1' second);
-  DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(
-      AUDIT_TRAIL_TYPE => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
-      USE_LAST_ARCH_TIMESTAMP => TRUE,
-      CONTAINER => DBMS_AUDIT_MGMT.CONTAINER_CURRENT);
-END;
-/
 
 
 -- kdy došlo k nárůstu auditních dat
@@ -108,6 +62,10 @@ select * from AUDIT_UNIFIED_ENABLED_POLICIES
 order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
 ;
 
+--
+-- generování seznamu auditu
+--
+
 -- ALL audit policies
 select * from AUDIT_UNIFIED_POLICIES
   WHERE 1=1
@@ -118,6 +76,23 @@ select * from AUDIT_UNIFIED_POLICIES
 --  and AUDIT_OPTION like 'INSERT%'
 --order by policy_name
  ;
+
+-- NOAUDIT ALTER SESSION
+SELECT * FROM auditable_system_actions
+  WHERE component='Standard'
+   AND name like 'ALTER SES%'
+  ;
+
+-- system_privilege_map
+SELECT * FROM system_privilege_map;
+
+--
+ALTER AUDIT POLICY CS_ACTIONS_GENERAL DROP ACTIONS ALTER SESSION;
+
+-- INFO - audit SELECT  per username INFO
+-- INFO na testovacích DB 'TS0', 'TS0I', 'TS1', 'TS1I'
+create audit policy CS_INFO_POLICY actions ALL, SELECT;
+audit policy CS_INFO_POLICY by INFO;
 
 
 -- NOAUDIT
@@ -130,7 +105,8 @@ SELECT POLICY_NAME FROM AUDIT_UNIFIED_ENABLED_POLICIES where user_name like 'SYS
 BEGIN
   FOR rec IN
     (SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
-		FROM AUDIT_UNIFIED_ENABLED_POLICIES)
+		  FROM AUDIT_UNIFIED_ENABLED_POLICIES
+     WHERE policy_name like 'CS_%')
   LOOP
     EXECUTE immediate 'noaudit policy '||rec.policy_name||' '||rec.username;
 end LOOP;
@@ -149,18 +125,8 @@ end LOOP;
 END;
 /
 
--- NOAUDIT ALTER SESSION
-SELECT * FROM auditable_system_actions
-  WHERE component='Standard'
-   AND name like 'ALTER SES%'
-  ;
---
-ALTER AUDIT POLICY CS_ACTIONS_GENERAL DROP ACTIONS ALTER SESSION;
+-- generování seznamu k auditu
 
--- INFO - audit SELECT  per username INFO
--- INFO na testovacích DB 'TS0', 'TS0I', 'TS1', 'TS1I'
-create audit policy CS_INFO_POLICY actions ALL, SELECT;
-audit policy CS_INFO_POLICY by INFO;
 
 select DBMS_LOB.SUBSTR(SQL_TEXT_VARCHAR2,4000), count(*)
   from UNIFIED_AUDIT_TRAIL where dbusername = 'INFO'
@@ -224,25 +190,13 @@ ORA-06512: at "SYS.ARM_MOVE_C", line 503
 ORA-06512: at "SYS.ARM_MOVE_C", line 883
 ORA-06512: at line 1
 
-
-"ORA-01476: divisor is equal to zero
-ORA-06512: at "SYS.DBMS_STATS", line 34830
-ORA-06512: at "SYS.ARM_MOVE_C", line 503
-ORA-06512: at "SYS.ARM_MOVE_C", line 883
-ORA-06512: at line 1
-"
-
-
 exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL');
-
-
 exec dbms_stats.set_table_prefs('SYS','X$UNIFIED_AUDIT_TRAIL','CONCURRENT','OFF');
-
 exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL', method_opt=> 'for all columns size auto');
 
 -- p. Fiala, dát vědět, dočasně vypnout audit
 
--- change tablespace
+-- change AUDIT tablespace
 BEGIN
    dbms_audit_mgmt.set_audit_trail_location(
    audit_trail_type => dbms_audit_mgmt.audit_trail_unified,
@@ -257,4 +211,9 @@ CS_ACTIONS_FREQUENT_DWH
 audit policy CS_ACTIONS_FREQUENT_DWH;
 noaudit policy CS_ACTIONS_FREQUENT_DWH;
 
-select * from AUDIT_UNIFIED_ENABLED_POLICIES  where policy_name='CS_ACTIONS_FREQUENT_DWH';
+LOGON CS_ACTIONS_GENERAL, CS_PRIVILEGES_GENERAL 138400
+LOGOFF  CS_ACTIONS_GENERAL                      137982
+
+-- ESPPA
+SYS                                                                                        EXECUTE              CS_ACTIONS_FREQUENT_SYS             0        675
+SYS                                                                                        SELECT               CS_ACTIONS_FREQUENT_SYS             0         63

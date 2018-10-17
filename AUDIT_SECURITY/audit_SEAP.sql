@@ -15,7 +15,7 @@ select ARM_DB_NAME, ARM_FULLID, TRANSFER_ENABLED from ARM_ADMIN.ARM_DATABASES wh
 select --/*+ parallel full  (a) */
 --    a.*
       -- locknuty ucet
-    ARM_TIMESTAMP, 
+    ARM_TIMESTAMP,
     to_char(ARM_TIMESTAMP, 'YYYY-MM-DD"T"HH24:MI:SS"+01:00"'),
     OS_USERNAME, USERHOST, RETURN_CODE
 --
@@ -25,7 +25,7 @@ select --/*+ parallel full  (a) */
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID in (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name in '&db' and TRANSFER_ENABLED = 'Y')
   AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
---     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00' 
+--     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00'
   --                         and TIMESTAMP'2017-08-22 18:10:00'
   and ARM_ACTION_NAME='LOGON'
 --   and ARM_ACTION_NAME = 'EXECUTE'
@@ -50,8 +50,8 @@ FETCH FIRST 5 ROWS ONLY
 
 -- object schema, name
 select
---    *
-  object_schema, object_name, return_code, count(*) cnt
+    *
+--  object_schema, object_name, return_code, count(*) cnt
 --   substr(sql_text, 1, 32767)
 --    sql_text, count(*)
 --    action_name, return_code, count(*)
@@ -60,12 +60,14 @@ select
 -- event_timestamp, Dbusername, Client_Program_Name, Action_Name, sql_text,
 -- Unified_Audit_Policies, return_code
   from ARM12.ARM_UNIAUD12
- where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
+ where 1 = 1
+--   AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
   AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
-  AND return_code > 0
- AND UNIFIED_AUDIT_POLICIES is NOT null
- AND object_schema not in ('SYS', 'SYSTEM')
--- and action_name='LOGOFF BY CLEANUP'
+--  AND return_code > 0
+-- AND UNIFIED_AUDIT_POLICIES is NOT null
+   AND UNIFIED_AUDIT_POLICIES = 'CS_ACTIONS_FREQUENT_SYS'
+-- AND object_schema not in ('SYS', 'SYSTEM')
+   and action_name='EXECUTE'
 --   and dbusername='LDAPUSER'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
@@ -87,6 +89,17 @@ select
  group by trunc(event_timestamp,'HH24')
 order by   trunc(event_timestamp,'HH24')
 ;
+
+-- ARM action name
+select ARM_ACTION_NAME, unified_audit_policies,
+    count(*)
+from ARM12.ARM_UNIAUD12
+where 1 = 1
+--   AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='DWHP' and transfer_enabled = 'Y')
+   and ARM_TIMESTAMP > sysdate - interval '4' hour
+--   and return_code = 0
+group by ARM_ACTION_NAME, unified_audit_policies
+order by count(*) DESC;
 
 
 -- standardní AUDIT
@@ -169,3 +182,5 @@ order by ntimestamp# DESC
          AND ARM_ACTION_NAME = 'CREATE DIRECTORY'  -- action name DROP pøevedeno na CREATE, DROP neexistuje
          AND obj$name = 'TXMSG_LOGS'
 ORDER BY arm_timestamp;
+
+

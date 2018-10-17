@@ -10,6 +10,10 @@ SELECT *  FROM ARM_ADMIN.ARM_DATABASES
 --    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
+-- parametry přenosu
+select * 
+  from ARM_ADMIN.ARM_MOVE_DEFINITIONS ;
+
 -- ARM status ERROR
 SELECT * FROM arm_admin.arm_status
   WHERE 1=1
@@ -19,23 +23,24 @@ SELECT * FROM arm_admin.arm_status
 --    AND status not like 'DISABLED'
 ORDER by ARM_DB_NAME;
 
--- ARM logs
-SELECT *
-    -- FROM ARM11.ARM_LOG11
-    FROM ARM12.ARM_LOG12
+select * 
+  from ARM_ADMIN.ARM_OPERATION_LOG
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
 --      AND arm_db_name LIKE 'RTOP'
-     AND sub_date > sysdate - interval '4' hour
---     AND status <> 'F'
-ORDER BY sub_date DESC;
+     AND start_date > sysdate - interval '4' hour
+--     AND status <> 'OK'
+ORDER BY start_date DESC
+;
+
 
 --// client logs
 select *
-  from ARM_ADMIN.ARM_CLIENT_LOGS
+  from ARM_ADMIN.ARM_CLIENT_LOGS 
  where sub_date > sysdate - 1/24
 order by sub_date desc;
 
+-- lokálně na db
 select * from ARM_CLIENT.ARM_LOG;
 
 
@@ -287,3 +292,21 @@ exec dbms_stats.gather_table_stats('SYS','X$UNIFIED_AUDIT_TRAIL');
 
 
 -- p. Fiala, dát vědět, dočasně vypnout audit
+
+
+-- OLD
+
+-- OLD
+-- ARM logs
+SELECT *
+    -- FROM ARM11.ARM_LOG11
+    FROM ARM12.ARM_LOG12
+   WHERE 1=1
+     AND arm_db_name LIKE '%&db%'
+--      AND arm_db_name LIKE 'RTOP'
+     AND sub_date > sysdate - interval '4' hour
+--     AND status <> 'F'
+ORDER BY sub_date DESC;
+
+
+select * from dba_users where username like 'ARM%';
