@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DWHP
+DEFINE db=DWHDD18Z
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -37,7 +37,9 @@ ORDER BY start_date DESC
 --// client logs
 select *
   from ARM_ADMIN.ARM_CLIENT_LOGS 
- where sub_date > sysdate - 1/24
+ where 
+        arm_db_name LIKE '%&db%'
+   AND  sub_date > sysdate - interval '4' hour
 order by sub_date desc;
 
 -- lokálně na db
@@ -310,3 +312,14 @@ ORDER BY sub_date DESC;
 
 
 select * from dba_users where username like 'ARM%';
+
+-- SEAP view pro Hamouze na DWH
+create or replace view ARM12.ARM_UNIAUD_DWHP
+AS
+select *
+  from ARM12.ARM_UNIAUD12 a
+ where ARM_FULLID in (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name in 'DWHP' and TRANSFER_ENABLED = 'Y')
+;
+
+
+grant select on ARM12.ARM_UNIAUD_DWHP to CEN31776;

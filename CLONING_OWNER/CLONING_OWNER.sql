@@ -142,13 +142,9 @@ create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
 
 
 -- data CLONING_METHOD
-insert into CLONING_METHOD values ('14','SB_SNAPVX_CLONE','Starbank VMAX3: SnapVX link disk snapshot'  ,'Starbank VMAX3: SnapVX link disk snapshot', 'Y', 'N');
-insert into CLONING_METHOD values ('15','SB_SNAPVX_RESTORE','Starbank VMAX3: SnapVX restore disk snapshot','Starbank VMAX3: SnapVX restore disk snapshot', 'Y', 'N');
+insert into CLONING_METHOD values ('16','SNAPVX_CLONE','SnapVX create disk snapshot'  ,'SnapVX create disk snapshot', 'Y', 'N');
 
-insert into CLONING_METHOD_STEP values ('11','arm.yml','400',NULL,'Y','Y');
-
-
-insert into CLONING_METHOD_STEP values (10,'STEP100_sb_create_snapshot.sh',100,'Starbank create disk snapshot','N','Y');
+insert into CLONING_METHOD_STEP values (16,'STEP100_create_snapshot.sh',100,'SnapVX create disk snapshot','N','Y');
 
 update CLONING_METHOD_STEP
   set step_name = 'STEP070_drop_db.sh',
@@ -156,6 +152,10 @@ update CLONING_METHOD_STEP
       position = 70
  where position = 15;
 
+go to cab: if (nikki namisto maja) and (nikki ma derovany tricko)
+
+n = rand()
+if n == 24 then zajdu na cab
 
 -- INSERTING into CLONING_METHOD_STEP - common / local (oem)
 

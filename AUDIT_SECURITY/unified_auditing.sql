@@ -73,8 +73,9 @@ select * from AUDIT_UNIFIED_POLICIES
      -- AND policy_name in (
         -- select policy_name from AUDIT_UNIFIED_ENABLED_POLICIES)
   and policy_name like 'CS%'
---  and AUDIT_OPTION like 'INSERT%'
---order by policy_name
+  and policy_name in ('CS_ACTIONS_GENERAL');
+  and AUDIT_OPTION like 'ALTER SESSION%'
+order by policy_name, audit_option
  ;
 
 -- NOAUDIT ALTER SESSION
@@ -106,7 +107,8 @@ BEGIN
   FOR rec IN
     (SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
 		  FROM AUDIT_UNIFIED_ENABLED_POLICIES
-     WHERE policy_name like 'CS_%')
+     WHERE policy_name like 'CS_%'
+       and policy_name = 'CS_ACTIONS_FREQUENT_DBA')
   LOOP
     EXECUTE immediate 'noaudit policy '||rec.policy_name||' '||rec.username;
 end LOOP;
