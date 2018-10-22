@@ -126,6 +126,7 @@ ALTER USER &user profile default;
 ALTER USER &user IDENTIFIED BY "xxx";
 ALTER USER &user profile PROF_DBA;
 
+alter user dbsnmp identified by "";
 
 */
 

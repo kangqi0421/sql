@@ -184,3 +184,23 @@ order by ntimestamp# DESC
 ORDER BY arm_timestamp;
 
 
+-- view ARM12.ARM_UNIAUD_DWHP pro DWH
+
+partitions: ARM_TIMESTAMP
+subpartitions: ARM_FULLID
+
+select count(1) from ARM12.ARM_UNIAUD_DWHP where ARM_TIMESTAMP between trunc(systimestamp) and trunc(systimestamp)+1;
+
+grant select on ARM12.ARM_UNIAUD_DWHP to SOL60210;
+
+create or replace view ARM12.ARM_UNIAUD_DWHP
+AS
+select *
+  from ARM12.ARM_UNIAUD12 a
+ where ARM_FULLID = 'ODSP1239916374'
+/
+
+grant select on ARM12.ARM_UNIAUD12 to CEN31776 with grant option;
+grant select on ARM12.ARM_UNIAUD_DWHP to CEN31776;
+
+

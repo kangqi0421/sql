@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 7db13njng0wu9
+DEFINE SQLID = 9b830kxvd2av6
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -44,8 +44,8 @@ select * from table(dbms_xplan.display_awr('&SQLID','&PLAN_HASH',null, '+ALLSTAT
 
 -- změna exec plánu
 SELECT
-*
---       sql_id, plan_hash_value, TIMESTAMP, COST
+--*
+       sql_id, plan_hash_value, TIMESTAMP, COST
   FROM SYS.DBA_HIST_SQL_PLAN
  WHERE sql_id = '&sqlid'
     AND id = 0
@@ -70,7 +70,7 @@ select sql_id,
 --  Is_Bind_Aware, Is_Bind_Sensitive
 --  ,is_resolved_adaptive_plan
 --  from v$sql where sql_id='&SQLID'
-  from v$sqlstats where sql_id='&SQLID'
+  from gv$sqlstats where sql_id='&SQLID'
 order by sql_id ;
 
 -- SQL duration z ASH
@@ -103,7 +103,7 @@ SELECT
       SUM(executions_delta)                                                     "executions"
   FROM SYS.DBA_HIST_SQLSTAT NATURAL JOIN DBA_HIST_SNAPSHOT
  WHERE sql_id = '&sqlid'
---   AND end_interval_time > sysdate - 2/24
+   AND end_interval_time > sysdate - interval '7' day
   GROUP by sql_id
   --having SUM(executions_delta) > 0
 order by 3 desc
@@ -158,7 +158,7 @@ select
 where (owner, table_name) in (
 SELECT  distinct object_owner,
     object_name
-  FROM V$SQL_PLAN
+  FROM GV$SQL_PLAN
 --    FROM DBA_HIST_SQL_PLAN
   WHERE SQL_ID        = '&sqlid'
 --    WHERE SQL_ID in ('4k1xxjq1aymdt', '90rd3rb489wp6', '0mt9bj1u0uh4h', 'f58w05s13mspm')
@@ -179,14 +179,15 @@ where histogram <> 'NONE'
   AND (owner, table_name) in (
 SELECT  distinct object_owner,
     object_name
-  FROM V$SQL_PLAN
+  FROM GV$SQL_PLAN
   WHERE SQL_ID        = '&sqlid'  --9a5pr6jkppff6 &sqlid
   AND object_type     = 'TABLE'
   )
 ORDER by 1,2;
 
--- kontrola na po�et ��dek
-select count(*) from GCALLBACK.OB_CAMPAIGN;
+-- nastaveni histogramu
+select sname, sval1, spare4 from sys.optstat_hist_control$ order by sname;
+
 
 -- SQL report --
 @?/rdbms/admin/awrsqrpt
