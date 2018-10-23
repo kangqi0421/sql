@@ -2,9 +2,18 @@
 -- SQL profile
 --
 
+-- zjisteni stavajiciho SQL profile a SQL hintu
+select inst_id, sql_id, plan_hash_value,
+       optimizer_cost, sql_profile, sql_patch
+  from gv$sql
+ where sql_id sql_id in ('gygdvbjdj9gvq', '939d23gvdvs58')
+;
+
 --
 -- coe_load_sql_profile.sql
-select * from dba_sql_profiles;
+select * from dba_sql_profiles
+ -- where name = 'SYS_SQLPROF_02669aacf8d20002'
+ order by created DESC;
 
 -- COE script
 @/dba/sql/coe_xfr_sql_profile
@@ -17,7 +26,7 @@ select * from dba_sql_profiles;
 SELECT extractValue(value(h),'.') AS hint
 FROM sys.sqlobj$data od, sys.sqlobj$ so,
 table(xmlsequence(extract(xmltype(od.comp_data),'/outline_data/hint'))) h
-WHERE so.name = 'coe_5htf3c7z5fka1_1333230131'
+WHERE so.name = 'SYS_SQLPROF_036695a06bab0001'
 AND so.signature = od.signature
 AND so.category = od.category
 AND so.obj_type = od.obj_type
@@ -35,9 +44,11 @@ and	rat.task_id   = tsk.id
 
 
 -- drop SQL profile
+define sql_profile = SYS_SQLPROF_02669aacf8d20002
+
 BEGIN
   DBMS_SQLTUNE.DROP_SQL_PROFILE (
-    name => 'coe_5htf3c7z5fka1_1333230131'
+    name => '&sql_profile'
 );
 END;
 /

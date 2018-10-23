@@ -5,7 +5,7 @@
 -- reset ansiconsole
 SET SQLFORMAT
 
-DEFINE SQLID = 9b830kxvd2av6
+DEFINE SQLID = gygdvbjdj9gvq
 
 DEFINE PLAN_HASH=%
 DEFINE PLAN_HASH=653645620
@@ -16,7 +16,7 @@ SELECT  SQL_ID, COUNT(*) cnt
 --      dba_hist_active_sess_history ash
        GV$ACTIVE_SESSION_HISTORY ASH
   WHERE 1=1
-    AND SAMPLE_TIME > sysdate - interval '4' hour
+    AND SAMPLE_TIME > sysdate - interval '1' hour
 --    AND SAMPLE_TIME BETWEEN TIMESTAMP'2016-11-10 01:00:00'
 --                        AND TIMESTAMP'2016-11-10 03:00:00'
   group by SQL_ID
@@ -29,8 +29,18 @@ order by sample_time desc;
 
 @sqlid &SQLID %
 
-select count(*) from v$sql where sql_id = '&SQLID';
-select sql_id, child_number, plan_hash_value from v$sql where sql_id = '&SQLID';
+-- pocty sql id dle RAC instance
+select inst_id, count(*) 
+  from gv$sql where sql_id = '&SQLID'
+  group by inst_id
+  order by inst_id;
+
+-- adaptive plan ?
+select inst_id, sql_id, child_number, plan_hash_value, 
+       optimizer_cost, sql_profile, sql_patch, FIRST_LOAD_TIME, users_executing
+  from gv$sql 
+ where sql_id = '&SQLID'
+  order by sql_id, first_load_time desc;
 
 -- v$sql
 set pages 999
@@ -42,13 +52,20 @@ set pages 999
 select * from table(dbms_xplan.display_awr('&SQLID',NULL,null, '+ALLSTATS'));
 select * from table(dbms_xplan.display_awr('&SQLID','&PLAN_HASH',null, '+ALLSTATS'));
 
+-- text based output
+select plan_table_output from table (dbms_xplan.display_awr('&sqlid', '&PLAN_HASH'));
+
 -- změna exec plánu
 SELECT
 --*
-       sql_id, plan_hash_value, TIMESTAMP, COST
+  timestamp, plan_hash_value, cost
+--  id, operation, options, object_type, object_owner, object_name
+--       sql_id, plan_hash_value, TIMESTAMP, COST
   FROM SYS.DBA_HIST_SQL_PLAN
  WHERE sql_id = '&sqlid'
     AND id = 0
+--    and plan_hash_value in ('3223995408','384336403')
+--  and object_name in ('CSAS_REL_RECORD_FILE_S', 'CS_IDX_CSAS_REL_RC_F_ID', 'D_1F02939680001D07')
 order by timestamp desc, plan_hash_value, id
 ;
 
@@ -57,11 +74,9 @@ order by timestamp desc, plan_hash_value, id
 
 SELECT * FROM TABLE(version_rpt('&SQLID'));
 
--- adaptive plan ?
 
 -- optimizer_adaptive_features = TRUE/FALSE
 select sql_id,
---  CHILD_NUMBER,
   PLAN_HASH_VALUE,
 	round(elapsed_time/1000/NULLIF(executions,0),0) AVG_ETIME_MS,
 	round(cpu_time/1000/NULLIF(executions,0),0) AVG_CPUTIME_MS,
@@ -80,10 +95,10 @@ SELECT   sql_id, sql_exec_start,
     MAX(sample_time) end_sql,
     MAX(sample_time)-sql_exec_start AS duration
   FROM
-      DBA_HIST_ACTIVE_SESS_HISTORY
---        GV$ACTIVE_SESSION_HISTORY
+--      DBA_HIST_ACTIVE_SESS_HISTORY
+        GV$ACTIVE_SESSION_HISTORY
   WHERE 1   =1
---      AND SAMPLE_TIME = sysdate - interval '1' hour
+      AND SAMPLE_TIME = sysdate - interval '2' hour
 --    AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-09-29 15:30:00'
 --                        AND TIMESTAMP'2015-09-29 15:33:00'
   and SQL_ID like '&sqlid'
@@ -153,7 +168,7 @@ order by 2, 3;
 -- vyber tables z exec planu --
 select
 --    OWNER, TABLE_NAME, NUM_ROWS, LAST_ANALYZED
-    OWNER, TABLE_NAME, NUM_ROWS, blocks, partitioned, LAST_ANALYZED
+    OWNER, TABLE_NAME, NUM_ROWS, blocks, partitioned, LAST_ANALYZED, DEGREE
   from DBA_TABLES
 where (owner, table_name) in (
 SELECT  distinct object_owner,
@@ -199,3 +214,10 @@ FROM dba_sql_plan_baselines b join v$sql s
 WHERE  s.sql_id='&SQLID'
 ;
 
+-- FLUSH
+SELECT 'exec dbms_shared_pool.purge ('''|| address||','|| hash_value||''',''C'');' as flush
+FROM v$sqlarea
+WHERE sql_id = '&SQLID';
+
+exec dbms_shared_pool.purge ('0000000E3CEDFAB0,1528086390','C');
+commit;

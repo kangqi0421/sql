@@ -52,12 +52,24 @@ asmca -silent -createDiskGroup -diskGroupName DWHDD18Z_DATA -diskList '/dev/mapp
 compatible.asm
 compatible.rdbms
 
-for each in REVP_D01 REVP_FRA
+for each in ECRST_FRA ESPE_D01 ECRSTB_FRA ECRSTB_D01 ECRSTC_D01 ESPT_FRA ECRSTC_FRA ESPE_FRA ECRST_D01
 do
-  asmcmd lsattr -l -G $each
+  # asmcmd lsattr -l -G $each
   asmcmd setattr -G $each compatible.asm 12.1
-  asmcmd setattr -G $each compatible.rdbms 12.1
+  # asmcmd setattr -G $each compatible.rdbms 12.1
   asmcmd lsattr -l -G $each
+  asmcmd mount $each
+done
+
+## upgrade na 12.2, pokud je compatible menší nez 10.0
+for each in ECRST_FRA ESPE_D01 ECRSTB_FRA ECRSTB_D01 ECRSTC_D01 ESPT_FRA ECRSTC_FRA ESPE_FRA ECRST_D01
+do
+sqlplus / as sysasm <<ESQL
+alter diskgroup $each mount restricted;
+alter diskgroup $each set attribute 'compatible.asm'='11.2.0.2.0';
+alter diskgroup $each dismount;
+alter diskgroup $each mount;
+ESQL
 done
 
 ## asmcmd dropdg

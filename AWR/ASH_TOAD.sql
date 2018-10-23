@@ -29,9 +29,9 @@ select
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-07-31 12:39:00'
-                           AND TIMESTAMP'2018-07-31 12:40:00'
---                         and sample_time > sysdate - interval '120' minute     -- poslednich NN minut
+--       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-07-31 12:39:00'
+--                           AND TIMESTAMP'2018-07-31 12:40:00'
+                         and sample_time > sysdate - interval '5' minute     -- poslednich NN minut
 --                         and SQL_ID = '5vd1txs4gsb06'
 --                         and event in ('enq: TM - contention')
 --                           and event like 'gc%' 
@@ -45,7 +45,7 @@ select
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'     
 --                         and machine in ('rasft1','rasft2')
-                           and action like 'JOB_RUN%'     
+--                           and action like 'JOB_RUN%'     
 --                         and program like 'oracle@csbponl (LGWR)'
 --                         and SQL_PLAN_OPERATION = 'HASH JOIN'
 --                           and sql_opname = 'UPDATE'
@@ -56,6 +56,7 @@ select
 --                         and a.inst_id = 2
 --                         and qc_instance_id in (1,2) 
 --                         and user_id = (select user_id from dba_users where USERNAME in ('CEN31049'))
+                           and in_parse = 'Y'
 --                           and program like '%tux%' 
 --  XID having count(*) > 1
 --group by   sql_id ORDER by count(*) DESC 
