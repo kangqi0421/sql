@@ -24,28 +24,6 @@ EXCEPTION
 END;
 /
 
--- App TEMP tablespace
-BEGIN
-  EXECUTE IMMEDIATE
-    'drop tablespace TEMP';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF sqlcode != -959 THEN RAISE;
-    END IF;
-END;
-/
-
-BEGIN
-  EXECUTE IMMEDIATE
-    'create bigfile temporary tablespace TEMP
-       tempfile size 10G autoextend on next 1G maxsize 600G';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF sqlcode != -1543 THEN RAISE;
-    END IF;
-END;
-/
-
 -- UNDOTBS2 as bigfile
 BEGIN
   EXECUTE IMMEDIATE

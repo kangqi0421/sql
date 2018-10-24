@@ -30,12 +30,11 @@ UPDATE oli_owner.databases d
       d.clone_source_alias_id = 1
  where d.dbname like 'DWHT%';
 
-
-
--- StarBank update
+-- update produkce pro umozneni klonu na SNAPVX_SNAPSHOT
 UPDATE oli_owner.databases
-  set CLONING_METHOD_ID = 10
- where dbname like 'CSPO';
+  set CLONING_METHOD_ID = 16,
+    CLONE_SOURCE_LICDB_ID = 317   -- DUMMY DB
+ where dbname like 'SMARTP';
 
 'SDPO','TS0O','TS3O','TS7O','TS9O'
 

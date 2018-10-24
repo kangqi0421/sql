@@ -2,7 +2,7 @@
 -- OEM CPU Usage
 --
 
-define server = pordb06.vs.csin.cz
+define server = pordb04.vs.csin.cz
 
 -- pocty CPU cores a CPU_COUNT
 CM$MGMT_DB_CPU_USAGE_ECM

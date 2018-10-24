@@ -48,10 +48,10 @@ ORDER BY TARGET_NAME;
 -- cpu_count - instance caging
 SELECT
   host_name, target_name, value
- FROM MGMT$DB_INIT_PARAMS
+ FROM SYSMAN.MGMT$DB_INIT_PARAMS
  where name = 'cpu_count'
 --    AND REGEXP_LIKE(host_name, 'z?(t|d|p|b)ordb0[0-5].vs.csin.cz')
-    and REGEXP_LIKE(host_name, '[pb]ordb06.vs.csin.cz')
+    and REGEXP_LIKE(host_name, '[p]ordb02.vs.csin.cz')
  order by target_name;
 
 -- db_recovery_file_dest_size

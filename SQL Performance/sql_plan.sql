@@ -98,7 +98,7 @@ SELECT   sql_id, sql_exec_start,
 --      DBA_HIST_ACTIVE_SESS_HISTORY
         GV$ACTIVE_SESSION_HISTORY
   WHERE 1   =1
-      AND SAMPLE_TIME = sysdate - interval '2' hour
+      AND SAMPLE_TIME > sysdate - interval '4' hour
 --    AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-09-29 15:30:00'
 --                        AND TIMESTAMP'2015-09-29 15:33:00'
   and SQL_ID like '&sqlid'
@@ -125,7 +125,7 @@ order by 3 desc
 ;
 
 --// SQL Plan line id a operation
-SELECT   a.SQL_ID,
+SELECT   a.SQL_ID, a.sql_plan_hash_value,
     --a.SQL_EXEC_START,
     a.sql_plan_line_id,
     SQL_PLAN_OPERATION,
@@ -139,15 +139,16 @@ SELECT   a.SQL_ID,
           on (a.sql_id = p.SQL_ID
               and a.sql_plan_hash_value(+) = p.plan_hash_value
               and a.sql_plan_line_id(+) = p.id)
-        WHERE 1     =1
+        WHERE 1 = 1
         AND a.SQL_ID IN ('&sqlid')
         --and sql_plan_hash_value = '&PLAN_HASH'
-        AND a.sample_time > sysdate - interval '1' day
+--        AND a.sample_time > sysdate - interval '4' hour
 --        AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-02-15 23:30:00'
 --                            AND TIMESTAMP'2015-02-16 09:00:00'
           --        AND SQL_PLAN_OPERATION = 'HASH JOIN'
+        and a.sql_plan_hash_value = 384336403  
         AND a.SQL_EXEC_START IS NOT NULL
-  GROUP BY a.SQL_ID, a.sql_plan_line_id, p.object_name,SQL_PLAN_OPERATION
+  GROUP BY a.SQL_ID, a.sql_plan_hash_value, a.sql_plan_line_id, p.object_name,SQL_PLAN_OPERATION
     --a.SQL_EXEC_START,
   ORDER BY COUNT(*) DESC
   ;
