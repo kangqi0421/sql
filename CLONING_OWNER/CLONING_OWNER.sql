@@ -177,11 +177,11 @@ select * from CLONING_PARAMETER
   order by lower(parameter_name);
 
 REM INSERTING into CLONING_PARAMETER
-Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','rman_catalog','N',NULL,'RMAN catalog connect string',NULL, 'N');
-Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_server','N',NULL,'TSM server pro REST API',NULL, 'N');
-Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','tsm_node','N',NULL,'TSM TDPO node',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','source_group','N',NULL,'Source device group',NULL, 'N');
+Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','target_group','N',NULL,'Target device group',NULL, 'N');
 
-insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_inventory','N',NULL,'Ansible inventory file',NULL, 'N');
+insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',NULL,'Ansible playbook file',NULL, 'N');
+insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',NULL,'Ansible playbook file',NULL, 'N');
 
 
 -- delete params
