@@ -6,13 +6,16 @@
 BEGIN
   EXECUTE IMMEDIATE
     'create bigfile temporary tablespace USER_TEMP
-       tempfile size 10G autoextend on next 1G maxsize 600G';
+       tempfile size 100G autoextend on next 1G maxsize 600G';
 EXCEPTION
   WHEN OTHERS THEN
     IF sqlcode != -1543 THEN RAISE;
     END IF;
 END;
 /
+
+-- predchozi obcas nenastavi autoextend
+alter database tempfile 2 autoextend on next 1G maxsize 600G;
 
 BEGIN
   EXECUTE IMMEDIATE
