@@ -15,6 +15,8 @@ SELECT
     regexp_replace(hostname, '^(\w+)(\.\w+)*$', '\1') hostname,
     regexp_replace(hostname, '^\w+\.(.+?\.)', '\1')     domain,
 
+-- split STRING per ','
+SELECT  REGEXP_SUBSTR (str, '[^,]+', 1, 1)    AS part_1
 
 set lin 180
 col username for a15
