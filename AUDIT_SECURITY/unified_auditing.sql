@@ -22,6 +22,13 @@ exec DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(audit_trail_type => DBMS_AUDIT_M
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, use_last_arch_timestamp => true);
 DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
 
+-- 12.2+ TRUNCATE AUDSYS.AUD$UNIFIED
+shutdown immediate;
+startup upgrade;
+TRUNCATE TABLE AUDSYS.AUD$UNIFIED;
+shutdown immediate;
+startup;
+
 
 -- kdy došlo k nárůstu auditních dat
 select *
