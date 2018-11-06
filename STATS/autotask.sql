@@ -2,6 +2,9 @@
 -- autotask
 --
 
+-- advisor
+V$STATS_ADVISOR_RULES
+
 select * from dba_autotask_operation;
 
 select * from dba_autotask_client
