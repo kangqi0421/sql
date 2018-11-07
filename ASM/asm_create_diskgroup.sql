@@ -1,5 +1,8 @@
 # ASM disk groups
 
+asmcmd dsget
+asmcmd dsset '/dev/mapper/asm_*_DWHTA1*','/dev/mapper/asm_*_DWHSRC*'
+
 ## list new asm diskgroups
 sqlplus / as sysasm <<ESQL
 select unique

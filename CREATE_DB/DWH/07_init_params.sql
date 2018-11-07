@@ -12,3 +12,6 @@ alter system set recyclebin = OFF scope=spfile;
 
 -- disable force logging
 alter database no force logging;
+
+-- disable adapt.plans
+alter system set OPTIMIZER_ADAPTIVE_PLANS = false;

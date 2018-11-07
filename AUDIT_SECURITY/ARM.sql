@@ -11,7 +11,7 @@ SELECT *  FROM ARM_ADMIN.ARM_DATABASES
 order by ARM_DB_NAME;
 
 -- parametry přenosu
-select * 
+select *
   from ARM_ADMIN.ARM_MOVE_DEFINITIONS ;
 
 -- ARM status ERROR
@@ -23,7 +23,7 @@ SELECT * FROM arm_admin.arm_status
 --    AND status not like 'DISABLED'
 ORDER by ARM_DB_NAME;
 
-select * 
+select *
   from ARM_ADMIN.ARM_OPERATION_LOG
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
@@ -36,14 +36,18 @@ ORDER BY start_date DESC
 
 --// client logs
 select *
-  from ARM_ADMIN.ARM_CLIENT_LOGS 
- where 
+  from ARM_ADMIN.ARM_CLIENT_LOGS
+ where
         arm_db_name LIKE '%&db%'
    AND  sub_date > sysdate - interval '4' hour
 order by sub_date desc;
 
 -- lokálně na db
 select * from ARM_CLIENT.ARM_LOG;
+
+-- verze ARM clienta
+SELECT ARM_CLIENT.ARM_FUNC.get_version FROM dual;
+
 
 
 --// zjisteni presouvaciho jobu //--

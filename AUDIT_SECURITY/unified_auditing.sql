@@ -23,7 +23,9 @@ exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT
 DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
 
 -- 12.2+ TRUNCATE AUDSYS.AUD$UNIFIED
-shutdown immediate;
+sqlplus -prelim / as sysdba
+shutdown abort
+sqlplus  / as sysdba
 startup upgrade;
 TRUNCATE TABLE AUDSYS.AUD$UNIFIED;
 shutdown immediate;

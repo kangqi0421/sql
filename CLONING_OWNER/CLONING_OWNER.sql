@@ -184,15 +184,71 @@ insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',
 insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',NULL,'Ansible playbook file',NULL, 'N');
 
 
--- delete params
-delete  from template_param_value
-  where parameter_name = 'ARCHIVELOG';
+--
+-- kde všude máme parametry
+--
 
-delete FROM db_param_value
-  where parameter_name = 'ARCHIVELOG';
+define parameter = app_supp_email
 
-delete FROM  cloning_parameter
-  where parameter_name = 'ARCHIVELOG';
+select * FROM  cloning_parameter
+  where parameter_name = '&parameter';
+
+select *  from template_param_value
+  where parameter_name = '&parameter';
+
+select * FROM db_param_value
+  where parameter_name = '&parameter';
+
+SELECT p . parameter_type ,
+       p . parameter_name ,
+       p . mandatory ,
+       tp . template_id,
+       CASE
+         WHEN dp . parameter_type IS NOT NULL THEN dp . parameter_value
+         WHEN tp . parameter_type IS NOT NULL THEN tp . parameter_value
+         WHEN mp . parameter_type IS NOT NULL THEN mp . parameter_value
+         ELSE p . default_value
+       END
+     parameter_value ,
+       CASE
+         WHEN dp . parameter_type IS NOT NULL THEN dp . reset
+         WHEN tp . parameter_type IS NOT NULL THEN tp . reset
+         WHEN mp . parameter_type IS NOT NULL THEN mp . reset
+         ELSE p . reset
+       END
+     reset ,
+       CASE
+         WHEN dp . parameter_type IS NOT NULL THEN 'TARGET_PARAMETER'
+         WHEN tp . parameter_type IS NOT NULL THEN 'TEMPLATE_DEFAULT'
+         WHEN mp . parameter_type IS NOT NULL THEN 'METHOD_DEFAULT'
+         ELSE 'OVERALL_DEFAULT'
+       END
+     status
+FROM cloning_parameter p ,
+     db_param_value dp ,
+     template_param_value tp ,
+     method_param_value mp
+WHERE 1 = 1
+      AND dp . licdb_id in (
+        select licdb_id from oli_owner.databases
+        where dbname = 'BOSON')
+      AND p.parameter_name = 'app_supp_email'
+--      AND tp . template_id ( + ) = l_cloning_template_id
+--      AND mp . method_id ( + ) = l_cloning_method_id
+      AND p . parameter_type = dp . parameter_type ( + )
+      AND p . parameter_name = dp . parameter_name ( + )
+      AND p . parameter_type = tp . parameter_type ( + )
+      AND p . parameter_name = tp . parameter_name ( + )
+      AND p . parameter_type = mp . parameter_type ( + )
+      AND p . parameter_name = mp . parameter_name ( + )
+ORDER BY p . parameter_type ,  p . parameter_name
+;
+
+-- CONFIG_DATA
+-- CLONING_REST_URL
+-- ENV_NAME: PRODUCTION
+select * FROM CONFIG_DATA;
+
 
 
 
