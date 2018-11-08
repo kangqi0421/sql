@@ -185,6 +185,7 @@ ORDER BY arm_timestamp;
 
 
 -- view ARM12.ARM_UNIAUD_DWHP pro DWH
+-- CEN31776 = Martin Hamouz
 
 partitions: ARM_TIMESTAMP
 subpartitions: ARM_FULLID
@@ -197,7 +198,7 @@ create or replace view ARM12.ARM_UNIAUD_DWHP
 AS
 select *
   from ARM12.ARM_UNIAUD12 a
- where ARM_FULLID = 'ODSP1239916374'
+ where ARM_FULLID like 'DWH%'
 /
 
 grant select on ARM12.ARM_UNIAUD12 to CEN31776 with grant option;

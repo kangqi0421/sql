@@ -23,13 +23,15 @@ exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT
 DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
 
 -- 12.2+ TRUNCATE AUDSYS.AUD$UNIFIED
-sqlplus -prelim / as sysdba
-shutdown abort
-sqlplus  / as sysdba
+sqlplus -prelim / as sysdba <<< 'shutdown abort'
+sqlplus  / as sysdba <<ESQL
 startup upgrade;
 TRUNCATE TABLE AUDSYS.AUD$UNIFIED;
 shutdown immediate;
-startup;
+startup
+@/dba/local/sql/SECURITY/audit12c/noaudit_all.sql
+exit
+ESQL
 
 
 -- kdy došlo k nárůstu auditních dat
