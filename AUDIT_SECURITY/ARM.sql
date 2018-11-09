@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DWHDD18Z
+DEFINE db=DWHSRC01
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES

@@ -26,10 +26,11 @@ DELETE FROM  DBA_AUDIT_MGMT_LAST_ARCH_TS;
 sqlplus -prelim / as sysdba <<< 'shutdown abort'
 sqlplus  / as sysdba <<ESQL
 startup upgrade;
+SELECT ARM_CLIENT.ARM_FUNC.get_version FROM dual;
 TRUNCATE TABLE AUDSYS.AUD$UNIFIED;
 shutdown immediate;
 startup
-@/dba/local/sql/SECURITY/audit12c/noaudit_all.sql
+-- @/dba/local/sql/SECURITY/audit12c/noaudit_all.sql
 exit
 ESQL
 
