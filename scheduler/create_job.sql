@@ -42,7 +42,9 @@ begin
 dbms_scheduler.create_job(
   job_name => 'TEST',
   JOB_TYPE => 'PLSQL_BLOCK',
-  job_action => 'BEGIN dbms_lock.sleep(10); END;',
+  job_action => 'BEGIN
+      dbms_lock.sleep(10);
+      END;',
   start_date => sysdate,
   repeat_interval => NULL,
   auto_drop => true,
