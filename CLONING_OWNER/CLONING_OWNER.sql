@@ -22,7 +22,7 @@ select licdb_id, dbname, clone_source_licdb_id,
   where dbname like 'CRM%';
 
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
-  where target_dbname like 'DWHTA2';
+  where target_dbname like 'DWHTA%';
 
 -- DWHT update na alias 1
 UPDATE oli_owner.databases d
@@ -46,13 +46,24 @@ SELECT * FROM source_alias_db;
 -- zmenit method_id
 -- zmenit template_id
 update OLI_OWNER.DATABASES
-  set CLONING_METHOD_ID = 2,   -- set to
+  set CLONING_METHOD_ID = 6,   -- set to G800 method
       CLONING_TEMPLATE_ID = 3,
       CLONE_SOURCE_LICDB_ID = (
       -- source db
       select licdb_id from OLI_OWNER.DATABASES where dbname = 'RDBPKA')
   -- target db
   where dbname like 'RDBTA%';
+
+
+-- clone source alias
+update OLI_OWNER.DATABASES
+  set CLONING_METHOD_ID = (
+        select cloning_method_id from CLONING_METHOD where method_name = 'VSP_G800'),
+      CLONE_SOURCE_LICDB_ID = NULL,
+      clone_source_alias_id = (
+          select source_alias_id from source_alias where alias_name = 'DWHSRC' )
+  -- target db
+  where dbname like 'DWHT%';
 
 
 select licdb_id, dbname, rac,

@@ -4,20 +4,40 @@
 
 define db = CTL
 
-select NVL(d.db_name, 'UNKNOWN'),
-       disk_group,
+select 
+       NVL(d.db_name, 'UNKNOWN') dbname,
+       REGEXP_SUBSTR(disk.cm_target_name, '[dt][^\.]+', 1, 1)
+        || '_' || replace(dg.disk_group, 'D01', 'DATA') storage_group,  -- nutno jeětě poladit
+       dg.disk_group,
+       replace(dg.disk_group, 'D01', 'DATA') disk_group_new,  -- nutno jeětě poladit
        round(total_size) "total size GB",
        round(total_size/member_disk_count) "disk size",
+       round(total_size)/4 "disk size po 4",       
        round(total_size)/8 "disk size po 8-mi",
        member_disk_count
-  from SYSMAN.MGMT_ASM_DISKGROUP_ECM dg
+  from (
+      select distinct disk_group, total_size, member_disk_count from SYSMAN.MGMT_ASM_DISKGROUP_ECM)
+        dg
        LEFT JOIN (
           select distinct DISKGROUP, DB_NAME from SYSMAN.MGMT_ASM_CLIENT_ECM
           ) d
          on (d.diskgroup = dg.disk_group)
-  where d.db_name like '&db%'
+        join  (
+           select distinct cm_target_name, disk_group from SYSMAN.cm$mgmt_asm_disk_ecm)
+           disk
+          on (disk.disk_group = dg.disk_group)
+  where 1 = 1 
+--    AND d.db_name like '&db%'
+    and d.diskgroup like 'REVT%'
 order by db_name, disk_group
 ;
+
+
+
+select * from SYSMAN.MGMT_ASM_DISKGROUP_ECM
+  where disk_group like 'CMTT%';
+
+select * from SYSMAN.cm$mgmt_asm_disk_ecm;
 
 -- metric
 AND m.metric_name = 'DiskGroup_Usage'
@@ -50,12 +70,13 @@ order by disk_group;
 -- ASM disky
 set pages 999
 SELECT
-    distinct disk_group
+  distinct cm_target_name, disk_group
+--  * 
 FROM
-    cm$mgmt_asm_disk_ecm
-  where path like '/dev/mapper/asm_vplex%'
-    and disk_group like '%D01'
-order by 1;
+    sysman.cm$mgmt_asm_disk_ecm
+  where path like '/dev/mapper/asm_449%'
+    --- and disk_group like '%D01'
+order by 1,2;
 
 
 -- CM view

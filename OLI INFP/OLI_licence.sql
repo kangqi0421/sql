@@ -55,8 +55,8 @@ select lic_env_id, hostname, domain
   from servers
   where hostname like 'p%r02db%';
 
-define LIC_ENV_ID = 5694
-define PP = 10
+define LIC_ENV_ID = 6194
+define PP = 12
 
 -- Diagnostics Pack
 Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
