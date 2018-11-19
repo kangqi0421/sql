@@ -34,7 +34,7 @@ ORDER BY owner, job_name;
 
 SELECT   *
     FROM dba_scheduler_job_run_details
-ORDER BY log_date DESC
+ORDER BY log_date DESC;
 
 -- failure count > 0
 SELECT   owner, job_name,  enabled,
