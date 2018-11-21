@@ -29,10 +29,10 @@ select
 --    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-07-31 12:39:00'
---                           AND TIMESTAMP'2018-07-31 12:40:00'
-                         and sample_time > sysdate - interval '1' minute     -- poslednich NN minut
---                         and SQL_ID = '5vd1txs4gsb06'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-11-20 12:36:00'
+                           AND TIMESTAMP'2018-11-20 12:38:00'
+--                         and sample_time > sysdate - interval '1' minute     -- poslednich NN minut
+--                         and SQL_ID = '19jw88uappqbu'
 --                         and event in ('enq: TM - contention')
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')

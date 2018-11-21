@@ -15,3 +15,7 @@ alter database no force logging;
 
 -- disable adapt.plans
 alter system set OPTIMIZER_ADAPTIVE_PLANS = false;
+
+-- warning
+alter system set "_kgl_large_heap_warning_threshold" = 209715200;
+
