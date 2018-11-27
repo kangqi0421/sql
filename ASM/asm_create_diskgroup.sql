@@ -55,13 +55,13 @@ asmca -silent -createDiskGroup -diskGroupName DWHDD18Z_DATA -diskList '/dev/mapp
 compatible.asm
 compatible.rdbms
 
-for each in ECRST_FRA ESPE_D01 ECRSTB_FRA ECRSTB_D01 ECRSTC_D01 ESPT_FRA ECRSTC_FRA ESPE_FRA ECRST_D01
+for each in WBLZ_D01 WBLZ_FRA
 do
-  # asmcmd lsattr -l -G $each
-  asmcmd setattr -G $each compatible.asm 12.1
-  # asmcmd setattr -G $each compatible.rdbms 12.1
   asmcmd lsattr -l -G $each
-  asmcmd mount $each
+  asmcmd setattr -G $each compatible.asm 12.2
+  asmcmd setattr -G $each compatible.rdbms 12.1
+  asmcmd lsattr -l -G $each
+  # asmcmd mount $each
 done
 
 ## upgrade na 12.2, pokud je compatible menší nez 10.0

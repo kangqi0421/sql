@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DWHSRC01
+DEFINE db=RTOP
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES

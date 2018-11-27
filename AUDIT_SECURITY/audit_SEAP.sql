@@ -1,5 +1,5 @@
 
-define db=WDNZ
+define db=RTOP
 define user = FEWCRAS
 
 --// neuspesne prihlaseni za posledni 2 dny //--
@@ -50,31 +50,21 @@ FETCH FIRST 5 ROWS ONLY
 
 -- object schema, name
 select
-    *
---  object_schema, object_name, return_code, count(*) cnt
---   substr(sql_text, 1, 32767)
---    sql_text, count(*)
---    action_name, return_code, count(*)
---    dbusername, count(*)
---    return_code, count(*)
--- event_timestamp, Dbusername, Client_Program_Name, Action_Name, sql_text,
--- Unified_Audit_Policies, return_code
+     arm_timestamp, arm_action_name, dbusername, return_code, object_schema, object_name, sql_text_varchar2, unified_audit_policies
   from ARM12.ARM_UNIAUD12
  where 1 = 1
---   AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
+  AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
   AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
---  AND return_code > 0
+  AND return_code > 0
 -- AND UNIFIED_AUDIT_POLICIES is NOT null
-   AND UNIFIED_AUDIT_POLICIES = 'CS_ACTIONS_FREQUENT_SYS'
+--   AND UNIFIED_AUDIT_POLICIES = 'CS_ACTIONS_FREQUENT_SYS'
 -- AND object_schema not in ('SYS', 'SYSTEM')
-   and action_name='EXECUTE'
---   and dbusername='LDAPUSER'
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
 --group by substr(sql_text, 1, 32767)
-group by object_schema, object_name, return_code
-   order by 4 desc
+order by return_code
+-- order by 4 desc
 --FETCH FIRST 5 ROWS ONLY
 --order by event_timestamp desc
 --FETCH FIRST 5 PERCENT ROWS ONLY
