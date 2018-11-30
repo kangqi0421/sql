@@ -162,6 +162,7 @@ GRANT SELECT ON OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG TO  OLI_CA_INTERFACE;
 
 -- postgres tables
 grant select on postgres.database to OLI_OWNER with GRANT option;
+grant select on postgres.PG_DATABASE_NEW to OLI_OWNER with GRANT option;
 
 --
 GRANT SELECT ON OLI_OWNER.OLAPI_DATABASES TO  OLI_CA_INTERFACE;
@@ -232,8 +233,6 @@ ORA-06512: at line 1
 - OLIAPI_ORACLE_CMDB_CI
 - OLIAPI_POSTGRES_CMDB_CI
 
-
-
 -- OLAPI_APPS_DB_SERVERS_FARM_FLG
 
 CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_ORACLE_CMDB_CI"
@@ -251,7 +250,7 @@ SELECT DISTINCT
                    i.dbinst_id,
                    i.ca_id as dbinst_cmdb_ci_id,
                    d.ca_id as db_cmdb_ci_id,
-                   i.licdb_id,
+                   i.licdb_id oli_id,
                    i.server_id,
                    s.ca_id cmdb_ci_server,
                    s.hostname, s.domain,
@@ -288,24 +287,33 @@ SELECT DISTINCT
 
 CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_POSTGRES_CMDB_CI"
 AS
-SELECT instance database_instance,
+SELECT
+   application app_name,
+   instance database_instance,
        CASE
          WHEN hostname IN ('pedb01', 'bedb01') THEN 'pedb01,bedb01'
          WHEN hostname IN ('zpedb01', 'zbedb01') THEN 'zpedb01,zbedb01'
          ELSE hostname
        END
      hostname,
+     'vs.csin.cz' domain,
        CASE
          WHEN hostname LIKE 'p%' THEN 'Production'
          WHEN hostname LIKE 'b%' THEN 'Production'
          WHEN hostname LIKE 'z%' THEN 'Pre-production'
          WHEN hostname LIKE 't%' THEN 'Test'
          WHEN hostname LIKE 'd%' THEN 'Development'
-       END
-     environment,
-       vip,
-       port tcp_port,
-       database database_name
-FROM postgres.database
+       END environment,
+     vip,
+     port tcp_port,
+     NULL version,
+     CASE
+         WHEN hostname LIKE 'p%' THEN 'true'
+         WHEN hostname LIKE 'b%' THEN 'true'
+         WHEN hostname LIKE 'z%' THEN 'true'
+         WHEN hostname LIKE 't%' THEN 'false'
+         WHEN hostname LIKE 'd%' THEN 'false'
+     END is_clustered,
+     database database_name
+FROM postgres.DATABASE
 /
-

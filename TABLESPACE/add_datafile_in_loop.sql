@@ -35,20 +35,23 @@ begin
 end;
 /
 
+-- RAC undo datafiles
+alter database datafile 3 resize 65535M;
+alter database datafile 3 autoextend off;
+alter database datafile 4 resize 65535M;
+alter database datafile 4 autoextend off;
 
-
--- resize UNDO datafile
-DECLARE
-   CURSOR c_datafile
-   IS
-      SELECT file_id
-        FROM dba_data_files
-       WHERE tablespace_name like 'UNDO%'
-        AND AUTOEXTENSIBLE = 'YES';
+-- add UNDOTBS datafiles
 BEGIN
-   FOR rec IN c_datafile
+   FOR rec IN (
+      select tablespace_name from dba_tablespaces
+        where contents = 'UNDO')
    LOOP
-      execute immediate 'alter database datafile '|| rec.file_id ||'  resize 16G';
+     for i in 1..10
+     loop
+       execute immediate 'alter tablespace '||rec.tablespace_name
+           ||' add datafile size 65535M';
+     end loop;
    END LOOP;
 END;
 /

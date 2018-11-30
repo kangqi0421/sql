@@ -15,7 +15,9 @@ select round(o.space_usage_kbytes / 1048576) as space_usage_GB from v$sysaux_occ
 
 -- Simply clean all audit records
 exec DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,FALSE);
-truncate table ARM_CLIENT.ARM_UNIAUD12TMP;
+truncate table ARM_CLIENT.ARM_UNIAUD12_CL;
+truncate table ARM_CLIENT.ARM_AUD$12_CL;
+
 
 --
 exec DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED, last_archive_time => sysdate -1/1440) ;
@@ -66,9 +68,10 @@ select value from v$option where parameter = 'Unified Auditing';
 
 -- enabled policies
 set lines 2000 pages 2000
-col USER_NAME for A30
+col USER_NAME for A10
 col POLICY_NAME for A30
 col AUDIT_CONDITION for a5
+col ENABLED_OPT for a4
 select * from AUDIT_UNIFIED_ENABLED_POLICIES
 --WHERE USER_NAME = 'SYS'
 order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
@@ -120,7 +123,8 @@ BEGIN
     (SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
 		  FROM AUDIT_UNIFIED_ENABLED_POLICIES
      WHERE policy_name like 'CS_%'
-       and policy_name = 'CS_ACTIONS_FREQUENT_DBA')
+       --and policy_name = 'CS_ACTIONS_FREQUENT_DBA'
+       )
   LOOP
     EXECUTE immediate 'noaudit policy '||rec.policy_name||' '||rec.username;
 end LOOP;
