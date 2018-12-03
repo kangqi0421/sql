@@ -167,3 +167,17 @@ alter tablespace ODI_DATA
   add datafile  size 512m autoextend on next 512m maxsize 32767m;
 
 @ls ODI_DATA
+
+-- UNDO resize na 65535M
+BEGIN
+   FOR rec IN (
+      select d.file_id
+        from dba_data_files d join dba_tablespaces t
+          on d.tablespace_name = t.tablespace_name
+      where t.contents = 'UNDO'
+    )
+   LOOP
+      execute immediate 'alter database datafile '||rec.file_id||' resize 65535M';
+   END LOOP;
+END;
+/
