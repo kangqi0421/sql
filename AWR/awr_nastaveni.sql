@@ -96,6 +96,7 @@ wri$_optstat_opr
 https://jhdba.wordpress.com/2011/08/23/939/
 Statistics Space Used by SM/OPTSTAT in the SYSAUX Tablespace is not Reclaimed After Purging (Doc ID 454678.1) To BottomTo Bottom
 
+select dbms_stats.get_stats_history_retention from dual;
 
 -- vypnutí automatiky sběru
 exec dbms_stats.alter_stats_history_retention(-1);

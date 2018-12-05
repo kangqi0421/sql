@@ -1,3 +1,22 @@
+--
+-- How to gather statistics
+--
+
+https://schd.ws/hosted_files/utougtrainingdays2018/a2/Best_Practices_for_Manging_statistics.pdf
+
+– Incremental Statistics
+  • Ability to accurate generate global statistics from partition level statistics
+  • Controlled by the parameter INCREMENTAL (default is FALSE)
+BEGIN
+  dbms_stats.Set_global_prefs('INCREMENTAL', 'TRUE');
+END;
+/
+
+– Concurrent Statistics Gathering
+  • Ability to gather statistics on multiple objects concurrently under a GATHER_SCHEMA_STATS
+  command
+  • Controlled by the parameter CONCURRENT (default is FALSE)
+
 -- GTS pouze jedne partitions
 exec dbms_stats.gather_table_stats('TELEB', 'SB_T_DEPOSITAQUERY_RESP', GRANULARITY => 'PARTITION', PARTNAME => 'P1M20170501');
 
