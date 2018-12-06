@@ -4,6 +4,8 @@
 -- bez restartu
 --
 
+-- WHENEVER SQLERROR EXIT SQL.SQLCODE
+
 column db_name new_value db_name print
 SELECT SYS_CONTEXT ('USERENV', 'DB_NAME') as db_name from dual;
 
@@ -11,6 +13,8 @@ column spfile new_value spfile
 select regexp_replace(name, '^(\+\w+)/\w+/datafile/.*',
     '\1/&db_name/spfile&db_name..ora', 1, 1, 'i') as spfile
   from v$datafile where file# = 1;
+
+WHENever SQLERROR continue
 
 create pfile from spfile;
 create spfile = '&spfile' from pfile;
@@ -27,4 +31,4 @@ host rm -f $ORACLE_HOME/dbs/spfile$ORACLE_SID.ora
 -- startup
 -- show parameter spfile
 
-
+exit

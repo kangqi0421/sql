@@ -21,3 +21,5 @@ END;
 select round(value/power(1024,3)) "fra_size_gb"
   from v$parameter
  where name = 'db_recovery_file_dest_size';
+
+exit

@@ -20,3 +20,5 @@ for rec in (
   END LOOP;
 END;
 /
+
+EXIT
