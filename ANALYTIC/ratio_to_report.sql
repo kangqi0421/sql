@@ -2,9 +2,9 @@
 -- RATIO_TO_REPORT
 --
 
-ratio_to_report(count(*)) over()*100 PCT
+round(ratio_to_report(count(*)) over()*100) PCT
 
-  (ratio_to_report(count(*)) over() *100) ||'%' PCT
+round(ratio_to_report(count(*)) over() *100) ||'%' PCT
 
 -- SQL Developer SQLDEV:GAUGE RATIO_TO_REPORT : MIN|MAX|MIN_THRESHOLD|MAX_THRESHOLD|VALUE
 'SQLDEV:GAUGE:0:100:0:100:'||
