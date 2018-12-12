@@ -123,7 +123,7 @@ BEGIN
     (SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
 		  FROM AUDIT_UNIFIED_ENABLED_POLICIES
      WHERE policy_name like 'CS_%'
-       --and policy_name = 'CS_ACTIONS_FREQUENT_DBA'
+       -- and policy_name = 'CS_ACTIONS_FREQUENT_SYS'
        )
   LOOP
     EXECUTE immediate 'noaudit policy '||rec.policy_name||' '||rec.username;
