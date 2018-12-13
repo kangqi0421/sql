@@ -37,6 +37,11 @@ exit
 ESQL
 
 
+-- 18+
+-- ALTER_PARTITION_INTERVAL
+exec DBMS_AUDIT_MGMT.ALTER_PARTITION_INTERVAL(1,'DAY');
+
+
 -- kdy došlo k nárůstu auditních dat
 select *
   from ARM_CLIENT.ARM_AUDIT_HISTOGRAM
