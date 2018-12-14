@@ -75,6 +75,11 @@ alter diskgroup $each mount;
 ESQL
 done
 
+
+## mount ALL - v novejsich verzich ...
+asmcmd mount -a
+
+
 ## asmcmd dropdg
 
 ASMCMD> mount DLKZ_FRA

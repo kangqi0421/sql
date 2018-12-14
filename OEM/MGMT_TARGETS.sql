@@ -220,7 +220,7 @@ where h.MA like 'PowerPC%'
 select --p.*,
   --p.target_name, p.property_value "Contact"
   p.target_name||': '||p.property_value
- from mgmt$target_properties p
+ from sysman.mgmt$target_properties p
 where 1=1
   and p.target_type in ('rac_database','oracle_database')
   and p.property_name = 'orcl_gtp_contact'  -- Contact
