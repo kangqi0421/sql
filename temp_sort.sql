@@ -5,7 +5,7 @@
 select  sid, sql_id, active_time, operation_type,
   actual_mem_used, max_mem_used,
   work_area_size, tempseg_size
-  from V$SQL_WORKAREA_ACTIVE
+  from GV$SQL_WORKAREA_ACTIVE
  where tempseg_size > 0
 order by actual_mem_used;
 
@@ -13,6 +13,7 @@ order by actual_mem_used;
 select * from dba_tablespaces
  where contents = 'TEMPORARY';
 
+-- V$TEMPSEG_USAGE - new versions
 select s.username, round(sum(s.blocks * value)/power(1024,3)) "GB"
   from GV$TEMPSEG_USAGE s, v$parameter p
     where name = 'db_block_size'

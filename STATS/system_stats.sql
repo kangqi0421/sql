@@ -9,14 +9,55 @@ IOTFRSPEED - I/O transfer speed in milliseconds
 
 ## Workload-related stats:
 
-SREADTIM  - Single block read time in milliseconds
-MREADTIM - Multiblock read time in ms
-CPUSPEED - CPU speed
-MBRC - Average blocks read per multiblock read (see db_file_multiblock_read_count)
-MAXTHR - Maximum I/O throughput (for OPQ only)
-SLAVETHR - OPQ Factotum (slave) throughput (OPQ only)
+CPUSPEED    Workload CPU speed in millions of cycles/second
+CPUSPEEDNW  Noworkload CPU speed in millions of cycles/second
+IOSEEKTIM   Seek time + latency time + operating system overhead time in milliseconds
+IOTFRSPEED  Rate of a single read request in bytes/millisecond
+MAXTHR      Maximum throughput that the I/O subsystem can deliver in bytes/second
+MBRC            Average multiblock read count sequentially in blocks
+MREADTIM        Average time for a multi-block read request in milliseconds
+SLAVETHR        Average parallel slave I/O throughput in bytes/second
+SREADTIM        Average time for a single-block read request in milliseconds
 
-MBRC - pokud není hodnota spočtena, pak se derivuje z _db_file_optimizer_read_count=8
+
+MBRC - pokud není hodnota spočtena, pak se derivuje z _db_file_optimizer_read_count = ???
+
+
+## dict stats
+
+/dba/sql/CREATE_DB/gather_dict_system_stats.sql
+
+begin
+  DBMS_STATS.GATHER_DICTIONARY_STATS ();
+  DBMS_STATS.GATHER_FIXED_OBJECTS_STATS();
+end;
+
+## system stats
+
+exec dbms_stats.delete_system_stats();
+
+exec dbms_stats.gather_system_stats('NOWORKLOAD');
+
+exec dbms_stats.gather_system_stats('INTERVAL', interval=> 60);
+
+## Exadata
+
+exec dbms_stats.gather_system_stats('EXADATA');
+
+
+## SYS.aux_stats$
+
+SQL> show parameter db_file_multiblock_read_count
+
+
+column pname format a20
+SELECT pname, pval1
+  FROM SYS.aux_stats$
+WHERE sname = 'SYSSTATS_MAIN';
+
+column pname format a20
+select pname, pval1 from aux_stats$ where pname='MBRC';
+
 
 --
 SELECT DECODE(pname,
@@ -32,22 +73,21 @@ SELECT DECODE(pname,
 ) AS statistic,
 pval1 AS value
 FROM SYS.aux_stats$
-WHERE pname IN ('CPUSPEEDNW',
-'IOSEEKTIM','IOTFRSPEED',
-'SREADTIM','MREADTIM',
-'CPUSPEED','MBRC',
-'MAXTHR','SLAVETHR')
+WHERE pname IN (
+    'CPUSPEEDNW',
+    'IOSEEKTIM','IOTFRSPEED',
+    'SREADTIM','MREADTIM',
+    'CPUSPEED','MBRC',
+    'MAXTHR','SLAVETHR')
 AND sname = 'SYSSTATS_MAIN'
 ORDER BY pname;
 
 
-column pname format a20
-SELECT pname, pval1
-  FROM SYS.aux_stats$
-WHERE sname = 'SYSSTATS_MAIN';
-
 -- Exadata
 exec dbms_stats.set_system_stats(pname => 'MBRC',       pvalue => 128);
+
+-- DWHP
+exec dbms_stats.set_system_stats(pname => 'MBRC',       pvalue => 64);
 
 -- export SYSTEM stats
 exec dbms_stats.create_stat_table(user,'STAT_TIMESTAMP');

@@ -7,9 +7,12 @@ nahraženo postupem na wiki
 https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
 
 
--- ansible
+-- ansible migrate disks
 ./asm_migrate_db.yml -e 'server=zpordb04 db=RTOZA'
 ./asm_migrate_db.yml -e 'server=tordb02 db=CLMTC do_migrate=true'
+
+-- ansible add disk
+./asm_add_disk.yml -e 'server=zpordb05 db=CPSZA'
 
 
 -- oraenv na DB
@@ -136,21 +139,3 @@ select name, header_status,state, path, total_mb, free_mb,disk_number
   from v$asm_disk
 order by NAME;
 
-
---
-alter diskgroup CLMT_D01 drop disk
-CLMT_D01_0020,
-CLMT_D01_0021,
-CLMT_D01_0022,
-CLMT_D01_0023,
-CLMT_D01_0024,
-CLMT_D01_0025,
-CLMT_D01_0026,
-CLMT_D01_0027,
-CLMT_D01_0028,
-CLMT_D01_0029,
-CLMT_D01_0030,
-CLMT_D01_0031,
-CLMT_D01_0032,
-CLMT_D01_0033,
-CLMT_D01_0034;

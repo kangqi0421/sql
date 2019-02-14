@@ -2,7 +2,7 @@
 
 select 
  * 
---event, count(*) cnt
+-- * cnt
 --sample_time, count(*)
 --  SQL_ID, COUNT(*) cnt
 -- parse time
@@ -25,16 +25,17 @@ select
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
 --    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
-    FROM GV$ACTIVE_SESSION_HISTORY a
---    FROM dba_hist_active_sess_history a
+--  p2, count(*)
+--    FROM GV$ACTIVE_SESSION_HISTORY a
+    FROM dba_hist_active_sess_history a
   WHERE 
   1=1                
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2018-12-02 15:21:00'
---                           AND TIMESTAMP'2018-12-02 15:22:00'
-                         and sample_time > sysdate - interval '1' minute     -- poslednich NN minut
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-01-24 13:00:00'
+                           AND TIMESTAMP'2019-01-24 14:00:00'
+--                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
 --                           and sample_id IN (276540, 275627)
---                         and SQL_ID = '19jw88uappqbu'
---                         and event in ('enq: TM - contention')
+                         and SQL_ID in ('8s6a8wh7vtvnx','6nn5rv7n469cq','d4dj07j54ram2','24hw1hptpxmqg')
+--                         and event = 'row cache lock'
 --                           and event like 'gc%' 
 --                         and event not in ('enq: MC - Securefile log')
 --                           and session_state  = 'ON CPU'
@@ -61,8 +62,9 @@ select
 --                           and program like '%tux%' 
 --  XID having count(*) > 1
 --group by   sql_id ORDER by count(*) DESC 
+--group by event order by 2 desc
 --    sql_exec_id
---group by sample_time
+--group by p2
 --group by  event order by  count(*) DESC
 --group by  current_obj# order by count(*) desc
   --trunc(sample_time, 'mi')
@@ -78,7 +80,7 @@ select
 --group by blocking_session
 --ORDER by count(*) DESC  
 --ORDER by session_id
-ORDER BY sample_time -- desc  --, inst_id
+ORDER BY sample_time desc  --, inst_id
 ;
 
 -- min snapshot time
@@ -89,8 +91,16 @@ select * from gv$sqlstats where sql_id in ('90rd3rb489wp6','0mt9bj1u0uh4h','f3v7
 
 select * from dba_sequences where sequence_name like 'SEQ_LOG%';
 
-select * 
-  from gv$sql where sql_id in ('b76ju2sbynd04');
+-- wait event, count
+select event, count(*), sum(time_waited)
+    FROM GV$ACTIVE_SESSION_HISTORY a
+  WHERE 1 = 1
+--    AND event = 'enq: IV -  contention'
+    AND sql_id IN ('8s6a8wh7vtvnx','6nn5rv7n469cq','d4dj07j54ram2','24hw1hptpxmqg')
+--        AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-01-13 15:00:00'
+--                           AND TIMESTAMP'2019-01-13 16:00:00'
+                         and sample_time > sysdate - interval '4' hour -- poslednich NN minut
+group by event order by 3 desc;
 
 select * from V$SQL_PLAN
   where SQL_ID = 'byus5kg9cbs7d'
@@ -206,16 +216,6 @@ SELECT sample_time, username, event, session_id, blocking_session, a.time_waited
 ORDER BY sample_time desc
 
 
-SELECT  trunc(ash.SAMPLE_TIME, 'MI'), ash.event, count (*) 
-              FROM dba_hist_active_sess_history ash 
-             WHERE sample_time BETWEEN TO_DATE ('26.09.2006 09:00:00', 
-                                                'DD.MM.YYYY HH24:MI:SS' 
-                                               ) 
-                                   AND TO_DATE ('26.09.2006 11:00:00', 
-                                                'DD.MM.YYYY HH24:MI:SS' 
-                                               )
-  group by trunc(ash.SAMPLE_TIME, 'MI'),  ash.event 
-  order by 1,3
   
 
 -- mutex sleep

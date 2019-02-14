@@ -1,7 +1,10 @@
 # ASM disk groups
 
+```
 asmcmd dsget
-asmcmd dsset '/dev/mapper/asm_*_DWHTA1*','/dev/mapper/asm_*_DWHSRC*'
+
+asmcmd dsset '/dev/mapper/asm_250FX_*_OCR','/dev/mapper/asm*p1'
+```
 
 ## list new asm diskgroups
 sqlplus / as sysasm <<ESQL
@@ -22,26 +25,31 @@ asmcmd lsdsk --suppressheader --candidate
 asmcmd lsdsk --suppressheader --candidate | \
   grep -Poi '([A-Z]+)_(D0\d|DATA|FRA)' | uniq
 
-DG=DRDMTA_DATA
-AU_SIZE=64
-##AU_SIZE=8
+for db in BRATB BRATC CPSTSYS CPSTINT CPSTPRS
+do
+
+dg=${db}_DATA
+au_size=64
+##au_size=8
 DB_COMPATIBLE="12.1"
 ASM_COMPATIBLE="12.2"
+echo "dg: $dg"
 asmca -silent -createDiskGroup \
-  -diskGroupName $DG \
-    -diskList "'/dev/mapper/asm_*${DG}1" \
-  -redundancy EXTERNAL -au_size ${AU_SIZE} \
+  -diskGroupName $dg \
+    -diskList "'/dev/mapper/asm_*${dg}" \
+  -redundancy EXTERNAL -au_size ${au_size} \
   -compatible.asm ${ASM_COMPATIBLE} -compatible.rdbms ${DB_COMPATIBLE} -compatible.advm ${ASM_COMPATIBLE}
 
+done
 
-DG=DRDMTA_FRA
-AU_SIZE=8
+DG=${db}_FRA
+au_size=8
 DB_COMPATIBLE="12.1"
 ASM_COMPATIBLE="12.2"
 asmca -silent -createDiskGroup \
   -diskGroupName $DG \
     -diskList "'/dev/mapper/asm_*${DG}1" \
-  -redundancy EXTERNAL -au_size ${AU_SIZE} \
+  -redundancy EXTERNAL -au_size ${au_size} \
   -compatible.asm ${ASM_COMPATIBLE} -compatible.rdbms ${DB_COMPATIBLE} -compatible.advm ${ASM_COMPATIBLE}
 
 
@@ -64,7 +72,7 @@ do
   # asmcmd mount $each
 done
 
-## upgrade na 12.2, pokud je compatible menší nez 10.0
+## upgrade na 12.2, pokud je compatible menï¿½ï¿½ nez 10.0
 for each in ECRST_FRA ESPE_D01 ECRSTB_FRA ECRSTB_D01 ECRSTC_D01 ESPT_FRA ECRSTC_FRA ESPE_FRA ECRST_D01
 do
 sqlplus / as sysasm <<ESQL
@@ -82,8 +90,8 @@ asmcmd mount -a
 
 ## asmcmd dropdg
 
-ASMCMD> mount DLKZ_FRA
-ASMCMD> dropdg -r DLKZ_FRA
+asmcmd mount DLKZ_FRA
+asmcmd dropdg -r DLKZ_FRA
 
 
 ## asmcmd mkdg
@@ -115,7 +123,7 @@ SET heading off verify off feed off trims on pages 0 lines 32767
 define au_size=${AU_SIZE}
 define compatible=${COMPATIBLE}
 spool asm_create_dg.sql
--- nazev DG je vytvoøen pøes regexp
+-- nazev DG je vytvoï¿½en pï¿½es regexp
 -- '^/dev/(mapper/(\w+_){3}|rlvo)([a-zA-Z]+)[_]?(D01|d01|DATA|data|FRA|fra)(p1|\d+)','\3_\4'
 -- AIX /dev/rlvo
 -- Linux /dev/mapper
@@ -166,7 +174,7 @@ ORDER by NAME;
 ESQL
 
 
-## RAC: mount asm dg na všech nodech
+## RAC: mount asm dg na vï¿½ech nodech
 for dg in $(asmcmd lsdg --suppressheader | awk '{print $NF}' | tr -d '/')
 do
   srvctl start diskgroup -diskgroup $dg

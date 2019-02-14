@@ -25,9 +25,16 @@ select owner, job_name name, state, job_class, INSTANCE_STICKINESS, INSTANCE_ID
 -- RTOP
 --
 - create job class
-- set attr
+BEGIN
+DBMS_SCHEDULER.CREATE_JOB_CLASS (job_class_name =>  'ETL_L1_L1_CLASS');
+END;
+/
+- set attr na tuto CLASS
 DBMS_SCHEDULER.SET_ATTRIBUTE('SYS.ETL_L1_L1_CLASS', 'service', 'RTOZA_ETL');
 
+
+-- reset pro klonování do testu
+DBMS_SCHEDULER.SET_ATTRIBUTE_NULL(i.owner||'.'||i.job_class_name, 'service');
 
 -- MCI_JOBS, redefine default job class na service MCI_JOBS
 DECLARE

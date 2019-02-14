@@ -5,8 +5,20 @@
 -- Add USER_TEMP
 BEGIN
   EXECUTE IMMEDIATE
-    'create bigfile temporary tablespace USER_TEMP
-       tempfile size 100G autoextend on next 1G maxsize 700G';
+    'create temporary tablespace USER_TEMP tempfile
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G,
+      size 1G autoextend on next 1G maxsize 63G';
 EXCEPTION
   WHEN OTHERS THEN
     IF sqlcode != -1543 THEN RAISE;

@@ -1,7 +1,52 @@
+
+
 -- CLOB size
+-- pozor vraci v chars, nikoliv bytes
+
 select dbms_lob.getlength(CERTIFICATEREVOCATIONLIST)/1024 from CSCERT_OWNER_USER.CACERTIFICATES
   where id = 227256
 ;
+
+-- length v bytes
+LENGTHB(TO_CHAR(SUBSTR(<clob-column>,1,4000)))
+
+--
+select
+     l.table_owner, l.partition_name, s.bytes
+  FROM dba_segments s inner join dba_lob_partitions l
+   on (   s.owner = l.table_owner
+      AND s.partition_name = l.lob_partition_name)
+  where l.table_owner = 'SIEBEL'
+    AND l.table_name = 'CX_RT_LOG_XM'
+    AND s.segment_type = 'LOB PARTITION'
+ order by l.partition_name desc
+;
+
+
+
+create function get_clob_length
+     ( p_clob clob
+     ) return number is
+  l_no_of_pieces     number := null;
+  l_bufsize          number := 2000;
+  l_string           varchar2(10000) := null;
+  l_start            number := 1;
+  l_length           number := null;
+  l_amount           number := null;
+  l_return           number := 0;
+begin
+  l_length := dbms_lob.getlength(p_clob);
+  l_no_of_pieces := trunc(l_length/l_bufsize) + sign(mod(l_length,l_bufsize));
+  for i in 1..l_no_of_pieces loop
+    l_amount := least(l_bufsize,l_length-l_start+1);
+    l_string := dbms_lob.substr(p_clob,l_amount,l_start);
+    l_return := l_return + lengthb(l_string);
+    l_start := l_start + l_bufsize;
+  end loop;
+  return(l_return);
+end;
+/
+
 
 -- shrink clob-u
 alter table CSCERT_OWNER_USER.CACERTIFICATES modify lob(CERTIFICATEREVOCATIONLIST) (shrink space);

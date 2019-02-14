@@ -38,7 +38,7 @@ select distinct
         )
      AND name not in  ('Backup BASIC Compression')
     and currently_used='TRUE'
-    and last_usage_date > sysdate - interval '1' month
+    and last_usage_date > sysdate - interval '3' month
     and host not in (
         select hostname||'.'||domain as server
           from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
@@ -65,7 +65,7 @@ select distinct
         )
      AND name not in  ('Backup BASIC Compression')
     and currently_used='TRUE'
-    and last_usage_date > sysdate - interval '1' month
+    and last_usage_date > sysdate - interval '3' month
 order by database_name;
 
 

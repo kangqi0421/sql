@@ -50,14 +50,8 @@ select
   from dba_roles
     where oracle_maintained = 'N'
      AND (
-   role like 'CPT%'
-or role like 'CPTPK%'
-or role like 'CPTPKMASTER%'
-or role like 'CPTTOOL%'
-or role like 'LOG%'
-or role like 'JOB%'
-or role like 'CONSOLE%'
-or role like 'FAKEDWH%')
+   role like 'PAD%'
+)
 order by 1
 ;
 

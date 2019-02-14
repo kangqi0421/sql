@@ -55,15 +55,15 @@ select lic_env_id, hostname, domain
   from servers
   where hostname like 'p%r02db%';
 
-define LIC_ENV_ID = 6194
-define PP = 12
+define LIC_ENV_ID = 6894
+define PP = 6
 
--- Diagnostics Pack
-Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
-  values ('36','133','3','&PP','Y','N',&LIC_ENV_ID);
 -- Enterprise Edition
 Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('38','133','3','&PP','Y','N',&LIC_ENV_ID);
+-- Diagnostics Pack
+Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
+  values ('36','133','3','&PP','Y','N',&LIC_ENV_ID);
 -- Partitioning
 Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('46','133','3','&PP','Y','N',&LIC_ENV_ID);
@@ -72,12 +72,10 @@ Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_US
   values ('51','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Real Application Clusters
---Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
---  values ('48','133','3','&PP','Y','N',&LIC_ENV_ID);
+--Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('48','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Advanced Compression
--- Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
---   values ('3','133','3','&PP','Y','N',&LIC_ENV_ID);
+-- Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('3','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 commit;
 

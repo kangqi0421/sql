@@ -218,7 +218,7 @@ select * FROM config_data;
 LIC_CAPTURE_USAGE_TIMEOUT : default(365)
 
 
--- sync EM
+-- sync EM - duplicity OMST, OMSP
 
 select INST_NAME from
 (
@@ -229,3 +229,18 @@ select  i2.dbinst_id,CPUCOUNT,INST_NAME,count(*)
 group by INST_NAME,i2.dbinst_id,CPUCOUNT
 having count(*) > 1
 ) order by 1
+
+-- sync EM - duplicity v OMS_DATABASES
+select
+   db_target_guid, count(*)
+ from oli_owner.oms_databases emd
+ group by db_target_guid
+ having count(*) > 1
+;
+
+-- duplicity em_guid v OLI_OWNER.DATABASES
+select em_guid, count(*)
+  from oli_owner.databases
+ where em_guid is not NULL
+ group by em_guid
+   having count(*) > 1;

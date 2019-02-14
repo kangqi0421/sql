@@ -8,7 +8,6 @@
 @srdc_db_job_diagnostic.sql "6"
 
 
-
 -- running job
 SELECT *
   from dba_scheduler_running_jobs
@@ -93,3 +92,6 @@ ORDER BY job_start_time;
 ORDER BY log_date DESC;
 
 
+
+-- 18.4
+dbms_scheduler enabled false

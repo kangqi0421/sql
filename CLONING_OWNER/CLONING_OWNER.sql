@@ -16,10 +16,14 @@ SELECT CLONING_TASK_TASK_ID_SEQ.NEXTVAL FROM dual;
 ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 1;
 
 -- source target info
-select licdb_id, dbname, clone_source_licdb_id,
-       clone_source_alias_id, CLONING_METHOD_ID
+select *
   from oli_owner.databases
-  where dbname like 'CRM%';
+  where 1= 1
+    and CLONING_METHOD_ID = 3  -- SNAPVX_CLONE
+--    AND dbname like 'CRM%'
+    and env_status = 'Pre-production'
+;
+
 
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
   where target_dbname like 'DWHTA%';
@@ -36,7 +40,6 @@ UPDATE oli_owner.databases
     CLONE_SOURCE_LICDB_ID = 317   -- DUMMY DB
  where dbname like 'SMARTP';
 
-'SDPO','TS0O','TS3O','TS7O','TS9O'
 
 -- source alias
 SELECT * FROM source_alias;
@@ -66,15 +69,6 @@ update OLI_OWNER.DATABASES
   where dbname like 'DWHT%';
 
 
-select licdb_id, dbname, rac,
-    CLONE_SOURCE_LICDB_ID, CLONING_METHOD_ID, CLONING_TEMPLATE_ID
-  FROM OLI_OWNER.DATABASES
-  where 1=1
-    and dbname like 'RTO%'
-    and cloning_method_id = 3
-  order by DBNAME;
-
-
 
 -- EXPORT/IMPORT
 ```
@@ -85,74 +79,18 @@ expdp \'/ as sysdba\' schemas=$SCHEMA $OPTIONS dumpfile=cloning.dmp logfile=clon
 impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloning_imp.log
 ```
 
--- drop user
---
--- drop user cloning_py cascade;
--- create user cloning_py identified by abcd1234 profile PROF_APPL;
--- grant execute on cloning_owner.cloning_api to cloning_py;
--- grant SELECT on CLONING_OWNER.CLONING_TASKS to CLONING_PY ;
 
-```
-drop user cloning_owner cascade;
-create user cloning_owner identified by abcd1234 profile PROF_APPL
-  default tablespace users quota unlimited on users ;
--- password reuse
-alter user cloning_owner profile default;
-alter user cloning_owner identified by abcd1234;
-alter user cloning_owner profile PROF_APPL;
+-- CLONING_METHOD
 
-grant cs_appl_accounts to cloning_owner;
+select * FROM CLONING_METHOD
+  where allow_disk_snapshot = 'Y'
+ order by method_name
+;
 
+insert into CLONING_METHOD values ('17','G800_SNAPSHOT',
+    'G800: Create disk snapshot'  ,'G800: Create disk snapshot',
+    'Y', 'N', NULL, 'B', 'N', 'N', 'N');
 
-grant create view, create synonym to CLONING_OWNER;
-
-grant ALL on OLI_OWNER.DATABASES  to CLONING_OWNER;
-grant update on OLI_OWNER.DATABASES to CLONING_OWNER;
-grant SELECT on OLI_OWNER.SERVERS to CLONING_OWNER;
-grant SELECT on OLI_OWNER.DBINSTANCES to CLONING_OWNER;
-grant SELECT on OLI_OWNER.APP_DB to CLONING_OWNER;
-grant SELECT on OLI_OWNER.APPLICATIONS to CLONING_OWNER;
--- DASHBOARD MGMT view
-grant SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
-grant SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
-grant SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
-```
-
-grant all on CLONING_OWNER.DB_PARAM_VALUE to OLI_OWNER;
-
-GRANT execute on OLI_OWNER.UTILS to CLONING_OWNER;
-
-select
-  --*
-  step_name
-  from CLONING_OWNER.CLONING_METHOD_STEP
-  where cloning_method_id = 3
-order by position  ;
-
-
--- rozděleno na ARCHIVELOG a NOARCHIVELOG
-
-
---
--- SYNONYM
---
-CREATE OR REPLACE SYNONYM "CLONING_OWNER"."MGMT$DB_DBNINSTANCEINFO"
-  FOR "DASHBOARD"."MGMT$DB_DBNINSTANCEINFO";
-CREATE OR REPLACE SYNONYM "CLONING_OWNER"."MGMT$DB_INIT_PARAMS"
-  FOR "DASHBOARD"."MGMT$DB_INIT_PARAMS";
-CREATE OR REPLACE SYNONYM "CLONING_OWNER"."CM$MGMT_ASM_CLIENT_ECM"
-  FOR "DASHBOARD"."CM$MGMT_ASM_CLIENT_ECM";
-
-
--- granty zatím moc nefungují ...
-grant select on oli_owner.databases to cloning_py with grant option;
-grant select on cloning_owner.cloning_method to cloning_py with grant option;
-grant select on cloning_owner.cloning_relation to cloning_py;
-create synonym cloning_py.cloning_relation for cloning_owner.cloning_relation;
-
-
--- data CLONING_METHOD
-insert into CLONING_METHOD values ('16','SNAPVX_CLONE','SnapVX create disk snapshot'  ,'SnapVX create disk snapshot', 'Y', 'N');
 
 insert into CLONING_METHOD_STEP values (16,'STEP100_create_snapshot.sh',100,'SnapVX create disk snapshot','N','Y');
 
@@ -162,10 +100,6 @@ update CLONING_METHOD_STEP
       position = 70
  where position = 15;
 
-go to cab: if (nikki namisto maja) and (nikki ma derovany tricko)
-
-n = rand()
-if n == 24 then zajdu na cab
 
 -- INSERTING into CLONING_METHOD_STEP - common / local (oem)
 
@@ -184,14 +118,7 @@ Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',30
 
 -- CLONING_PARAMETER
 
-select * from CLONING_PARAMETER
-  order by lower(parameter_name);
-
-REM INSERTING into CLONING_PARAMETER
 Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','source_group','N',NULL,'Source device group',NULL, 'N');
-Insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','target_group','N',NULL,'Target device group',NULL, 'N');
-
-insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',NULL,'Ansible playbook file',NULL, 'N');
 insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',NULL,'Ansible playbook file',NULL, 'N');
 
 
@@ -199,16 +126,34 @@ insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',
 -- kde všude máme parametry
 --
 
-define parameter = app_supp_email
+define parameter = asm_source_dg
 
 select * FROM  cloning_parameter
-  where parameter_name = '&parameter';
+  -- where lower(parameter_name) = '&parameter'
+  order by lower(parameter_name);
 
-select *  from template_param_value
+select *
+  from           template_param_value
+    natural join cloning_template
   where parameter_name = '&parameter';
 
 select * FROM db_param_value
   where parameter_name = '&parameter';
+
+select dbname, parameter_name, parameter_value, env_status, cloning_method_id
+   FROM db_param_value p
+    natural join oli_owner.databases d
+  where parameter_name = '&parameter'
+     -- and env_status = 'Pre-production'
+ order by dbname ;
+
+-- ${source_db}_D01
+/*
+delete FROM db_param_value p
+  where parameter_name = 'asm_source_dg'
+   and p.parameter_value = '${source_db}_DATA'
+  ;
+*/
 
 SELECT p . parameter_type ,
        p . parameter_name ,

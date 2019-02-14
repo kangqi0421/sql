@@ -9,20 +9,17 @@
 FROM mgmt$db_tablespaces group by target_guid
 
 
--- pouze DB
--- EM_MANAGEABLE_ENTITIES nepouzivat !!!
+-- pouze DB size
 SELECT
-    d.entity_name dbname,
+    d.database_name,
     round(m.value) as database_size_gb
 FROM
-    sysman.mgmt$metric_current m
-    JOIN sysman.EM_MANAGEABLE_ENTITIES d ON (
-        m.target_guid = d.entity_guid
-    )
+         sysman.mgmt$metric_current m
+    JOIN sysman.MGMT$DB_DBNINSTANCEINFO d
+         ON (m.target_guid = d.target_guid)
 WHERE
-  d.category_prop_3 = 'DB'
-  AND m.metric_name = 'DATABASE_SIZE'
-  AND m.metric_column in ('ALLOCATED_GB', 'USED_GB')
+      m.metric_name = 'DATABASE_SIZE'
+  AND m.metric_column in ('ALLOCATED_GB')
   AND m.target_name LIKE 'MCIP%'
 ;
 

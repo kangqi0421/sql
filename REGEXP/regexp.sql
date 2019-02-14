@@ -8,7 +8,7 @@ REGEXP_LIKE(host_name, '^[dt][pb][a-z]{3}db\d{2}.vs.csin.cz')
 where REGEXP_LIKE(hostname, '^t.dw\S{3}$')
 
 -- filtr na personální účty
-REGEXP_LIKE(username, '^[A-Z]+\d{4,}$')
+REGEXP_LIKE(username, '^[A-Z]{1,3}\d{4,}$')
 
 -- hostname, domain
 SELECT

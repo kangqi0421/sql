@@ -1,6 +1,6 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RTOP
+DEFINE db=DMTA2
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -18,8 +18,8 @@ select *
 SELECT * FROM arm_admin.arm_status
   WHERE 1=1
 --    AND ARM_DB_NAME LIKE '%&db%'
-    AND status = 'ERROR'
---    AND status <> 'OK'
+    --AND status = 'ERROR'
+      AND status not in ('OK', 'DISABLED')
 --    AND status not like 'DISABLED'
 ORDER by ARM_DB_NAME;
 
@@ -28,7 +28,7 @@ select *
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
 --      AND arm_db_name LIKE 'RTOP'
-     AND start_date > sysdate - interval '4' hour
+     AND start_date > sysdate - interval '14' hour
 --     AND status <> 'OK'
 ORDER BY start_date DESC
 ;

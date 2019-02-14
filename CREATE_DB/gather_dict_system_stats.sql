@@ -27,7 +27,7 @@ BEGIN
                             dbms_stats.delete_system_stats();
                             dbms_stats.gather_system_stats(''NOWORKLOAD'');
                             -- tohle nechat až na uzaverku
-                            --dbms_stats.gather_system_stats(''INTERVAL'', interval=> 60);
+                            dbms_stats.gather_system_stats(''INTERVAL'', interval=> 60);
                             END;',
         start_date      => sysdate,
         auto_drop       => true,
