@@ -1,12 +1,13 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=DMTA2
+DEFINE db=RMDZ
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
   WHERE 1=1
     AND ARM_DB_NAME LIKE '%&db%'
 --    AND ARM_FULLID LIKE 'DWHTA%'
+--     AND arm_db_name = 'RMDZ'
 --    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
@@ -111,7 +112,7 @@ exec arm_admin.arm_adm.add_subpart('RTOP1246254454',DATE '2016-09-18', DATE '201
 -- a ted uz prenosy z RTOP@pordb06 funguji ...
 
 -- disable transfer after drop database
-update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'MDWZA649441337';
+update ARM_ADMIN.ARM_DATABASES SET TRANSFER_ENABLED = 'N' WHERE ARM_FULLID LIKE 'PWCZ3583958567';
 commit;
 
 

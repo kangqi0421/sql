@@ -34,6 +34,8 @@ begin
 END;
 /
 
+
+
 begin
   sys.dbms_resource_manager.clear_pending_area();
   sys.dbms_resource_manager.create_pending_area();

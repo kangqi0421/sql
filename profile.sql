@@ -29,4 +29,22 @@ select profile,RESOURCE_NAME, limit
 
 select username, profile from dba_users;
 
+select username, profile from dba_users
+  where REGEXP_LIKE(username, '^[A-Z]{1,3}\d{4,}$');
+
+*/
+
+--
+/*
+begin
+  for rec in (
+   select username  from dba_users
+      where REGEXP_LIKE(username, '^[A-Z]{1,3}\d{4,}$')
+  AND profile not in ('PROF_USER', 'PROF_DBA'))
+    loop
+      execute immediate 'alter user '||rec.username|| ' profile PROF_USER';
+    end loop;
+end;
+/
+
 */

@@ -91,8 +91,10 @@ WHERE m.sganame = 'Total SGA (MB)'
 COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
   'OEM data pro target db instance včetně CPU MEM SIZE';
 
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE" ("EM_GUID", "TARGET_NAME", "DBNAME", "LOG_MODE", "CHARACTERSET", "SL_MIN", "DBVERSION", "ENV_STATUS", "RAC", "SLA", "CONNECT_DESCRIPTOR", "SERVER_NAME", "PORT", "HOST_NAME", "DB_SIZE_MB", "DB_LOG_SIZE_MB", "ASM_DISKGROUP") AS
-  select t.target_guid em_guid,
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE"
+AS
+  select
+       t.target_guid em_guid,
        t.target_name,
        database_name dbname,
        log_mode,
@@ -112,13 +114,14 @@ COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
          else 'Bronze'
        end SLA,
        -- servername
-       -- pokud je db v clsteru, vrat scanName, jinak server name
+       -- pokud je db v clusteru, vrat scanName, jinak server name
        NVL2(cluster_name, scanName, server_name)
          || ':' || port || '/'||
          NVL2(domain, database_name||'.'||domain, database_name)  AS CONNECT_DESCRIPTOR,
        NVL2(cluster_name, scanName, server_name) server_name,
        port,
        d.host_name,
+       p.platform,
        db_size_mb,
        db_log_size_mb,
        dg.diskgroup AS ASM_DISKGROUP
@@ -131,7 +134,8 @@ COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
         'ClusterName' as cluster_name,
         'MachineName' as server_name,
         'DBDomain' as domain,
-        'Port' as port
+        'Port' as port,
+        'orcl_gtp_os' as platform
         )) p ON (d.target_guid = p.target_guid)
   -- pouze DB bez RAC instance
   JOIN MGMT$TARGET t on (d.target_guid = t.target_guid)
@@ -166,7 +170,7 @@ COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
 WHERE -- t.TYPE_QUALIFIER3 = 'DB'  -- nefunguje kvuli 12.2. verzi db
       t.TARGET_TYPE in ('rac_database', 'oracle_database')
   and TYPE_QUALIFIER3 != 'RACINST'
-  --and database_name = 'CPTZ'
+--  and database_name = 'CPTZ'
 ;
 
 -- OLI data pro REST
@@ -242,6 +246,7 @@ SELECT
        o.app_name,
        e.env_status,
        e.host_name,
+       e.platform,
        e.server_name, e.port, e.connect_descriptor,
        round(e.db_size_mb / 1024) as db_size_gb,
        e.asm_diskgroup
@@ -357,4 +362,6 @@ select 'GRANT '||privilege||
 GRANT SELECT on DASHBOARD.MGMT$DB_INIT_PARAMS to CLONING_OWNER;
 GRANT SELECT on DASHBOARD.MGMT$DB_DBNINSTANCEINFO to CLONING_OWNER;
 GRANT SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
+
+GRANT SELECT on DASHBOARD.MGMT$TARGET_PROPERTIES to REDIM_OWNER WITH GRANT OPTION;
 ..
