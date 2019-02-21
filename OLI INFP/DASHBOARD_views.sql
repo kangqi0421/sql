@@ -283,6 +283,13 @@ FROM
   OLI_DATABASE o
   join EM_DATABASE e on o.DB_EM_GUID = e.em_guid;
 
+--
+-- server
+--
+
+select hostname, os, envstatus as env
+  from em_hosts_v
+;
 
 --
 -- MGMT EM / CM view protažené přes MView z EM do OLI dashboard

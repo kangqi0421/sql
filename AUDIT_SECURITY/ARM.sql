@@ -5,9 +5,9 @@ DEFINE db=RMDZ
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
   WHERE 1=1
-    AND ARM_DB_NAME LIKE '%&db%'
+--    AND ARM_DB_NAME LIKE '%&db%'
 --    AND ARM_FULLID LIKE 'DWHTA%'
---     AND arm_db_name = 'RMDZ'
+     AND arm_db_name = 'BOSTA'
 --    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
@@ -328,3 +328,11 @@ select *
 
 
 grant select on ARM12.ARM_UNIAUD_DWHP to CEN31776;
+
+
+-- EM database
+
+select dbname from em_database
+minus
+select arm_db_name from ARM_ADMIN.ARM_DATABASES;
+
