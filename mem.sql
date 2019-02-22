@@ -1,10 +1,10 @@
-col name for a35
+col name for a30
 col value for 999999
 
 -- vypis memory parametru
 prompt NON-DEFAULT memory target, sga a pga
 SELECT name,
-  value/power(1024,3) "value [MB]",
+  value/power(1024,3) "value [GB]",
   isdefault
 FROM V$SYSTEM_PARAMETER
 WHERE name IN ('memory_target','memory_max_target','sga_max_size','sga_target',

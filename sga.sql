@@ -1,8 +1,8 @@
 -- SGAINFO
-col name for a30
+col name for a35
 select name, round(bytes/1048576) "MB", RESIZEABLE
   from gv$sgainfo
- where name like 'Large%'
+ --where name like 'Large%'
 ;
 
 -- historie = DBA_HIST_SGASTAT
@@ -45,5 +45,11 @@ SELECT SUM(DECODE(bh.status, 'free', 1, 0)) AS free,
        SUM(DECODE(bh.status, 'mrec', 1, 0)) AS mrec,
        SUM(DECODE(bh.status, 'irec', 1, 0)) AS irec
 FROM   v$bh bh;
+
+*/
+
+/*
+RDSPA:
+RDSTB:
 
 */
