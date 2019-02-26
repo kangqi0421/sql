@@ -2,12 +2,20 @@
 -- OLI_OWNER.SERVERS
 --
 
-define server = tgdwsrc1
+define server = pgtsmsta1
 
 -- OLI kontrola proti CMDB
 select * from   OLI_OWNER.SERVERS
-  where hostname like '&server%'
+  where 1 = 1
+--    AND hostname like '&server%'
+   AND domain = 'cc.csin.cz'
+   --AND hostname in ('zgdwhdb1')
+   and failover_server_id = 695
+   
 ;
+
+-- update failover serveru
+UPDATE SERVERS set failover_server_id = NULL where  hostname like 'z%dwmdb1';
 
 -- pridani targetu
 -- nutno zadat LIC_ENV_ID - jinak neprojde přidání serveru
@@ -68,10 +76,20 @@ select * from OLI_OWNER.dbinstances
 --
 define server = tgdwsrc1
 
-create or replace PROCEDURE "api_delete_server" (
-  p_hostname VARCHAR2)
-...
-;
+
+BEGIN
+for rec in (
+    select hostname from OLI_OWNER.SERVERS
+      where hostname in (
+      'zgdwhdb1'
+      --,'zodwhdb1', 'zgdwmdb1','zodwmdb1'
+        ))
+  LOOP
+    api_delete_server(rec.hostname || '.cc.csin.cz');
+  END loop;
+END;         
+/
+
 
 --
 -- vloz VMWare servery

@@ -10,7 +10,7 @@ Enterprise Manager 12c For Oracle Database: How to Enable the Metric "Feature Us
 Database > Monitoring > Metric and Collections Settings
 Feature Usage: change to Enable
 
-select count(*) from MGMT$DB_FEATUREUSAGE;
+select count(*) from dasahboard.MGMT$DB_FEATUREUSAGE;
 
   COUNT(*)
 ----------
@@ -38,13 +38,13 @@ select distinct
         )
      AND name not in  ('Backup BASIC Compression')
     and currently_used='TRUE'
-    and last_usage_date > sysdate - interval '3' month
+    and last_usage_date > sysdate - interval '2' month
     and host not in (
         select hostname||'.'||domain as server
           from OLI_OWNER.OLAPI_LICENCE_USAGE_SUMMARY
          where current_prod_id = 3)
     -- vyjimky
-    and host not in ('avlog.vs.csin.cz')
+    --and host not in ('avlog.vs.csin.cz')
 order by database_name;
 
 

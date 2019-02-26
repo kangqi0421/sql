@@ -1,5 +1,15 @@
+--
+-- dbms_java
+--
+
 -- Java JDK test version
 select dbms_java.get_jdk_version() from dual;
+
+-- JAVAVM in dba registry
+select substr(comp_id,1,15) comp_id,substr(comp_name,1,30) comp_name,
+       substr(version,1,10) version, status
+  from dba_registry 
+ where    comp_id = 'JAVAVM';
 
 /*
 ERROR at line 1:

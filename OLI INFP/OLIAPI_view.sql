@@ -59,6 +59,8 @@ call oli_owner.api_delete_server('tbsb2i.vs.csin.cz');
 
 
 
+
+
 -- ERROR
 delete from databases where licdb_id = 91
 Error report -

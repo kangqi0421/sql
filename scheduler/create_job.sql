@@ -1,3 +1,7 @@
+--
+-- DBMS_SCHEDULER
+--
+
 ALTER SESSION Set TIME_ZONE = 'EUROPE/PRAGUE';
 alter session set NLS_TERRITORY = 'CZECH REPUBLIC';
 
@@ -66,7 +70,7 @@ END;
 /
 
 
--- instance_stickiness on INST 2 - nahraženo za DB service MCI_JOBS
+-- instance_stickiness on INST 2 - nahraï¿½eno za DB service MCI_JOBS
 begin
   dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'INSTANCE_ID', value=> 2);
   dbms_scheduler.set_attribute(name => 'TEST' ,attribute=>'instance_stickiness', value=> TRUE);
@@ -114,3 +118,13 @@ dbms_scheduler.set_attribute ( job_name, 'max_run_duration' , interval '60' seco
 
 -- log_history - the length of time scheduler logs are kept in dayes
 DBMS_SCHEDULER.set_scheduler_attribute (attribute => 'log_history',value     => 60);
+
+
+-- DBA_SCHEDULER_GLOBAL_ATTRIBUTE
+select  ATTRIBUTE_NAME, VALUE
+from   DBA_SCHEDULER_GLOBAL_ATTRIBUTE;
+select  *
+from   dba_scheduler_job_classes
+where job_class_name in (select job_class
+                                       from   dba_scheduler_jobs
+                                       where job_name=upper('&jobname'));

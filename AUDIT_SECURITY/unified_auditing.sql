@@ -55,11 +55,15 @@ SELECT DATABASE_ID, count(*) over () FROM DBA_AUDIT_MGMT_LAST_ARCH_TS;
 set lines 180 pages 999
 col ACTION_NAME for a20
 col UNIFIED_AUDIT_POLICIES for a25
-select dbusername,action_name,unified_audit_policies,return_code, count(*)
+select dbusername,action_name,
+   -- unified_audit_policies
+    return_code, count(*)
   from unified_audit_trail
 -- from ARM_CLIENT.ARM_AUD$12TMP
- group by dbusername,action_name,unified_audit_policies,return_code
-order by count(*) DESC;
+ group by dbusername,action_name,return_code
+order by count(*) DESC
+fetch first 10 rows only;
+
 
 -- workarounds
 AUDIT_SYS_OPERATIONS = FALSE
@@ -117,6 +121,7 @@ audit policy CS_INFO_POLICY by INFO;
 
 
 -- NOAUDIT
+noaudit policy CS_ACTIONS_FREQUENT_DWH;
 noaudit policy CS_PRIVILEGES_GENERAL;
 noaudit policy CS_ACTIONS_GENERAL;
 noaudit policy CS_ACTIONS_FREQUENT_SYS by SYS;
