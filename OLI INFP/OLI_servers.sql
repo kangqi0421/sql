@@ -11,7 +11,7 @@ select * from   OLI_OWNER.SERVERS
    AND domain = 'cc.csin.cz'
    --AND hostname in ('zgdwhdb1')
    and failover_server_id = 695
-   
+
 ;
 
 -- update failover serveru
@@ -70,11 +70,14 @@ delete from OLI_OWNER.SERVERS
    where server_id = 2831
 ;
 
-select * from OLI_OWNER.dbinstances 
+select * from OLI_OWNER.dbinstances
   where server_id = 2831;
 
 --
 define server = tgdwsrc1
+
+--
+-- delete server vcetne cascade options na db instance
 
 
 BEGIN
@@ -87,7 +90,7 @@ for rec in (
   LOOP
     api_delete_server(rec.hostname || '.cc.csin.cz');
   END loop;
-END;         
+END;
 /
 
 
