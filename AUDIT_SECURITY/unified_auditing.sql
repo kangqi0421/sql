@@ -97,7 +97,7 @@ select * from AUDIT_UNIFIED_POLICIES
      -- AND policy_name in (
         -- select policy_name from AUDIT_UNIFIED_ENABLED_POLICIES)
   and policy_name like 'CS%'
-  and policy_name in ('CS_ACTIONS_GENERAL');
+  and policy_name in ('CS_ACTIONS_GENERAL')
   and AUDIT_OPTION like 'ALTER SESSION%'
 order by policy_name, audit_option
  ;
@@ -113,6 +113,12 @@ SELECT * FROM system_privilege_map;
 
 --
 ALTER AUDIT POLICY CS_ACTIONS_GENERAL DROP ACTIONS ALTER SESSION;
+
+ALTER AUDIT POLICY CS_ACTIONS_GENERAL DROP ACTIONS ALTER SESSION;
+
+
+CS_ACTIONS_FREQUENT: SELECT
+CS_PRIVILEGES_GENERAL: SELECT ANY TABLE
 
 -- INFO - audit SELECT  per username INFO
 -- INFO na testovacích DB 'TS0', 'TS0I', 'TS1', 'TS1I'
@@ -157,7 +163,8 @@ END;
 
 
 select DBMS_LOB.SUBSTR(SQL_TEXT_VARCHAR2,4000), count(*)
-  from UNIFIED_AUDIT_TRAIL where dbusername = 'INFO'
+  from UNIFIED_AUDIT_TRAIL
+ where dbusername = 'INFO'
 group by DBMS_LOB.SUBSTR(SQL_TEXT_VARCHAR2,4000)
 order by 2 desc;
 
@@ -172,18 +179,18 @@ select
 --    action_name, return_code, count(*)
 --    dbusername, count(*)
 --    return_code, count(*)
- event_timestamp, Dbusername, Action_Name, return_code
+ event_timestamp, Dbusername, Action_Name, unified_audit_policies, return_code
 -- sql_text, Unified_Audit_Policies,
   from UNIFIED_AUDIT_TRAIL
 --   FROM ARM_CLIENT.ARM_AUD$12TMP --meziskladiste
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
 --                            and timestamp'2015-07-08 22:05:00'
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
+--  AND event_timestamp > SYSTIMESTAMP - INTERVAL '4' HOUR
    -- AND return_code > 0
-   AND return_code = 1017
---  and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
--- AND UNIFIED_AUDIT_POLICIES is null
+--   AND return_code = 1017
+  -- and unified_audit_policies = 'CS_ACTIONS_FREQUENT'
+  AND UNIFIED_AUDIT_POLICIES is NOT null
  -- and action_name like 'LOG%'
 --  and action_name like 'INSERT'
    -- and dbusername='JOB_APP'
@@ -207,6 +214,14 @@ select
  group by trunc(event_timestamp,'HH24'), client_program_name
  ORDER BY 3 desc
 ;
+
+-- DWH
+CS_PRIVILEGES_GENERAL, CS_ACTIONS_FREQUENT
+return code, count
+0 82592
+54  13307
+20002 4
+942 2
 
 
 -- Known Issues
