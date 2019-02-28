@@ -74,7 +74,8 @@ select * from OLI_OWNER.dbinstances
   where server_id = 2831;
 
 --
-define server = tgdwsrc1
+define server = dprmddb01
+                tprmddb01
 
 --
 -- delete server vcetne cascade options na db instance
@@ -82,13 +83,13 @@ define server = tgdwsrc1
 
 BEGIN
 for rec in (
-    select hostname from OLI_OWNER.SERVERS
+    select hostname, domain from OLI_OWNER.SERVERS
       where hostname in (
-      'zgdwhdb1'
-      --,'zodwhdb1', 'zgdwmdb1','zodwmdb1'
-        ))
+      'dprmddb01'
+        )
+           )
   LOOP
-    api_delete_server(rec.hostname || '.cc.csin.cz');
+    api_delete_server(OLIFQDN(lower(rec.hostname), lower(rec.domain)));
   END loop;
 END;
 /
