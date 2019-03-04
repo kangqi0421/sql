@@ -3,6 +3,10 @@
 --
 How To Enable The New Unified Auditing In 12c ? (Doc ID 1567006.1)
 
+-- TODO
+- vyřadit plošně ALTER SESSION, kvuli
+Severity 3SR 3-19375638801 : ORA-07445: exception encountered: core dump [kgscFreeCachedCursor()+600]
+
 
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
