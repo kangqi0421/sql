@@ -140,7 +140,8 @@ SELECT POLICY_NAME FROM AUDIT_UNIFIED_ENABLED_POLICIES where user_name like 'SYS
 -- NOAUDIT all
 BEGIN
   FOR rec IN
-    (SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
+    (
+     SELECT POLICY_NAME, decode(USER_NAME,'ALL USERS','',' BY '||USER_NAME) as username
 		  FROM AUDIT_UNIFIED_ENABLED_POLICIES
      WHERE policy_name like 'CS_%'
        -- and policy_name = 'CS_ACTIONS_FREQUENT_SYS'
