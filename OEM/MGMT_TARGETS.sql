@@ -234,7 +234,7 @@ where 1=1
   )
 order by upper(p.target_name);
 
---// pouze DB vèetnì RAC, ale bez RAC instancí //--
+--// pouze DB vï¿½etnï¿½ RAC, ale bez RAC instancï¿½ //--
 SELECT target_name,
 	   case when emd_url like '%cc.csin.cz%' then 'VIE' else 'PRG' end DC
   FROM SYSMAN.mgmt_targets
@@ -266,3 +266,44 @@ SELECT
     --AND AGGREGATE_TARGET_NAME IN ('PRODUKCE')
     AND MEMBER_TARGET_NAME like 'dordb04%'
 ;
+
+-- cluster target
+select
+  'add_target -name="' || ManagementEntityEO.ENTITY_NAME
+  || '" -type="cluster" -host="' ||ManagementEntityEO.HOST_NAME
+  || '" -monitor_mode="1" -properties="OracleHome:' ||
+  (SELECT PROPERTY_VALUE FROM SYSMAN.MGMT_TARGET_PROPERTIES WHERE TARGET_GUID =
+  ManagementEntityEO.ENTITY_GUID AND
+  (UPPER(PROPERTY_NAME) LIKE '%HOME' AND UPPER(PROPERTY_NAME)!='MW_HOME' OR PROPERTY_NAME ='INSTALL_LOCATION') AND ROWNUM = 1)
+  || ';eonsPort:' ||
+  (SELECT PROPERTY_VALUE FROM SYSMAN.MGMT_TARGET_PROPERTIES WHERE TARGET_GUID = ManagementEntityEO.ENTITY_GUID AND
+  (UPPER(PROPERTY_NAME) LIKE 'EONSPORT%'))
+  || ';scanName:' ||
+  (SELECT PROPERTY_VALUE FROM SYSMAN.MGMT_TARGET_PROPERTIES WHERE TARGET_GUID = ManagementEntityEO.ENTITY_GUID AND
+  (UPPER(PROPERTY_NAME) LIKE 'SCANNAME%'))
+  || ';scanPort:' ||
+  (SELECT PROPERTY_VALUE FROM SYSMAN.MGMT_TARGET_PROPERTIES WHERE TARGET_GUID = ManagementEntityEO.ENTITY_GUID AND
+  (UPPER(PROPERTY_NAME) LIKE 'SCANPORT%'))
+  || '" -instances="'||
+  /*(select listagg(sub.entity_name,':host;') within group (order by sub.entity_name) FROM GC_MANAGEABLE_ENTITIES sub
+  where sub.ENTITY_TYPE='host' and sub.entity_name like ManagementEntityEO.ENTITY_NAME||'%')*/
+  (select listagg(d.entity_name,':host;') within group (order by d.entity_name) FROM GC_MANAGEABLE_ENTITIES sub, mgmt_assoc_instances a, em_manageable_entities d
+  where
+  a.source_me_guid = HEXTORAW(sub.entity_guid)
+  and sub.entity_guid= a.SOURCE_ME_GUID
+  AND a.dest_me_guid = d.entity_guid
+  AND d.manage_status != 1
+  and d.ENTITY_TYPE='host'
+  and a.ASSOC_TYPE = 'cluster_contains'
+  and sub.entity_name like '%'||ManagementEntityEO.ENTITY_NAME||'%')
+  ||':host"'
+  FROM GC_MANAGEABLE_ENTITIES ManagementEntityEO,MGMT_TARGET_TYPES ManagementEntityTypeEO
+  WHERE ManagementEntityEO.PROMOTE_STATUS=1
+  AND ManagementEntityEO.MANAGE_STATUS=1
+  AND ManagementEntityEO.ENTITY_TYPE!= 'host'
+  AND ManagementEntityEO.ENTITY_TYPE='cluster'
+  AND ManagementEntityEO.ENTITY_TYPE= ManagementEntityTypeEO.TARGET_TYPE
+  AND (NOT EXISTS(SELECT 1 FROM
+  mgmt_type_properties mtp WHERE mtp.target_type= ManagementEntityEO.entity_type AND mtp.property_name ='DISCOVERY_FWK_OPTOUT'AND
+  mtp.property_value='1'))
+  AND ManagementEntityEO.HOST_NAME ='&hostname';

@@ -72,18 +72,18 @@ select * from   OLI_OWNER.APP_DB
 --
 
 -- update em_guid DATABASES
-        // db migrate: update em guid
-        UPDATE
-          OLI_OWNER.DATABASES oli
-        set em_guid = (select db_target_guid
-            from  OLI_OWNER.OMS_DATABASES_MATCHING oms
-              WHERE 1 = 1
-                -- and match_status in ('NM')
-                and oli.dbname = oms.db_name
-                and oli.env_status = oms.envstatus)
-          WHERE upper(oli.dbname) = '&dbname'
-            -- and oli.env_status = '{{ lifecycle_env }}'
-        ;
+// db migrate: update em guid
+UPDATE
+  OLI_OWNER.DATABASES oli
+set em_guid = (select db_target_guid
+    from  OLI_OWNER.OMS_DATABASES_MATCHING oms
+      WHERE 1 = 1
+        -- and match_status in ('NM')
+        and oli.dbname = oms.db_name
+        and oli.env_status = oms.envstatus)
+  WHERE upper(oli.dbname) = '&dbname'
+    -- and oli.env_status = '{{ lifecycle_env }}'
+;
 
 
 --

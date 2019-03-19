@@ -1,11 +1,23 @@
-
 --
 -- INFP
 --
 
-- koncepce:
+koncepce:
 - rac = Y/N
 - is_rac = true/false pro JSON
+
+
+--
+-- CHECK
+--
+
+-- SELECT
+define db = BRATA
+select em_guid, dbname, env_status FROM EM_DATABASE where dbname = '&db';
+select dbname, env_status FROM OLI_DATABASE  where dbname = '&db';
+select * from API_DB_MV where dbname = '&db';
+select * from MGMT$DB_DBNINSTANCEINFO where target_name like '&db';
+
 
 -- TEST pro kontrolu parametrů
 create user SVOBODA identified by abcd1234 profile prof_dba;
@@ -29,10 +41,6 @@ COMMIT;
 
 connect DASHBOARD/abcd1234
 
--- test DWHPOC3
-select * from MGMT$DB_DBNINSTANCEINFO
-where target_name like 'DWHPOC3%'
-;
 
 -- Sync JOB
 
@@ -222,13 +230,6 @@ FROM
 -- ORDER BY dbname, inst_name
 /
 
--- SELECT
-select *
-   from
---     API_DB_MV
-     EM_DATABASE
-  where dbname = 'AFSZ';
-
 
 -- API_DB
 DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
@@ -261,11 +262,6 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
 SELECT * from DASHBOARD.API_DB_MV
 ;
-
-
--- tohle vyřadit z view, nefunguje
---
-'CATEST1', 'CATEST2', 'PWTESTA', 'TECOM1', 'TGASPER2', 'TPTESTA', 'TPTESTB'
 
 
 -- puvodni varianta s VIEW namisto MVIEW
