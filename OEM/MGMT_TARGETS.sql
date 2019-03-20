@@ -110,6 +110,19 @@ WHERE t.TYPE_QUALIFIER3 = 'DB'
 ORDER BY dbname
 ;
 
+--
+-- Target Properties
+--
+https://blogs.oracle.com/oem/leveraging-target-properties-to-enhance-enterprise-manager-capabilities-v2
+
+select *  from sysman.mgmt$all_target_prop_defs;
+
+select * from sysman.MGMT_ALL_TARGET_PROPS;
+
+select * from sysman.mgmt$target_properties
+  where property_name like 'udtp%';
+
+
 
 -- DB verze a Oracle Home
 select 'emcli modify_target -name="'|| t.target_name
