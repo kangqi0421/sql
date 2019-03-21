@@ -40,7 +40,7 @@ END;
 commit;
 
 
-call OLI_API.delete_database('TS2O');
+call oli_owner.OLI_API.delete_database('DWH_DUMMY_DDR1');
 
 select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) ||');' as cmd
   from OLI_OWNER.DATABASES d
