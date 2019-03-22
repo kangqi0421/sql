@@ -20,6 +20,10 @@ alter profile PROF_APPL limit
 -- vypnutí uzamčení účtu při změně hesla
 alter profile PROF_APPL limit FAILED_LOGIN_ATTEMPTS UNLIMITED;
 
+-- povolení zamykání na 5 pokusu
+alter profile PROF_APPL limit  FAILED_LOGIN_ATTEMPTS 5;
+
+
 select profile,RESOURCE_NAME, limit
   from dba_profiles
  where profile like 'PROF_APPL'
