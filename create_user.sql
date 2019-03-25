@@ -49,6 +49,20 @@ GRANT CREATE SESSION, CREATE TABLE, CREATE SYNONYM TO "&user";
 --
 alter user &user quota 10G on &default_tablespace;
 
+--
+-- list appl ucet
+--
+select *
+  from dba_users
+ where 1 = 1
+    and oracle_maintained = 'N'
+    and username like '%'
+    and not REGEXP_LIKE(username, '^[A-Z]{1,3}\d{4,}$')
+--    and account_status = 'OPEN'
+    AND username IN (select grantee from dba_role_privs where granted_role = 'CS_APPL_ACCOUNTS')
+order by 1
+/
+
 
 --
 emcli:
