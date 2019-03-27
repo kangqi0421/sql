@@ -2,6 +2,15 @@
 -- RAC class
 --
 
+-- DR test
+
+restart_on_recovery            BOOLEAN;
+
+Při abortu jedné db instance joby defaultně popadají.
+Pokud mají nastavený příznak restart_on_recovery, pak se automaticky nastartují na běžící instanci.
+Návrat na původní instanci pak musí proběhnout řízeným restatem jobu.
+
+
 -- load balance accross nodes
 col job_name for a15
 SELECT log_date, instance_id, job_name, status
