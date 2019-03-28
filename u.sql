@@ -116,12 +116,15 @@ order by username;
 spool off
 
 
-*/
+-- create user SOL60210
+create user SOL60210 identified externally as 'sol60210@CEN.CSIN.CZ' profile PROF_DBA;
+grant csconnect to SOL60210;
+
+
 
 --
 -- zmena hesla na puvodni
 --
-/*
 
 define user = SRBA
 ALTER USER &user profile default;
