@@ -19,7 +19,7 @@ USING (
              db_target_guid
         from OLI_OWNER.OMS_DATABASES_MATCHING
        WHERE match_status in ('NX')
-         -- and db_name like '{{ dbname }}'
+         and db_name NOT in ('RETAD','COGP','BRJ','ISS')
       ) em
 ON (oli.dbname = em.db_name)
 when matched then
@@ -56,6 +56,17 @@ when matched then
   update set oli.em_guid = oem.target_guid
 ;
 
+-- kontrola na rozdílná EM_GUID
+select
+    oli.hostname,
+    NVL2(oli.domain, oli.hostname ||'.'||oli.domain, oli.hostname),
+    oli.em_guid,
+    em.host_target_guid
+  from   OLI_OWNER.SERVERS oli
+    JOIN DASHBOARD.EM_HOSTS_V em
+      ON (NVL2(oli.domain, oli.hostname ||'.'||oli.domain, oli.hostname) = em.hostname)
+where oli.em_guid <> em.host_target_guid
+order by 1;
 
 -- server guid OEM > OLI
 merge
