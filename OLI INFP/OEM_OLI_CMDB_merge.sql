@@ -4,7 +4,7 @@
 -- Notes:
 --  - MAX je tam z duvodu duplicitnich targetu
 
--- kontrola na rozdílná EM_GUID
+-- kontrola na rozdï¿½lnï¿½ EM_GUID
 select oli.dbname, oli.em_guid,
        em.em_guid
   from   OLI_OWNER.databases oli
@@ -19,7 +19,8 @@ USING (
              db_target_guid
         from OLI_OWNER.OMS_DATABASES_MATCHING
        WHERE match_status in ('NX')
-         and db_name NOT in ('RETAD','COGP','BRJ','ISS')
+         -- zname duplicity BohouÅ¡e
+         and db_name NOT in ('BRJ','ISS')
       ) em
 ON (oli.dbname = em.db_name)
 when matched then
@@ -39,7 +40,7 @@ select oli.inst_name,
 where oli.em_guid <> em.em_guid
 order by oli.inst_name;
 
--- kontrola na rozdílná EM GUID u DB Instance
+-- kontrola na rozdï¿½lnï¿½ EM GUID u DB Instance
 merge
  into OLI_OWNER.DBINSTANCES oli
 USING (
@@ -48,15 +49,18 @@ USING (
         from DASHBOARD.MGMT$DB_DBNINSTANCEINFO d
         JOIN DASHBOARD.MGMT$TARGET t ON d.target_guid = t.target_guid
         WHERE t.target_type = 'oracle_database'
+          -- duplicity na instance name neresim, nutno opravit rucne
           AND instance_name NOT IN (
-            'dbfwdb', 'COGP2', 'BRJ', 'ISS', 'RETAD', 'CRMDB')
+            select inst_name from OLI_OWNER.DBINSTANCES
+            group by inst_name having count(*) > 1
+         )
       ) oem
 ON (upper(oli.inst_name) = upper(oem.instance_name))
 when matched then
   update set oli.em_guid = oem.target_guid
 ;
 
--- kontrola na rozdílná EM_GUID
+-- kontrola na rozdï¿½lnï¿½ EM_GUID
 select
     oli.hostname,
     NVL2(oli.domain, oli.hostname ||'.'||oli.domain, oli.hostname),
@@ -80,7 +84,7 @@ FROM
 WHERE
   oem.target_type = 'host'
   --AND REGEXP_LIKE(oem.host_name, '(d|t|zp|p)ordb0[0-4].vs.csin.cz')
-  and (oem.host_name NOT like '%dbzal%' AND oem.host_name NOT like 'dbtest%') -- duplicate server name
+  -- and (oem.host_name NOT like '%dbzal%' AND oem.host_name NOT like 'dbtest%') -- duplicate server name
   ) oem
 ON (oem.hostname = oli.hostname)
 when matched then

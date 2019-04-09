@@ -96,7 +96,8 @@ WHERE m.sganame = 'Total SGA (MB)'
 -- ORDER BY d.database_name
 ;
 
-COMMENT ON VIEW "DASHBOARD"."EM_INSTANCE"  IS
+-- namísto VIEW dávat TABLE, pak funguje comment
+COMMENT ON TABLE "DASHBOARD"."EM_INSTANCE" IS
   'OEM data pro target db instance včetně CPU MEM SIZE';
 
 CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE"
@@ -105,6 +106,8 @@ AS
        t.target_guid em_guid,
        t.target_name,
        database_name dbname,
+       -- availability short na UP a DOWN
+       decode(a.availability_status_code, 0, 'DOWN', 1, 'UP', 'UNKNOWN') availability,
        log_mode,
        characterset,
        substr(d.supplemental_log_data_min, 1, 1) SL_MIN,
@@ -146,7 +149,13 @@ AS
         'orcl_gtp_os' as platform
         )) p ON (d.target_guid = p.target_guid)
   -- pouze DB bez RAC instance
-  JOIN MGMT$TARGET t on (d.target_guid = t.target_guid)
+  INNER JOIN MGMT$TARGET t on (d.target_guid = t.target_guid)
+  -- availability
+  INNER JOIN (
+     select target_guid,
+            max(availability_status_code) availability_status_code
+     from MGMT$AVAILABILITY_CURRENT
+      group by target_guid) a on (d.target_guid = a.target_guid)
   -- DB and FRA size
   LEFT JOIN (
     SELECT
@@ -179,7 +188,7 @@ WHERE -- t.TYPE_QUALIFIER3 = 'DB'  -- nefunguje kvuli 12.2. verzi db
       t.TARGET_TYPE in ('rac_database', 'oracle_database')
   and TYPE_QUALIFIER3 != 'RACINST'
 --  and database_name = 'CPTZ'
-;
+/
 
 -- OLI data pro REST
 -- APP NAME listagg by ","
@@ -193,7 +202,7 @@ SELECT d.licdb_id,
        env_status,
        LISTAGG(APP_NAME,',') WITHIN GROUP (ORDER BY APP_NAME) app_name
  FROM
-  OLI_OWNER.DATABASES d
+       OLI_OWNER.DATABASES d
   join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
   JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
  group by d.licdb_id,
@@ -246,6 +255,7 @@ SELECT
        decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
        o.app_name,
        e.env_status,
+       e.availability,
        e.host_name,
        e.platform,
        e.server_name, e.port, e.connect_descriptor,
@@ -264,21 +274,6 @@ SELECT * from DASHBOARD.API_DB_MV
 ;
 
 
--- puvodni varianta s VIEW namisto MVIEW
-  SELECT /*+ result_cache */
-       e.dbname,
-       e.dbversion,
-       decode(e.rac, 'Y', 'true', 'false') is_rac,
-       decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
-       o.app_name,
-       e.env_status,
-       e.host_name,
-       e.server_name, e.port, e.connect_descriptor,
-       round(e.db_size_mb / 1024) as db_size_gb
-FROM
-  OLI_DATABASE o
-  join EM_DATABASE e on o.DB_EM_GUID = e.em_guid;
-
 --
 -- server
 --
@@ -291,15 +286,23 @@ select hostname, os, envstatus as env
 -- MGMT EM / CM view protažené přes MView z EM do OLI dashboard
 --
 
-connect DASHBOARD/abcd1234
+sqlplus dashboard/abcd1234
 
 -- pridat refresh mview do procky pro refresh
-CREATE OR REPLACE FORCE VIEW MGMT_TARGETS
+CREATE OR REPLACE FORCE VIEW dashboard.MGMT_TARGETS
 AS
   select * from SYSMAN.MGMT_TARGETS@OEM_PROD
     union
-  select target_name, target_type, type_meta_ver, category_prop_1, category_prop_2, category_prop_3, category_prop_4, category_prop_5, target_guid, load_timestamp, timezone_delta, timezone_region, display_name, owner, type_display_name, service_type, host_name, emd_url, last_load_time, is_group, broken_reason, broken_str, last_rt_load_time, last_updated_time, monitoring_mode, rep_side_avail, last_e2e_load_time, is_propagating, discovered_name, manage_status, is_active, promote_status, dynamic_property_status, org_id, oracle_home, oracle_config_home, unique_id, is_ready, is_ready_for_job, is_cloud_service
-  from SYSMAN.MGMT_TARGETS@OEM_TEST;
+  select * from SYSMAN.MGMT_TARGETS@OEM_TEST
+;
+
+CREATE OR REPLACE FORCE VIEW dashboard.MGMT$AVAILABILITY_CURRENT
+AS
+  select * from SYSMAN.MGMT$AVAILABILITY_CURRENT@OEM_PROD
+    union
+  select * from SYSMAN.MGMT$AVAILABILITY_CURRENT@OEM_TEST
+;
+
 
 -- přegenerovat view, kde není UNION
 select 'CREATE OR REPLACE FORCE VIEW '||owner||'.'||view_name||chr(10)||
@@ -315,10 +318,7 @@ from dba_views
     and view_name not in ('MGMT_TARGETS')
 ;
 
-CREATE OR REPLACE FORCE VIEW MGMT_ASM_CLIENT_ECM AS
-select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_PROD
-union
-select * from SYSMAN.MGMT_ASM_CLIENT_ECM@OEM_TEST;
+
 ..
 
 
@@ -353,6 +353,7 @@ select 'GRANT '||privilege||
  order by grantee, privilege
 ;
 
+set lines 32767 pages 0
 select 'GRANT '||privilege||
       ' on '||owner||'.'||table_name||
       ' to '||grantee||

@@ -2,17 +2,24 @@
 -- OLI_OWNER.SERVERS
 --
 
-define server = pgtsmsta1
+define server = bordb03
 
 -- OLI kontrola proti CMDB
 select * from   OLI_OWNER.SERVERS
   where 1 = 1
---    AND hostname like '&server%'
-   AND domain = 'cc.csin.cz'
+    AND hostname like '&server%'
+--   AND domain = 'cc.csin.cz'
    --AND hostname in ('zgdwhdb1')
-   and failover_server_id = 695
-
+--   and failover_server_id = 695
 ;
+
+-- počet CPU
+select hostname, domain, cpu_cores, hyperthreading
+   from   OLI_OWNER.CA_SERVERS
+  where 1 = 1
+    AND hostname like '&server%'
+;
+
 
 -- update failover serveru
 UPDATE SERVERS set failover_server_id = NULL where  hostname like 'z%dwmdb1';
