@@ -112,6 +112,13 @@ SELECT * FROM auditable_system_actions
    AND name like 'ALTER SES%'
   ;
 
+-- MINIMAL LOGON LOGOFF policy
+4 Standard  100 LOGON
+4 Standard  101 LOGOFF
+
+create audit policy CS_ACTIONS_LOGON actions LOGON, LOGOFF;
+audit policy CS_ACTIONS_LOGON;
+
 -- system_privilege_map
 SELECT * FROM system_privilege_map;
 

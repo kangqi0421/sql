@@ -1,6 +1,6 @@
 
-define db=RTOP
-define user = FEWCRAS
+define db=CPSP
+define user = CPS%
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -11,7 +11,6 @@ select ARM_DB_NAME, ARM_FULLID, TRANSFER_ENABLED from ARM_ADMIN.ARM_DATABASES wh
 -- 12c Unified auditing
 
 -- kdo zamknul účet
--- kdo co komu grantoval pres REDIM
 select --/*+ parallel full  (a) */
 --    a.*
       -- locknuty ucet
@@ -24,16 +23,18 @@ select --/*+ parallel full  (a) */
     -- RETURN_CODE,object_name,SQL_TEXT_VARCHAR2
   from ARM12.ARM_UNIAUD12 a
  where ARM_FULLID in (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where arm_db_name in '&db' and TRANSFER_ENABLED = 'Y')
-  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
+  -- AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
+  AND ARM_timestamp > SYSTIMESTAMP - INTERVAL '6' HOUR
 --     and ARM_TIMESTAMP between TIMESTAMP'2017-08-22 17:00:00'
   --                         and TIMESTAMP'2017-08-22 18:10:00'
   and ARM_ACTION_NAME='LOGON'
 --   and ARM_ACTION_NAME = 'EXECUTE'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
 --     and sql_text_varchar2 like '%dbms_scheduler.drop_job%'
-    and upper(dbusername) like '&user'
---    and return_code > 0
-   and return_code  in (1017)
+--    and upper(dbusername) like '&user'
+    and dbusername like 'CPS%'
+    and return_code > 0
+--   and return_code  in (1017)
 --  and a.ARM_ACTION_NAME in ('GRANT', 'REVOKE')
 --        and a.client_program_name = 'CSAS.REDIM.WorkflowServiceHost.exe'
 --        and a.role = 'CSCONNECT' -- nazev grantovane role

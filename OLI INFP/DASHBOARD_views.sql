@@ -36,9 +36,16 @@ CREATE DATABASE LINK "OEM_TEST" CONNECT TO DASHBOARD IDENTIFIED BY abcd1234 USIN
 create user DASHBOARD identified by abcd1234 profile DEFAULT;
   grant SELECT ANY TABLE, UNLIMITED TABLESPACE  to DASHBOARD;
 
-INSERT INTO SYSMAN.mgmt_role_grants VALUES ('DASHBOARD','EM_ALL_VIEWER',0,0);
+ALTER USER DASHBOARD ENABLE EDITIONS;
+
+grant MGMT_USER to DASHBOARD;
+grant EXEMPT ACCESS POLICY to DASHBOARD;
+
+INSERT INTO SYSMAN.mgmt_role_grants VALUES ('DASHBOARD','EM_USER',0 , 0);
+INSERT INTO SYSMAN.mgmt_role_grants VALUES ('DASHBOARD','EM_ALL_VIEWER',0 , 0);
 COMMIT;
 
+sqlplus /nolog
 connect DASHBOARD/abcd1234
 
 
@@ -100,7 +107,7 @@ WHERE m.sganame = 'Total SGA (MB)'
 COMMENT ON TABLE "DASHBOARD"."EM_INSTANCE" IS
   'OEM data pro target db instance včetně CPU MEM SIZE';
 
-CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE"
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE"
 AS
   select
        t.target_guid em_guid,
@@ -108,11 +115,11 @@ AS
        database_name dbname,
        -- availability short na UP a DOWN
        decode(a.availability_status_code, 0, 'DOWN', 1, 'UP', 'UNKNOWN') availability,
-       log_mode,
+       decode(log_mode, 'ARCHIVELOG', 'true', 'false') log_mode,
        characterset,
        substr(d.supplemental_log_data_min, 1, 1) SL_MIN,
        dbversion, env_status,
-       substr(rac, 1,1) rac,
+       decode(substr(rac, 1, 1), 'Y', 'true', 'false') rac,
        -- SLA
        CASE
          -- produkce v RAC clusteru = Platinum
@@ -242,6 +249,7 @@ FROM
 
 -- API_DB
 DROP MATERIALIZED VIEW DASHBOARD.API_DB_MV;
+
 CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
   NOLOGGING
   REFRESH COMPLETE
@@ -251,8 +259,8 @@ WITH PRIMARY KEY
 SELECT
        e.dbname,
        e.dbversion,
-       decode(e.rac, 'Y', 'true', 'false') is_rac,
-       decode(e.log_mode, 'ARCHIVELOG', 'true', 'false') is_archivelog,
+       e.rac is_rac,
+       e.log_mode is_archivelog,
        o.app_name,
        e.env_status,
        e.availability,
@@ -266,7 +274,6 @@ FROM
   inner join EM_DATABASE e
      on  (e.dbname = o.dbname and e.env_status = o.env_status)
 ;
-
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
   AS
@@ -292,19 +299,21 @@ sqlplus dashboard/abcd1234
 CREATE OR REPLACE FORCE VIEW dashboard.MGMT_TARGETS
 AS
   select * from SYSMAN.MGMT_TARGETS@OEM_PROD
-    union
+    UNION
   select * from SYSMAN.MGMT_TARGETS@OEM_TEST
 ;
 
 CREATE OR REPLACE FORCE VIEW dashboard.MGMT$AVAILABILITY_CURRENT
 AS
   select * from SYSMAN.MGMT$AVAILABILITY_CURRENT@OEM_PROD
-    union
+    UNION
   select * from SYSMAN.MGMT$AVAILABILITY_CURRENT@OEM_TEST
 ;
 
+..
 
--- přegenerovat view, kde není UNION
+-- přegenerovat view, kde není UNION na UNION test a prod
+set pages 0
 select 'CREATE OR REPLACE FORCE VIEW '||owner||'.'||view_name||chr(10)||
    '  AS '||chr(10)||
    'SELECT  * FROM SYSMAN.' ||view_name|| '@OEM_PROD'||chr(10)||
@@ -314,15 +323,16 @@ select 'CREATE OR REPLACE FORCE VIEW '||owner||'.'||view_name||chr(10)||
 from dba_views
   where owner = 'DASHBOARD'
     and view_name like '%MGMT%'
+    and TEXT_VC not like '%UNION%'
     -- vyjimky mezi verzi OEM 12c a 13c
-    and view_name not in ('MGMT_TARGETS')
+    -- and view_name not in ('MGMT_TARGETS')
 ;
 
 
 ..
 
 
---
+-- tyto view nejdou vytáhnout z OEM
 -- GC view ORA-22804: remote operations not permitted
 CREATE OR REPLACE FORCE VIEW "GC_TARGET_IDENTIFIERS" AS SELECT * FROM SYSMAN.GC_TARGET_IDENTIFIERS@OEM_PROD;
 
@@ -369,3 +379,49 @@ GRANT SELECT on DASHBOARD.CM$MGMT_ASM_CLIENT_ECM to CLONING_OWNER;
 
 GRANT SELECT on DASHBOARD.MGMT$TARGET_PROPERTIES to REDIM_OWNER WITH GRANT OPTION;
 ..
+
+GRANT SELECT on SYSMAN.MGMT_ASM_CLIENT_ECM to DASHBOARD WITH GRANT OPTION;
+"ORA-38818: neplatný odkaz na upravovaný objekt SYSMAN.MGMT_ASM_CLIENT_ECM
+"
+
+-- OMSP OMST zkracena verze EM_DATABASE
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE"
+  AS
+  select
+       database_name dbname,
+       -- availability short na UP a DOWN
+       decode(a.availability_status_code, 0, 'DOWN', 1, 'UP', 'UNKNOWN') availability,
+       dbversion,
+       env_status,
+       decode(substr(rac, 1, 1), 'Y', 'true', 'false') rac,
+       NVL2(cluster_name, scanName, server_name)
+         || ':' || port || '/'||
+         NVL2(domain, database_name||'.'||domain, database_name)  AS CONNECT_DESCRIPTOR
+  FROM
+    SYSMAN.MGMT$DB_DBNINSTANCEINFO d
+    JOIN SYSMAN.MGMT$TARGET_PROPERTIES
+      PIVOT (MIN(PROPERTY_VALUE) FOR PROPERTY_NAME IN (
+        'orcl_gtp_lifecycle_status' as env_status,
+        'RACOption' as rac,
+        'ClusterName' as cluster_name,
+        'MachineName' as server_name,
+        'DBDomain' as domain,
+        'Port' as port
+        )) p ON (d.target_guid = p.target_guid)
+  -- pouze DB bez RAC instance
+  INNER JOIN SYSMAN.MGMT$TARGET t on (d.target_guid = t.target_guid)
+  -- availability
+  INNER JOIN (
+     select target_guid,
+            max(availability_status_code) availability_status_code
+     from SYSMAN.MGMT$AVAILABILITY_CURRENT
+      group by target_guid) a on (d.target_guid = a.target_guid)
+  LEFT JOIN (select target_name, property_value scanName
+         from SYSMAN.MGMT$TARGET_PROPERTIES
+        where property_name = 'scanName') s
+    ON p.cluster_name = s.target_name
+WHERE --t.TYPE_QUALIFIER3 = 'DB'  -- nefunguje kvuli 12.2. verzi db
+        t.TARGET_TYPE in ('rac_database', 'oracle_database')
+    and TYPE_QUALIFIER3 != 'RACINST'
+    --and database_name = 'BOSON'
+;

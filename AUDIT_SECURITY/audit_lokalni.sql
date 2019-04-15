@@ -27,11 +27,11 @@ select
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
 --                            and timestamp'2015-07-08 22:05:00'
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
+--  AND event_timestamp > SYSTIMESTAMP - INTERVAL '6' DAY
 -- AND UNIFIED_AUDIT_POLICIES is null
   and ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-   and dbusername = '&user'
+   and dbusername like 'PSP%'
    and return_code > 0
 -- group by dbusername
 ORDER by event_timestamp desc

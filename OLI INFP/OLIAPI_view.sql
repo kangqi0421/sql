@@ -47,8 +47,6 @@ select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) |
  where d.dbname like 'TS2%';
 
 call OLI_API.delete_database('TS2O');
-call OLI_API.delete_database('TS2B');
-call OLI_API.delete_database('TS2I');
 
 --
 -- delete server - vlastní procedura api_delete_server
@@ -56,9 +54,6 @@ call OLI_API.delete_database('TS2I');
 tbsb2o.vs.csin.cz
 call oli_owner.api_delete_server('tbsb2o.vs.csin.cz');
 call oli_owner.api_delete_server('tbsb2i.vs.csin.cz');
-
-
-
 
 
 -- ERROR
