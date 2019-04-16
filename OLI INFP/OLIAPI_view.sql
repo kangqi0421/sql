@@ -22,7 +22,7 @@ set serveroutput on
 DECLARE
    server_id PLS_INTEGER;
 BEGIN
-   server_id := OLI_OWNER.OLI_API.ADD_SERVER('dpddmdb01.vs.csin.cz');
+   server_id := OLI_OWNER.OLI_API.ADD_SERVER('dpdetdb01.vs.csin.cz');
    dbms_output.put_line('server_id: ' || server_id);
 END;
 /

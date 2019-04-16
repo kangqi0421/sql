@@ -142,3 +142,25 @@ select * from CA_SERVERS
 select * from   OLI_OWNER.CA_SRC_SERVERS
  where hostname like 'dpddmdb01%'
 ;
+
+
+CA_VIRT_PLATFORMS
+b7057aa91dd1bc408e8c0658b24f68dc  ORACLE-01-BUD
+c25ac707519bfb4b881b655799852bcb  ORACLE-01-ANT
+
+select * from ca_relations;
+
+-- vazba na VMWare cluster
+select * from ca_relations
+  where p_name like 'HVP_ORACLE%';
+
+
+HSLV_dpdetdb01.vs.csin.cz
+HSLV_dprtodb01.vs.csin.cz
+
+Hosted on -VMware vCenter Clusters
+[L1]HVP_ORACLE-01-ANTStatus: Active
+
+VMware Virtual Platform
+
+zAPI_OLI_relations"@"CASDGW"
