@@ -15,6 +15,8 @@ update OLI_OWNER.DATABASES d
 -- API add databaze
 --
 
+-- app ve formatu bez SAS
+
 define db=DRDMTA
 define app=DRDM
 
@@ -141,7 +143,7 @@ MERGE
  into OLI_OWNER.APPLICATIONS d
 USING
    (select cmdb_ci_id, APP_NAME, APP_LONG_NAME from OLI_OWNER.CA_APPLICATIONS
-      where APP_NAME = 'ORDBF'
+      where APP_NAME = 'SAS_ORDBF'
         and status = 'Alive'
     ) s
 ON (s.app_name = d.app_name)
@@ -244,3 +246,22 @@ select em_guid, count(*)
  where em_guid is not NULL
  group by em_guid
    having count(*) > 1;
+
+
+-- APP
+- Change SAS app
+  procedure reload_applications AS
+  BEGIN
+   insert into ca_applications("CMDB_CI_ID", "APP_NAME", "APP_LONG_NAME",
+      select lower(cmdb_ci_id),
+      trim(resource_name) app_name,
+    from CA_SRC_APPLICATIONS;
+
+select * from applications
+  where app_name  like '%';
+
+-- update prefix SAS
+update applications
+   set app_name = 'SAS_'||app_name
+  where app_name not like 'SAS%';
+
