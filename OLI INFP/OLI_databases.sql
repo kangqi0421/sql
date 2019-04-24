@@ -1,15 +1,29 @@
 
-define dbname = 'SYMP'
+define db = 'BRAEA'
 
 -- DATABASES
 
 - OLI_DATABASE
 - EM_DATABASE
 
+-- chybí ještě insert do OLI_OWNER.APP_DB
+select *
+FROM
+  OLI_OWNER.DATABASES d
+    join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
+    JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
+    JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
+  where d.dbname like '&db'
+--  licdb_id = 6367
+;
+
+
 -- update ENV status
+define lifecycle = 'Education'
+
 update OLI_OWNER.DATABASES d
-  set d.env_status = 'Pre-production'
-  where dbname like 'AFSZ';
+  set d.env_status = '&lifecycle'
+  where dbname like '&db';
 
 --
 -- API add databaze
@@ -19,7 +33,6 @@ update OLI_OWNER.DATABASES d
 
 define db=DRDMTA
 define app=DRDM
-
 
 
 -- OLI API add db
@@ -150,17 +163,6 @@ ON (s.app_name = d.app_name)
   WHEN NOT MATCHED THEN
     INSERT (d.ca_id, d.app_name, d.app_long_name)
     VALUES (s.cmdb_ci_id, s.APP_NAME, s.APP_LONG_NAME);
-;
-
--- chybí ještě insert do OLI_OWNER.APP_DB
-select *
-FROM
-  OLI_OWNER.DATABASES d
-    join OLI_OWNER.APP_DB o ON (d.licdb_id = o.licdb_id)
-    JOIN OLI_OWNER.APPLICATIONS a ON (A.APP_ID = o.APP_ID)
-    JOIN OLI_OWNER.DBINSTANCES i ON (d.licdb_id = i.licdb_id)
-  where d.dbname like 'CPTDA'
---  licdb_id = 6367
 ;
 
 MERGE
