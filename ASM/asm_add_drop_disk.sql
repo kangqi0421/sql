@@ -2,6 +2,8 @@
 -- ASM přidání disků
 --
 
+asmcmd chdg - nutná specifikace v XML
+
 -- migrace disků
 nahraženo postupem na wiki
 https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
@@ -12,7 +14,7 @@ https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks
 ./asm_migrate_db.yml -e 'server=tordb02 db=CLMTC do_migrate=true'
 
 -- ansible add disk
-./asm_add_disk.yml -e 'server=zpordb05 db=CPSZA'
+./asm_add_disk.yml -v -e 'server=toem asm_diskgroup=OMST_DATA'
 
 
 -- oraenv na DB
@@ -121,6 +123,20 @@ select LISTAGG(name, ','||chr(10)) WITHIN GROUP (ORDER BY name)
             and dg.name like 'DWH%'
           order by d.disk_number
           ;
+
+-- ansible get ASM dg z DB
+          select
+             '[' ||
+              LISTAGG(dbms_assert.enquote_name(dg.name), ',')
+                  WITHIN GROUP (order by dg.name) ||
+              ']' as json_array
+            from V\$ASM_DISKGROUP_STAT dg,
+                 V\$PARAMETER p
+          where dg.name = ltrim(p.value, '+')
+                and p.name in
+                  ('db_create_file_dest', 'db_recovery_file_dest')
+          /
+
 
 -- funguje pouze z ASM instance
 select * from v$asm_operation;

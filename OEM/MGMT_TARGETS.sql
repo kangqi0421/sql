@@ -110,15 +110,6 @@ WHERE t.TYPE_QUALIFIER3 = 'DB'
 ORDER BY dbname
 ;
 
--- Availability - UP, DOWN, UNKNOWN
-select
-    target_name, availability_status,
-    availability_status_code,
-    decode(availability_status_code, 0, 'DOWN', 1, 'UP', 'UNKNOWN') availability
-   from DASHBOARD.MGMT$AVAILABILITY_CURRENT
-  where target_type like '%database';
-
-
 --
 -- Target Properties
 --

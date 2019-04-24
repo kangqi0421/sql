@@ -182,3 +182,18 @@ done
 
 crs
 
+## get ASM diskgroups
+
+
+```sql          select
+             '[' ||
+              LISTAGG(dbms_assert.enquote_name(dg.name), ',')
+                  WITHIN GROUP (order by dg.name) ||
+              ']' as json_array
+            from V\$ASM_DISKGROUP_STAT dg,
+                 V\$PARAMETER p
+          where dg.name = ltrim(p.value, '+')
+                and p.name in
+                  ('db_create_file_dest', 'db_recovery_file_dest')
+          /
+```

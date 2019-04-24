@@ -3,10 +3,17 @@
 --
 How To Enable The New Unified Auditing In 12c ? (Doc ID 1567006.1)
 
+-- async zapis pro 12.1, ve 12.2 uz nefunguje
+DBMS_AUDIT_MGMT.AUDIT_TRAIL_QUEUED_WRITE
+
+Changed "AUDIT_TRAIL_WRITE_MODE" to "AUDIT_TRAIL_QUEUED_WRITE"
+
+SELECT PARAMETER_VALUE FROM DBA_AUDIT_MGMT_CONFIG_PARAMS WHERE PARAMETER_NAME='AUDIT WRITE MODE';
+
+
 -- TODO
 - vyřadit plošně ALTER SESSION, kvuli
 Severity 3SR 3-19375638801 : ORA-07445: exception encountered: core dump [kgscFreeCachedCursor()+600]
-
 
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
