@@ -394,6 +394,7 @@ GRANT SELECT on SYSMAN.MGMT_ASM_CLIENT_ECM to DASHBOARD WITH GRANT OPTION;
        dbversion,
        env_status,
        decode(substr(rac, 1, 1), 'Y', 'true', 'false') rac,
+       d.host_name hostname,
        NVL2(cluster_name, scanName, server_name)
          || ':' || port || '/'||
          NVL2(domain, database_name||'.'||domain, database_name)  AS CONNECT_DESCRIPTOR

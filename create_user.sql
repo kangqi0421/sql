@@ -20,6 +20,10 @@ define owner_role=PAD_OWNER
 -- APP user
 --
 
+create tablespace FINCASETBL datafile size 512M autoextend on next 512M maxsize 32767M;
+-- BIGFILE
+create  bigfile tablespace FINCASETBL datafile size 512M autoextend on next 512M maxsize UNLIMITED;
+
 BEGIN EXECUTE IMMEDIATE 'CREATE ROLE &owner_role';
 EXCEPTION WHEN OTHERS THEN IF sqlcode != -1921 THEN RAISE; END IF; END;
 /
@@ -47,7 +51,7 @@ GRANT CBL_DB_SERVER to &user ;
 GRANT CREATE SESSION, CREATE TABLE, CREATE SYNONYM TO "&user";
 
 --
-alter user &user quota 10G on &default_tablespace;
+alter user &user quota UNLIMITED on &default_tablespace;
 
 --
 -- list appl ucet
