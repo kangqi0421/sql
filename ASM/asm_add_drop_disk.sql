@@ -96,6 +96,8 @@ ALTER SYSTEM SET asm_diskstring = '/dev/oracleasm/disks/*','/dev/mapper/asm_449*
 
 
 -- DROP disks
+
+
 set trims on pages 0 lines 32767
 select 'DROP DISK'||CHR(10) from dual;
 

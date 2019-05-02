@@ -1,4 +1,6 @@
--- reset memory_target to sga/pga size
+--
+-- hugepages | reset memory_target to sga/pga size
+--
 
 -- memory target na SGA a PGA
 SELECT component, round(current_size/1048576/1024) "current [GB]" FROM v$memory_dynamic_components
