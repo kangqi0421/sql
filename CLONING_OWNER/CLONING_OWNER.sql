@@ -126,10 +126,10 @@ insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',
 -- kde všude máme parametry
 --
 
-define parameter = asm_source_dg
+define parameter = clone_opts
 
 select * FROM  cloning_parameter
-  -- where lower(parameter_name) = '&parameter'
+  where lower(parameter_name) = '&parameter'
   order by lower(parameter_name);
 
 select *
@@ -145,12 +145,14 @@ select dbname, parameter_name, parameter_value, env_status, cloning_method_id
     natural join oli_owner.databases d
   where parameter_name = '&parameter'
      -- and env_status = 'Pre-production'
+     -- and dbname like 'RMD%'
  order by dbname ;
 
 -- ${source_db}_D01
 /*
 delete FROM db_param_value p
-  where parameter_name = 'asm_source_dg'
+  where parameter_name = '&parameter'
+    and licdb_id in (4362)
    and p.parameter_value = '${source_db}_DATA'
   ;
 */
