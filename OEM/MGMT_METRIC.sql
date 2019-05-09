@@ -247,10 +247,8 @@ AND metric_column = 'bytesFree'
 AND key_value     = 'MDM'
 
 -- mgmt$db_tablespaces
-SELECT
-       FROM
-         mgmt$db_tablespaces t,
-
+--> již nepoužívat
+After Upgrade to 13c, the TABLESPACE_USED_SIZE Column is Showing Value -1 on View MGMT$DB_TABLESPACE (Doc ID 2162698.1)
 
 -- ASM diskgroup
 Disk Group Usage

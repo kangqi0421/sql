@@ -2,6 +2,10 @@
 -- DB size current
 --
 
+MGMT$DB_TABLESPACE - již ne funguje pro free space
+After Upgrade to 13c, the TABLESPACE_USED_SIZE Column is Showing Value -1 on View MGMT$DB_TABLESPACE (Doc ID 2162698.1)
+
+
 -- source DATABASE_SIZE:
  SELECT ROUND(nvl(sum(tablespace_size)/1024/1024/1024,0),2) ALLOCATED_GB,
         ROUND(nvl(sum(tablespace_used_size)/1024/1024/1024,0),2) USED_GB,
@@ -70,23 +74,47 @@ GROUP BY d.database_name
 
 
 -- Grafana tablespace
-select
-     TO_CHAR(t.collection_timestamp,'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS TIMESTAMP,
-     d.entity_name as DBNAME,
-     d.host_name,
-     p.PROPERTY_VALUE ENV_STATUS,
-     tablespace_name,
-     round(tablespace_size/power(1024,2)) as SIZE_MB,
-     round(tablespace_used_size/power(1024,2)) AS USED_MB
-  from    mgmt$db_tablespaces t
-    JOIN sysman.EM_MANAGEABLE_ENTITIES d
-      ON (t.target_guid = d.entity_guid)
-    JOIN sysman.mgmt_target_properties p
-      ON (p.target_guid = d.entity_guid)
- where p.property_name = 'orcl_gtp_lifecycle_status'
-    AND d.entity_name = 'MDWTB'
-    --and tablespace_name = 'SYSTEM'
+WITH TBS_METRIC
+AS (
+  SELECT
+   rollup_timestamp,
+   target_guid,
+   METRIC_COLUMN,
+   key_value as tablespace_name,
+   ROUND(AVERAGE) VALUE
+ FROM
+        SYSMAN.MGMT$METRIC_DAILY
+ WHERE
+       METRIC_NAME    = 'tbspAllocation'
+   AND metric_column in ('spaceUsed', 'spaceAllocated')
+)
+SELECT
+   to_char(rollup_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as TIMESTAMP,
+   d.database_name DBNAME,
+   t.host_name as HOST_NAME,
+   p.property_value ENV_STATUS,
+   tablespace_name,
+   SIZE_MB,
+   USED_MB,
+   'MB' as UNIT
+FROM TBS_METRIC
+    PIVOT (MIN(VALUE) FOR METRIC_COLUMN IN (
+        'spaceAllocated' AS SIZE_MB,
+        'spaceUsed' AS USED_MB)
+          ) m
+    JOIN sysman.MGMT$TARGET t
+      ON (m.target_guid = t.target_guid)
+    JOIN sysman.mgmt$db_dbninstanceinfo d
+      ON (t.target_guid = d.target_guid)
+    LEFT JOIN (
+        select target_guid, property_value from  sysman.MGMT_TARGET_PROPERTIES
+           where property_name = 'orcl_gtp_lifecycle_status') p
+      ON (p.target_guid = m.target_guid)
+WHERE  m.rollup_timestamp > sysdate - interval '${context.global.params.oem_collection_date}' day(3)
+  -- AND  d.database_name = 'CPTDA'
+ORDER BY TIMESTAMP, DBNAME, HOST_NAME, TABLESPACE_NAME
 ;
+
 
 -- tbspAllocation
 SELECT
@@ -97,10 +125,10 @@ SELECT
    m.key_value tablespace,
    m.value
 FROM
-  MGMT$METRIC_DETAILS m
-  JOIN MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
+  SYSMAN.MGMT$METRIC_DETAILS m
+  JOIN SYSMAN.MGMT$DB_DBNINSTANCEINFO d ON (m.target_guid = d.target_guid)
 WHERE 1=1
-  -- AND m.target_name like 'CPTDA'
+  AND m.target_name like 'CPTDA'
   AND m.metric_name = 'tbspAllocation'
   AND m.metric_column in ('spaceUsed', 'spaceAllocated')
 ORDER by 1, 2

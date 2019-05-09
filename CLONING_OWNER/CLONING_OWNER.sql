@@ -126,7 +126,7 @@ insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',
 -- kde všude máme parametry
 --
 
-define parameter = clone_opts
+define parameter = asm_source_dg
 
 select * FROM  cloning_parameter
   where lower(parameter_name) = '&parameter'

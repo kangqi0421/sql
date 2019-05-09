@@ -104,8 +104,16 @@ Database=mdb
 -- CA CMDB casdgw DB link
 isql casd zAPI_Oracle_licence Heslo123.
 
-select count(*) from dbo.zAPI_Oracle_licence_apps;
 
+-- přes synonym jsou zpřístupněna data ze CMDB
+SYNONYM "OLI_OWNER"."CA_SRC_APPLICATIONS" FOR "zAPI_Oracle_licence_apps"@"CASDGW";
+SYNONYM "OLI_OWNER"."CA_SRC_DATABASES" FOR "zAPI_Oracle_Databases"@"CASDGW";
+SYNONYM "OLI_OWNER"."CA_SRC_DBINSTANCES" FOR "zAPI_Oracle_DBInstances"@"CASDGW";
+SYNONYM "OLI_OWNER"."CA_SRC_RELATIONS" FOR "zAPI_OLI_relations"@"CASDGW";
+SYNONYM "OLI_OWNER"."CA_SRC_SERVERS" FOR "zAPI_OLI_servers"@"CASDGW";
+SYNONYM "OLI_OWNER"."CA_SRC_VIRT_PLATFORMS" FOR "zAPI_OLI_virtual_platforms"@"CASDGW";
+
+select count(*) from dbo.zAPI_Oracle_licence_apps;
 
 --
 -- CA servers
