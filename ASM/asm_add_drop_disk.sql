@@ -4,6 +4,37 @@
 
 asmcmd chdg - nutná specifikace v XML
 
+list of open files on asm disk:
+```
+asmcmd lsod -G RMDTESTE_DATA
+```
+
+Linux – close file descriptors without killing process
+
+```
+lsof /dev/mapper/asm_vmax3_832_RMDTESTE_D01 | grep -v ^COMMAND | awk '{print $2, $4}'
+
+oracle    31814 oracle  256u   BLK  253,7      0t0 20968 /dev/mapper/../dm-7
+ora_rbal_ 291699 oracle  417u   BLK 253,111      0t0 342616 /dev/mapper/../dm-111
+
+-- above, fd 256 is open for update (could also be w (write))
+
+-- attach to process with gdb debugger
+# gdb -p 31814
+
+-- close file descriptor(s)
+gdb> p close(256)
+
+**or**
+
+call close(400)
+
+**batch**
+
+gdb -p 10029 --batch -ex 'call close(4)'
+
+```
+
 -- migrace disků
 nahraženo postupem na wiki
 https://foton.vs.csin.cz/dbawiki/playground:jirka:asm_migrate_disks

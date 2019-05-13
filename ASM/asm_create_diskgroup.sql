@@ -6,6 +6,7 @@ asmcmd dsget
 asmcmd dsset '/dev/mapper/asm_250FX_*_OCR','/dev/mapper/asm*p1'
 ```
 
+
 ## list new asm diskgroups
 sqlplus / as sysasm <<ESQL
 select unique
