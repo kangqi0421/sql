@@ -31,7 +31,6 @@ call close(400)
 
 **batch**
 
-gdb -p 10029 --batch -ex 'call close(4)'
 gdb -p 292676 --batch -ex 'call close(392)'
 
 ```
