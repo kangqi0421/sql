@@ -1,4 +1,6 @@
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+--
+--
 --
 -- File name:   snapper.sql (Oracle Session Snapper v4)
 -- Purpose:     An easy to use Oracle session-level performance measurement tool
@@ -40,24 +42,15 @@
 --              made about its correctness, reliability and safety. Use it at your
 --              own risk!
 --
--- License:     1) You may use this script for your (or your businesses) purposes for free
---              2) You may modify this script as you like for your own (or your businesses) purpose,
---                 but you must always leave this script header (the entire comment section), including the
---                 author, copyright and license sections as the first thing in the beginning of this file
---              3) You may NOT publish or distribute this script or any variation of it PUBLICLY
---                 (including, but not limited to uploading it to your public website or ftp server),
---                 instead just link to its location in blog.tanelpoder.com
---              4) You may distribute this script INTERNALLY in your company, for internal use only,
---                 for example when building a standard DBA toolset to be deployed to all
---                 servers or DBA workstations 
---
+-- Copyright:   Copyright 2018 Tanel Poder. All rights reserved. More info at http://tanelpoder.com
+--              Licensed under the Apache License, Version 2.0. See LICENSE.txt for terms & conditions.
 --
 -- Thanks to:   Adrian Billington, Jamey Johnston, Marcus Mönnig, Hans-Peter Sloot,
 --              Ronald Rood and Peter Bach for bugfixes, additions and improvements
 --
 --------------------------------------------------------------------------------
 --
---   The Session Snapper v4.24 ( USE AT YOUR OWN RISK !!! )
+--   The Session Snapper v4.29 ( USE AT YOUR OWN RISK !!! )
 --   (c) Tanel Poder ( http://blog.tanelpoder.com )
 --
 --
@@ -106,7 +99,7 @@
 --                   - the above example illustrates that you can also specify the gv$session
 --                     columns for TOP report yourself. The above example will show a TOP
 --                     activity report grouped by SQL_ID + EVENT + WAIT_CLASS
---                     Note that the columns are separated by a "+" sign (as comma is a snapper 
+--                     Note that the columns are separated by a "+" sign (as comma is a snapper
 --                     parameter separator, not ASH column separator)
 --
 --          ash1
@@ -165,30 +158,30 @@
 --      if you want to snap ALL sids, use "all" as value for
 --      <sids_to_snap> parameter
 --
---      alternatively you can use "select sid from gv$session" as value for <sids_to_snap>
+--      alternatively you can use "select inst_id,sid from gv$session" as value for <sids_to_snap>
 --      parameter to capture all SIDs. you can write any query (with multiple and/or)
 --      conditions to specify complex rules for capturing only the SIDs you want
 --
---      starting from version 3.0 there are further session_id selection options available in 
+--      starting from version 3.0 there are further session_id selection options available in
 --      instead of sid you can write such expressions for snapper's <sids_to_snap> parameter:
 --
 --         sid=123     -- take sid 123 only (the same as just writing 123)
 --         user=tanel  -- take all sessions where username is 'tanel' (case insensitive)
---                     -- this is the same as writing following subquery for the 
+--                     -- this is the same as writing following subquery for the
 --                     -- <sids_to_snap> parameter:
---                            select sid from gv$session where lower(username) like lower('tanel')
---                     
+--                            select inst_id,sid from gv$session where lower(username) like lower('tanel')
+--
 --         user=tanel% -- take all sessions where username begins with 'tanel%' (case insensitive)
 --                     -- the = means actually LIKE in SQL terms in this script
--- 
+--
 --          spid=1234  -- all these 3 parameters do the same thing:
 --          ospid=1234 -- they look up the sessions(s) where the processes OS PID=1234
 --          pid=1234   -- this is useful for quickly looking up what some OS process is doing
 --                     -- if it consumes too much of some resource
---          qc=123     
+--          qc=123
 --          qcsid=123  -- show query coordinator and all PX slave sessions
 --
---         program=sqlplus%     -- the following examples filter by corresponding gv$session coulmns 
+--         program=sqlplus%     -- the following examples filter by corresponding gv$session coulmns
 --         machine=linux01      -- machine
 --         osuser=oracle        -- os username
 --         module=HR            -- module
@@ -226,11 +219,11 @@
 --      (Write 90 10-second snapshots into tracefile for session IDs 117,210,313
 --       all statistics are reported, do not print any headers)
 --
---      @snapper trace,ash 900 999999999 "select sid from v$session"
+--      @snapper trace,ash 900 999999999 all
 --      (Take a snapshot of ALL sessions every 15 minutes and write the output to trace,
 --       loop (almost) forever )
 --
---      @snapper out,trace 300 12 "select sid from v$session where username='APPS'"
+--      @snapper out,trace 300 12 "select inst_id,sid from gv$session where username='APPS'"
 --      (Take 12 5-minute snapshots of all sessions belonging to APPS user, write
 --       output to both dbms_output and tracefile)
 --
@@ -263,19 +256,19 @@ define _IF_ORA12_OR_HIGHER="--"
 define _IF_LOWER_THAN_ORA12="--"
 define _IF_ORA11_OR_HIGHER="--"
 define _IF_LOWER_THAN_ORA11="--"
-define _IF_DBMS_SYSTEM_ACCESSIBLE="/* dbms_system is not accessible" 
+define _IF_DBMS_SYSTEM_ACCESSIBLE="/* dbms_system is not accessible"
 -- /*dummy*/ -- this "dummy" is here just for avoiding VIM syntax highlighter going crazy due to previous line
 define _IF_X_ACCESSIBLE="--"
 
 -- plsql_object_id columns available in v$session (from 10.2.0.3)
-define _YES_PLSQL_OBJ_ID="--"  
+define _YES_PLSQL_OBJ_ID="--"
 define _NO_PLSQL_OBJ_ID=""
 -- blocking_instance available in v$session (from 10.2)
-define _YES_BLK_INST="--"      
+define _YES_BLK_INST="--"
 define _NO_BLK_INST=""
 
 -- snapper v4 manual before/after snapshotting
-define _MANUAL_SNAPSHOT="--"   
+define _MANUAL_SNAPSHOT="--"
 define _USE_DBMS_LOCK=""
 
 -- set the noprint's value to "noprint" if you don't want these temporary variables to show up in a sqlplus spool file
@@ -297,7 +290,7 @@ col use_dbms_lock          &noprint new_value _USE_DBMS_LOCK
 
 col snapper_sid            &noprint new_value snapper_sid
 
--- sid_filter and inst_filter are the new RAC gv$ friendly way to filter sessions in Snapper v4 
+-- sid_filter and inst_filter are the new RAC gv$ friendly way to filter sessions in Snapper v4
 def sid_filter="/**/"
 def inst_filter="/**/"
 col sid_filter             &noprint new_value sid_filter
@@ -338,7 +331,7 @@ declare
     is
       ret varchar2(1000);
     begin
-      if str like '%@%' then 
+      if str like '%@%' then
         --dbms_output.put_line('get_filter:1 str= '||str);
         ret := lower(trim(regexp_replace(substr(str,instr(str,'=')+1), '^(.+)@([[:digit:]\*]+)(.*)', '\1')));
       else
@@ -351,23 +344,23 @@ declare
 
 begin
     -- compute inst_filter
-    case 
-        when regexp_instr('&ssid_begin','@')           = 0 then 
+    case
+        when regexp_instr('&ssid_begin','@')           = 0 then
             lv_inst_filter := '/* inst_filter */ s.inst_id=USERENV(''Instance'')';
-        when regexp_instr('&ssid_begin','@\*') > 0 or '&ssid_begin' like '(%' then 
+        when regexp_instr('&ssid_begin','@\*') > 0 or '&ssid_begin' like '(%' then
             lv_inst_filter := '/* inst_filter */ 1=1';
-        when regexp_instr('&ssid_begin','@\d+')        > 0 then 
+        when regexp_instr('&ssid_begin','@\d+')        > 0 then
             lv_inst_filter := 's.inst_id = ' || regexp_replace('&ssid_begin', '^(.+)@(\d+)(.*)', '\2');
         else
             lv_inst_filter := 's.inst_id=USERENV(''Instance'')';
-        --when regexp_instr('&ssid_begin','@\d+')   > 0 then regexp_replace(snapper_sid, '^(.+)@\d+', '\1') || ' AND inst_id = ' || regexp_replace(snapper_sid, '^(.+)@(\d+)(.*)', '\2') 
+        --when regexp_instr('&ssid_begin','@\d+')   > 0 then regexp_replace(snapper_sid, '^(.+)@\d+', '\1') || ' AND inst_id = ' || regexp_replace(snapper_sid, '^(.+)@(\d+)(.*)', '\2')
     end case;
 
     -- compute sid_filter
     case
         when trim(lower('&ssid_begin')) like 'con_id=%'    then lv_sid_filter   := 's.con_id in ('||get_filter('&ssid_begin')||')';
-        when trim(lower('&ssid_begin')) like 'sid=%'       then lv_sid_filter   := 's.sid in ('   ||get_filter('&ssid_begin')||')'; 
-        when trim(lower('&ssid_begin')) like 'audsid=%'    then lv_sid_filter   := 's.audsid in ('||get_filter('&ssid_begin')||')'; 
+        when trim(lower('&ssid_begin')) like 'sid=%'       then lv_sid_filter   := 's.sid in ('   ||get_filter('&ssid_begin')||')';
+        when trim(lower('&ssid_begin')) like 'audsid=%'    then lv_sid_filter   := 's.audsid in ('||get_filter('&ssid_begin')||')';
         when trim(lower('&ssid_begin')) like 'user=%'      then lv_sid_filter   := 'lower(username) like '''         ||get_filter('&ssid_begin')||'''';
         when trim(lower('&ssid_begin')) like 'username=%'  then lv_sid_filter   := 'lower(username) like '''         ||get_filter('&ssid_begin')||'''';
         when trim(lower('&ssid_begin')) like 'machine=%'   then lv_sid_filter   := 'lower(machine) like '''          ||get_filter('&ssid_begin')||'''';
@@ -391,8 +384,8 @@ begin
         when trim(lower('&ssid_begin')) like 'lgwr%'       then lv_sid_filter   := 'program like ''%(LG__)%'''; -- 12c multiple adaptive LGWR workers
         when trim(lower('&ssid_begin')) like 'dbwr%'       then lv_sid_filter   := 'regexp_like(program, ''.*\((DBW.|BW..)\).*'', ''i'')';
         when trim(lower('&ssid_begin')) like 'select%'     then lv_sid_filter   := q'{(s.inst_id,s.sid) in (&snapper_sid)}';
-        when trim(lower('&ssid_begin')) like '(%'          then lv_inst_filter  := '/* inst_filter2 */ 1=1'; lv_sid_filter := q'{(s.inst_id,s.sid) in (&snapper_sid)}'; 
-        else                                                    lv_sid_filter   := '/* sid_filter_else_cond */ s.sid in ('||get_filter('&ssid_begin')||')'; 
+        when trim(lower('&ssid_begin')) like '(%'          then lv_inst_filter  := '/* inst_filter2 */ 1=1'; lv_sid_filter := q'{(s.inst_id,s.sid) in (&snapper_sid)}';
+        else                                                    lv_sid_filter   := '/* sid_filter_else_cond */ s.sid in ('||get_filter('&ssid_begin')||')';
     end case;
 
     :inst_filter := lv_inst_filter;
@@ -425,7 +418,7 @@ end;
 -- this query populates some sqlplus variables required for dynamic compilation used below
 with mod_banner as (
     select
-        replace(banner,'9.','09.') banner
+        replace(banner,' 9.','09.') banner
     from
         v$version
     where rownum = 1
@@ -452,7 +445,7 @@ from
 -- current workaround: 1st serveroutput command below is for sql developer compatibility
 -- 2nd is for sqlplus, so that newlines and leading spaces get properly printed
 set termout off
-set serveroutput on size 1000000 
+set serveroutput on size 1000000
 set serveroutput on size 1000000 format wrapped
 set termout on
 
@@ -507,21 +500,21 @@ declare
 
     type tmp_sestab is table of gv$session%rowtype index by pls_integer;
     type sestab is table of gv$session%rowtype index by varchar2(20);
-        
+
     g_sessions           sestab;
     g_empty_sessions     sestab;
 
     type hc_tab is table of number index by pls_integer; -- index is sql hash value
     type ses_hash_tab is table of hc_tab index by pls_integer; -- index is SID
-    
+
     g_ses_hash_tab       ses_hash_tab;
     g_empty_ses_hash_tab ses_hash_tab;
 
     -- dbms_debug_vc2coll is a built-in collection present in every oracle db
     g_ash                sys.dbms_debug_vc2coll := new sys.dbms_debug_vc2coll();
     g_empty_ash          sys.dbms_debug_vc2coll := new sys.dbms_debug_vc2coll();
-    g_snap1              sys.dbms_debug_vc2coll; 
-    g_snap2              sys.dbms_debug_vc2coll; 
+    g_snap1              sys.dbms_debug_vc2coll;
+    g_snap2              sys.dbms_debug_vc2coll;
 
     g_ash_samples_taken  number := 0;
 
@@ -570,13 +563,13 @@ declare
     g_ash_columns4    varchar2(1000) := 'con_id + inst_id + sql_id + sql_child_number + event + wait_class';
     g_ash_columns5    varchar2(1000) := 'con_id + inst_id + event + p1 + wait_class';
     g_ash_columns6    varchar2(1000) := 'con_id + inst_id + sid + user + machine + program';
-		
+
     -- output column configuration
     output_header     number := 0; -- 1=true 0=false
     output_username   number := 1; -- v$session.username
     output_inst       number := 0; -- inst
-    output_sid        number := CASE WHEN dbms_utility.is_cluster_database = TRUE THEN 0 ELSE 1 END; -- just sid 
-    output_inst_sid   number := CASE WHEN dbms_utility.is_cluster_database = TRUE THEN 1 ELSE 0 END; -- inst_id and sid together 
+    output_sid        number := CASE WHEN dbms_utility.is_cluster_database = TRUE THEN 0 ELSE 1 END; -- just sid
+    output_inst_sid   number := CASE WHEN dbms_utility.is_cluster_database = TRUE THEN 1 ELSE 0 END; -- inst_id and sid together
     output_time       number := 0; -- time of snapshot start
     output_seconds    number := 0; -- seconds in snapshot (shown in footer of each snapshot too)
     output_stype      number := 1; -- statistic type (WAIT,STAT,TIME,ENQG,LATG,...)
@@ -729,10 +722,10 @@ declare
        s NUMBER;
    begin
        s :=   to_number(extract(second from i)) +
-              to_number(extract(minute from i)) * 60 + 
-              to_number(extract(hour   from i)) * 60 * 60 + 
+              to_number(extract(minute from i)) * 60 +
+              to_number(extract(hour   from i)) * 60 * 60 +
               to_number(extract(day    from i)) * 60 * 60 * 24;
-       --output('get_seconds '||to_char(i)||' = '||to_char(s)); 
+       --output('get_seconds '||to_char(i)||' = '||to_char(s));
        return s;
    end get_seconds;
 
@@ -785,7 +778,7 @@ declare
 
     end;
 
-  
+
   /*---------------------------------------------------
    -- lookup stat delta helper calculator (l2.value - l1.value)
    ---------------------------------------------------*/
@@ -799,7 +792,7 @@ declare
 
         d    number;
     begin
-        begin 
+        begin
             val1 := l1(metric_id).value;
         exception
             when no_data_found then val1 := 0;
@@ -825,7 +818,7 @@ declare
     begin
         if metric_type || metric_name  is null then
             str := c.stype||','||trim(to_char(c.inst_id))||','||trim(to_char(c.sid))||','||trim(to_char(c.statistic#,'999999999999999999999999'));
-        else 
+        else
             begin
                 str := trim(metric_type)||','||trim(to_char(c.inst_id))||','||trim(to_char(c.sid))||','||trim(to_char(sn_reverse(metric_type||','||metric_name).statistic#));
             exception
@@ -836,7 +829,7 @@ declare
         --output('tmp_delta '||c.stype||' '||tmp_delta);
         return tmp_delta;
         -- return get_delta(str);
-    end; 
+    end;
 
     /*---------------------------------------------------
      -- function for calculating useful averages and ratios between metrics
@@ -848,9 +841,9 @@ declare
         mt  varchar2(100) := c.stype; -- metric_type
         mn  varchar2(100) := sn(c.statistic#).name; -- metric_name
     begin
-        case 
+        case
           when mt = 'STAT' then
-            case 
+            case
               when mn LIKE 'session _ga memory%'                   then ret := lpad( tptformat(gd(c), 'STAT'), 10) || ' actual value in end of snapshot';
               when mn LIKE '%ed%cursors current'                   then ret := lpad( tptformat(gd(c), 'STAT'), 10) || ' actual value in end of snapshot';
               when mn = 'file io service time'                     then ret := lpad( tptformat(gd(c) / nullif(gd(c, 'STAT', 'physical read total IO requests')+gd(c, 'STAT', 'physical write total IO requests'),0), 'TIME'), 10) || ' bad guess of IO service time per IO request';
@@ -866,6 +859,8 @@ declare
               when mn = 'DB Time'                                  then ret := lpad( tptformat(gd(c) * 10000, 'TIME'), 10) || ' total DB Time';
               when mn = 'physical write IO requests'               then ret := lpad( tptformat(gd(c, 'STAT', 'physical write bytes')       / nullif(gd(c),0), mt), 10) || ' bytes per request' ;
               when mn = 'physical write total IO requests'         then ret := lpad( tptformat(gd(c, 'STAT', 'physical write total bytes') / nullif(gd(c),0), mt), 10) || ' bytes per request' ;
+              when mn = 'physical read IO requests'                then ret := lpad( tptformat(gd(c, 'STAT', 'physical read bytes')        / nullif(gd(c),0), mt), 10) || ' bytes per request' ;
+              when mn = 'physical read total IO requests'          then ret := lpad( tptformat(gd(c, 'STAT', 'physical read total bytes')  / nullif(gd(c),0), mt), 10) || ' bytes per request' ;
               when mn = 'physical write total multi block requests' then ret:= lpad( tptformat(gd(c, 'STAT', 'physical write total IO requests') - gd(c), mt), 10) || ' total single block write requests' ;
               when mn = 'physical read total multi block requests' then ret := lpad( tptformat(gd(c, 'STAT', 'physical read total IO requests') - gd(c), mt), 10) || ' total single block read requests' ;
               when mn = 'physical read IO requests'                then ret := lpad( tptformat(gd(c, 'STAT', 'physical read bytes' )       / nullif(gd(c),0), mt), 10) || ' bytes per request' ;
@@ -886,7 +881,7 @@ declare
             -- this is ugly and wrong at the moment - will refactor some day
             case
               when mn = 'DB time' or mn= 'background elapsed time' then ret := lpad(tptformat((get_seconds(d2 - d1)*1000000 - (
-                                                                                                              gd(c) 
+                                                                                                              gd(c)
                                                                                                             /*+ gd(c, 'DB CPU', 'TIME') */
                                                                                                               + gd(c, 'WAIT', 'pmon timer')
                                                                                                               + gd(c, 'WAIT', 'VKTM Logical Idle Wait')
@@ -1017,7 +1012,7 @@ declare
     end case; -- mt
         return ret;
     end get_useful_average;
- 
+
   /*---------------------------------------------------
     -- function for converting large numbers to human-readable format
     ---------------------------------------------------*/
@@ -1155,7 +1150,7 @@ declare
     ---------------------------------------------------*/
    function get_sessions return sestab is
        tmp_sessions tmp_sestab;
-       l_return_sessions sestab; 
+       l_return_sessions sestab;
    begin
 
        select /*+ unnest */ /* get_session_list:2 */
@@ -1172,7 +1167,7 @@ declare
            --output('get_sessions i='||i||' sid='||tmp_sessions(i).sid);
            l_return_sessions(tmp_sessions(i).inst_id||','||tmp_sessions(i).sid) := tmp_sessions(i);
        end loop;
-       
+
        return l_return_sessions;
 
    end; -- get_sessions
@@ -1190,7 +1185,7 @@ declare
    function sitem(p in number) return varchar2 as
    begin
       return '<'||to_char(p)||'>';
-   end; -- sitem number 
+   end; -- sitem number
 
    function sitem(p in date) return varchar2 as
    begin
@@ -1210,34 +1205,34 @@ declare
    begin
       g_ash_samples_taken := 0;
       -- clear g_ash
-      g_ash := new sys.dbms_debug_vc2coll(); 
+      g_ash := new sys.dbms_debug_vc2coll();
    end; -- reset_ash
 
 
    /*---------------------------------------------------
-   -- proc for getting ash style samples from gv$session 
+   -- proc for getting ash style samples from gv$session
    ---------------------------------------------------*/
    procedure extract_ash is
        ash_i varchar2(30);
        s gv$session%rowtype;
-       
+
    begin
        -- keep track how many times we sampled gv$session so we could calculate averages later on
        g_ash_samples_taken := g_ash_samples_taken + 1;
        --output('g_sessions.count='||g_sessions.count);
        ash_i := g_sessions.first;
 
-       while ash_i is not null loop 
+       while ash_i is not null loop
 
           s := g_sessions(ash_i);
           if -- active, on cpu
-              (s.status = 'ACTIVE' and s.state != 'WAITING' and s.sid != g_mysid) 
+              (s.status = 'ACTIVE' and s.state != 'WAITING' and s.sid != g_mysid)
           or -- active, waiting for non-idle wait
-              (s.status = 'ACTIVE' and s.state = 'WAITING' and s.wait_class != 'Idle' and s.sid != g_mysid) 
-          then 
+              (s.status = 'ACTIVE' and s.state = 'WAITING' and s.wait_class != 'Idle' and s.sid != g_mysid)
+          then
              --output('extract_ash: i='||i||' sid='||s.sid||' hv='||s.sql_hash_value||' sqlid='||s.sql_id);
              -- if not actually waiting for anything, clear the past wait event details
-             if s.state != 'WAITING' then 
+             if s.state != 'WAITING' then
                  s.state:='ON CPU';
                  s.event:='ON CPU';
                  s.wait_class:='ON CPU'; --TODO: What do we need to do for 9i here?
@@ -1258,7 +1253,7 @@ declare
                           ||sitem(s.program)                   --  6  -- 48 bytes
                           ||sitem(s.event)                     --  7  -- 64 bytes
                           ||sitem(s.wait_class)                --  8  -- 64 bytes, 10g+
-                          ||sitem(s.state)                     --  9 
+                          ||sitem(s.state)                     --  9
                           ||sitem(s.p1)                        -- 10
                           ||sitem(s.p2)                        -- 11
                           ||sitem(s.p3)                        -- 12
@@ -1285,14 +1280,14 @@ declare
                           ||sitem(s.action)                    -- 28  -- 32 bytes
                           ||sitem(s.client_identifier)         -- 29  -- 64 bytes
                           ||sitem(s.service_name)              -- 30  -- 64 bytes, 10g+
-     &_IF_ORA12_OR_HIGHER ||sitem(s.con_id)                    -- 31  -- 12c+ 
-    &_IF_LOWER_THAN_ORA12 ||sitem('N/A')                       -- 31  
+     &_IF_ORA12_OR_HIGHER ||sitem(s.con_id)                    -- 31  -- 12c+
+    &_IF_LOWER_THAN_ORA12 ||sitem('N/A')                       -- 31
                     , 1, 1000);
-             
+
           end if; -- sample is of an active session
-          
+
           ash_i := g_sessions.next(ash_i);
-       
+
        end loop;
 
    exception
@@ -1325,7 +1320,7 @@ declare
                                          and s.inst_id = ss.inst_id
                                          and s.sid = ss.sid
                                          and  (lv_gather like '%s%' or lv_gather like '%a%')
-                                         and ss.statistic# in (select /*+ no_unnest */ statistic# from v$statname
+                                         and ss.statistic# in (select statistic# from v$statname
                                                             where lower(name) like '%'||lv_include_stat||'%'
                                                             or regexp_like (name, lv_include_stat, 'i')
                                                            )
@@ -1334,7 +1329,7 @@ declare
                                          select
                                                 'WAIT', s.inst_id, s.sid,
                                                 en.event# + (select count(*) from v$statname) + 1 - pls_adjust,
-                                                nvl(se.time_waited_micro,0) + ( decode(se.event||s.state, s.event||'WAITING', 
+                                                nvl(se.time_waited_micro,0) + ( decode(se.event||s.state, s.event||'WAITING',
                                                                                     CASE WHEN s.seconds_in_wait > 1300000000 THEN 0 ELSE s.seconds_in_wait END -- bug in v$session
                                                                               , 0) * 1000000 ) value, total_waits event_count
                                          from gv$session s, gv$session_event se, v$event_name en
@@ -1386,7 +1381,7 @@ declare
  &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11       s.why0+s.why1+s.why2 value, null event_count
  &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11 from x$kcbsw s, x$kcbwh w
  &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11 where
- &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11       s.indx = w.indx 
+ &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11       s.indx = w.indx
  &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11 and   s.why0+s.why1+s.why2 > 0
  &_IF_X_ACCESSIBLE &_IF_LOWER_THAN_ORA11 and   (lv_gather like '%b%' or lv_gather like '%a%')
                                          --
@@ -1428,7 +1423,7 @@ declare
         ) snapper_stats
         order by inst_id, sid, stype, statistic#;
 
-        if p_stats.COUNT > 0 then        
+        if p_stats.COUNT > 0 then
             -- l_stats is an associative array for stats lookup, used for the useful averages calculation
             -- p_stats_string is a dbms_debug_vc2coll collection datatype for "persisting" stats values across snapper DB calls (for "before" and "after" snaps)
             p_stats_string := sys.dbms_debug_vc2coll();
@@ -1558,11 +1553,11 @@ declare
         l_ash_grouping                number := 0;
         l_output_line                 varchar2(4000);
         l_ash_header_line             varchar2(4000);
-  
+
     begin
 
       -- bail out if no ASH samples recorded
-      if g_ash.count = 0 then 
+      if g_ash.count = 0 then
           output('    <No active sessions captured during the sampling period>');
           return;
       end if;
@@ -1585,16 +1580,16 @@ declare
                  , '+'                        AS DELIMITER
                  FROM DUAL
           )
-          CONNECT BY 
+          CONNECT BY
               INSTR(TOKEN, DELIMITER, 1, LEVEL)>0
-          ORDER BY 
+          ORDER BY
               LEVEL ASC
       ) loop
           -- supported ASH column names
           case s.token
               -- actual column names in gv$session
               when 'inst_id'                      then l_ash_grouping := l_ash_grouping + c_inst_id                  ; l_ash_header_line := l_ash_header_line || ' | ' || lpad('INST_ID'                   , w_inst_id                  , ' ');
-              when 'con_id'                       then l_ash_grouping := l_ash_grouping + c_con_id                   ; l_ash_header_line := l_ash_header_line || ' | ' || lpad('CON_ID'                     , w_con_id                  , ' ');
+              when 'con_id'                       then l_ash_grouping := l_ash_grouping + c_con_id                   ; l_ash_header_line := l_ash_header_line || ' | ' || lpad('CON_ID'                    , w_con_id                   , ' ');
               when 'sid'                          then l_ash_grouping := l_ash_grouping + c_sid                      ; l_ash_header_line := l_ash_header_line || ' | ' || lpad('SID'                       , w_sid                      , ' ');
               when 'username'                     then l_ash_grouping := l_ash_grouping + c_username                 ; l_ash_header_line := l_ash_header_line || ' | ' || rpad('USERNAME'                  , w_username                 , ' ');
               when 'machine'                      then l_ash_grouping := l_ash_grouping + c_machine                  ; l_ash_header_line := l_ash_header_line || ' | ' || rpad('MACHINE'                   , w_machine                  , ' ');
@@ -1664,7 +1659,7 @@ declare
              select column_value rec from table(cast(g_ash as sys.dbms_debug_vc2coll))
           ),
           ash_records as (
-             select 
+             select
                  substr(r.rec, instr(r.rec, '<', 1,  1)+1, instr (substr(r.rec, instr(r.rec, '<', 1,  1)+1), '>')-1) inst_id
                , substr(r.rec, instr(r.rec, '<', 1,  2)+1, instr (substr(r.rec, instr(r.rec, '<', 1,  2)+1), '>')-1) sid
                , substr(r.rec, instr(r.rec, '<', 1,  3)+1, instr (substr(r.rec, instr(r.rec, '<', 1,  3)+1), '>')-1) username
@@ -1694,79 +1689,79 @@ declare
                , substr(r.rec, instr(r.rec, '<', 1, 27)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 27)+1), '>')-1) module
                , substr(r.rec, instr(r.rec, '<', 1, 28)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 28)+1), '>')-1) action
                , substr(r.rec, instr(r.rec, '<', 1, 29)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 29)+1), '>')-1) client_identifier
-               , substr(r.rec, instr(r.rec, '<', 1, 30)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 30)+1), '>')-1) service_name              
-               , substr(r.rec, instr(r.rec, '<', 1, 31)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 31)+1), '>')-1) con_id              
-             from 
+               , substr(r.rec, instr(r.rec, '<', 1, 30)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 30)+1), '>')-1) service_name
+               , substr(r.rec, instr(r.rec, '<', 1, 31)+1, instr (substr(r.rec, instr(r.rec, '<', 1, 31)+1), '>')-1) con_id
+             from
                 raw_records r
           )
           select * from (
             select
                  decode(bitand(l_ash_grouping, power(2, s_inst_id                       )), 0, chr(0), inst_id                       ) as inst_id
-               , decode(bitand(l_ash_grouping, power(2, s_sid                           )), 0, chr(0), sid                           ) as sid                           
-               , decode(bitand(l_ash_grouping, power(2, s_username                      )), 0, chr(0), username                      ) as username                      
-               , decode(bitand(l_ash_grouping, power(2, s_machine                       )), 0, chr(0), machine                       ) as machine                       
-               , decode(bitand(l_ash_grouping, power(2, s_terminal                      )), 0, chr(0), terminal                      ) as terminal                      
-               , decode(bitand(l_ash_grouping, power(2, s_program                       )), 0, chr(0), program                       ) as program                       
-               , decode(bitand(l_ash_grouping, power(2, s_event                         )), 0, chr(0), event                         ) as event                         
-               , decode(bitand(l_ash_grouping, power(2, s_wait_class                    )), 0, chr(0), wait_class                    ) as wait_class                    
-               , decode(bitand(l_ash_grouping, power(2, s_state                         )), 0, chr(0), state                         ) as state                         
-               , decode(bitand(l_ash_grouping, power(2, s_p1                            )), 0, chr(0), p1                            ) as p1                            
-               , decode(bitand(l_ash_grouping, power(2, s_p2                            )), 0, chr(0), p2                            ) as p2                            
-               , decode(bitand(l_ash_grouping, power(2, s_p3                            )), 0, chr(0), p3                            ) as p3                            
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_obj#                 )), 0, chr(0), row_wait_obj#                 ) as row_wait_obj#                 
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_file#                )), 0, chr(0), row_wait_file#                ) as row_wait_file#                
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_block#               )), 0, chr(0), row_wait_block#               ) as row_wait_block#               
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_row#                 )), 0, chr(0), row_wait_row#                 ) as row_wait_row#                 
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_session_status       )), 0, chr(0), blocking_session_status       ) as blocking_session_status       
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_instance             )), 0, chr(0), blocking_instance             ) as blocking_instance             
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_session              )), 0, chr(0), blocking_session              ) as blocking_session              
-               , decode(bitand(l_ash_grouping, power(2, s_sql_hash_value                )), 0, chr(0), sql_hash_value                ) as sql_hash_value                
-               , decode(bitand(l_ash_grouping, power(2, s_sql_id                        )), 0, chr(0), sql_id                        ) as sql_id                        
-               , decode(bitand(l_ash_grouping, power(2, s_sql_child_number              )), 0, chr(0), sql_child_number              ) as sql_child_number              
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_object_id         )), 0, chr(0), plsql_entry_object_id         ) as plsql_entry_object_id         
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_subprogram_id     )), 0, chr(0), plsql_entry_subprogram_id     ) as plsql_entry_subprogram_id     
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_object_id               )), 0, chr(0), plsql_object_id               ) as plsql_object_id               
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_subprogram_id           )), 0, chr(0), plsql_subprogram_id           ) as plsql_subprogram_id           
-               , decode(bitand(l_ash_grouping, power(2, s_module                        )), 0, chr(0), module                        ) as module                        
-               , decode(bitand(l_ash_grouping, power(2, s_action                        )), 0, chr(0), action                        ) as action                        
-               , decode(bitand(l_ash_grouping, power(2, s_client_identifier             )), 0, chr(0), client_identifier             ) as client_identifier             
-               , decode(bitand(l_ash_grouping, power(2, s_service_name                  )), 0, chr(0), service_name                  ) as service_name                  
-               , decode(bitand(l_ash_grouping, power(2, s_con_id                        )), 0, chr(0), con_id                        ) as con_id                  
+               , decode(bitand(l_ash_grouping, power(2, s_sid                           )), 0, chr(0), sid                           ) as sid
+               , decode(bitand(l_ash_grouping, power(2, s_username                      )), 0, chr(0), username                      ) as username
+               , decode(bitand(l_ash_grouping, power(2, s_machine                       )), 0, chr(0), machine                       ) as machine
+               , decode(bitand(l_ash_grouping, power(2, s_terminal                      )), 0, chr(0), terminal                      ) as terminal
+               , decode(bitand(l_ash_grouping, power(2, s_program                       )), 0, chr(0), program                       ) as program
+               , decode(bitand(l_ash_grouping, power(2, s_event                         )), 0, chr(0), event                         ) as event
+               , decode(bitand(l_ash_grouping, power(2, s_wait_class                    )), 0, chr(0), wait_class                    ) as wait_class
+               , decode(bitand(l_ash_grouping, power(2, s_state                         )), 0, chr(0), state                         ) as state
+               , decode(bitand(l_ash_grouping, power(2, s_p1                            )), 0, chr(0), p1                            ) as p1
+               , decode(bitand(l_ash_grouping, power(2, s_p2                            )), 0, chr(0), p2                            ) as p2
+               , decode(bitand(l_ash_grouping, power(2, s_p3                            )), 0, chr(0), p3                            ) as p3
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_obj#                 )), 0, chr(0), row_wait_obj#                 ) as row_wait_obj#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_file#                )), 0, chr(0), row_wait_file#                ) as row_wait_file#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_block#               )), 0, chr(0), row_wait_block#               ) as row_wait_block#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_row#                 )), 0, chr(0), row_wait_row#                 ) as row_wait_row#
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_session_status       )), 0, chr(0), blocking_session_status       ) as blocking_session_status
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_instance             )), 0, chr(0), blocking_instance             ) as blocking_instance
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_session              )), 0, chr(0), blocking_session              ) as blocking_session
+               , decode(bitand(l_ash_grouping, power(2, s_sql_hash_value                )), 0, chr(0), sql_hash_value                ) as sql_hash_value
+               , decode(bitand(l_ash_grouping, power(2, s_sql_id                        )), 0, chr(0), sql_id                        ) as sql_id
+               , decode(bitand(l_ash_grouping, power(2, s_sql_child_number              )), 0, chr(0), sql_child_number              ) as sql_child_number
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_object_id         )), 0, chr(0), plsql_entry_object_id         ) as plsql_entry_object_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_subprogram_id     )), 0, chr(0), plsql_entry_subprogram_id     ) as plsql_entry_subprogram_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_object_id               )), 0, chr(0), plsql_object_id               ) as plsql_object_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_subprogram_id           )), 0, chr(0), plsql_subprogram_id           ) as plsql_subprogram_id
+               , decode(bitand(l_ash_grouping, power(2, s_module                        )), 0, chr(0), module                        ) as module
+               , decode(bitand(l_ash_grouping, power(2, s_action                        )), 0, chr(0), action                        ) as action
+               , decode(bitand(l_ash_grouping, power(2, s_client_identifier             )), 0, chr(0), client_identifier             ) as client_identifier
+               , decode(bitand(l_ash_grouping, power(2, s_service_name                  )), 0, chr(0), service_name                  ) as service_name
+               , decode(bitand(l_ash_grouping, power(2, s_con_id                        )), 0, chr(0), con_id                        ) as con_id
                , count(*)/g_ash_samples_taken average_active_samples
             from
                ash_records a
             group by
-                 decode(bitand(l_ash_grouping, power(2, s_inst_id                       )), 0, chr(0), inst_id                       ) -- inst_id                       
-               , decode(bitand(l_ash_grouping, power(2, s_sid                           )), 0, chr(0), sid                           ) -- sid                           
-               , decode(bitand(l_ash_grouping, power(2, s_username                      )), 0, chr(0), username                      ) -- username                      
-               , decode(bitand(l_ash_grouping, power(2, s_machine                       )), 0, chr(0), machine                       ) -- machine                       
-               , decode(bitand(l_ash_grouping, power(2, s_terminal                      )), 0, chr(0), terminal                      ) -- terminal                      
-               , decode(bitand(l_ash_grouping, power(2, s_program                       )), 0, chr(0), program                       ) -- program                       
-               , decode(bitand(l_ash_grouping, power(2, s_event                         )), 0, chr(0), event                         ) -- event                         
-               , decode(bitand(l_ash_grouping, power(2, s_wait_class                    )), 0, chr(0), wait_class                    ) -- wait_class                    
-               , decode(bitand(l_ash_grouping, power(2, s_state                         )), 0, chr(0), state                         ) -- state                         
-               , decode(bitand(l_ash_grouping, power(2, s_p1                            )), 0, chr(0), p1                            ) -- p1                            
-               , decode(bitand(l_ash_grouping, power(2, s_p2                            )), 0, chr(0), p2                            ) -- p2                            
-               , decode(bitand(l_ash_grouping, power(2, s_p3                            )), 0, chr(0), p3                            ) -- p3                            
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_obj#                 )), 0, chr(0), row_wait_obj#                 ) -- row_wait_obj#                 
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_file#                )), 0, chr(0), row_wait_file#                ) -- row_wait_file#                
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_block#               )), 0, chr(0), row_wait_block#               ) -- row_wait_block#               
-               , decode(bitand(l_ash_grouping, power(2, s_row_wait_row#                 )), 0, chr(0), row_wait_row#                 ) -- row_wait_row#                 
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_session_status       )), 0, chr(0), blocking_session_status       ) -- blocking_session_status       
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_instance             )), 0, chr(0), blocking_instance             ) -- blocking_instance             
-               , decode(bitand(l_ash_grouping, power(2, s_blocking_session              )), 0, chr(0), blocking_session              ) -- blocking_session              
-               , decode(bitand(l_ash_grouping, power(2, s_sql_hash_value                )), 0, chr(0), sql_hash_value                ) -- sql_hash_value                
-               , decode(bitand(l_ash_grouping, power(2, s_sql_id                        )), 0, chr(0), sql_id                        ) -- sql_id                        
-               , decode(bitand(l_ash_grouping, power(2, s_sql_child_number              )), 0, chr(0), sql_child_number              ) -- sql_child_number              
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_object_id         )), 0, chr(0), plsql_entry_object_id         ) -- plsql_entry_object_id         
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_subprogram_id     )), 0, chr(0), plsql_entry_subprogram_id     ) -- plsql_entry_subprogram_id     
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_object_id               )), 0, chr(0), plsql_object_id               ) -- plsql_object_id               
-               , decode(bitand(l_ash_grouping, power(2, s_plsql_subprogram_id           )), 0, chr(0), plsql_subprogram_id           ) -- plsql_subprogram_id           
-               , decode(bitand(l_ash_grouping, power(2, s_module                        )), 0, chr(0), module                        ) -- module                        
-               , decode(bitand(l_ash_grouping, power(2, s_action                        )), 0, chr(0), action                        ) -- action                        
-               , decode(bitand(l_ash_grouping, power(2, s_client_identifier             )), 0, chr(0), client_identifier             ) -- client_identifier             
-               , decode(bitand(l_ash_grouping, power(2, s_service_name                  )), 0, chr(0), service_name                  ) -- service_name                  
-               , decode(bitand(l_ash_grouping, power(2, s_con_id                        )), 0, chr(0), con_id                        ) -- con_id                  
+                 decode(bitand(l_ash_grouping, power(2, s_inst_id                       )), 0, chr(0), inst_id                       ) -- inst_id
+               , decode(bitand(l_ash_grouping, power(2, s_sid                           )), 0, chr(0), sid                           ) -- sid
+               , decode(bitand(l_ash_grouping, power(2, s_username                      )), 0, chr(0), username                      ) -- username
+               , decode(bitand(l_ash_grouping, power(2, s_machine                       )), 0, chr(0), machine                       ) -- machine
+               , decode(bitand(l_ash_grouping, power(2, s_terminal                      )), 0, chr(0), terminal                      ) -- terminal
+               , decode(bitand(l_ash_grouping, power(2, s_program                       )), 0, chr(0), program                       ) -- program
+               , decode(bitand(l_ash_grouping, power(2, s_event                         )), 0, chr(0), event                         ) -- event
+               , decode(bitand(l_ash_grouping, power(2, s_wait_class                    )), 0, chr(0), wait_class                    ) -- wait_class
+               , decode(bitand(l_ash_grouping, power(2, s_state                         )), 0, chr(0), state                         ) -- state
+               , decode(bitand(l_ash_grouping, power(2, s_p1                            )), 0, chr(0), p1                            ) -- p1
+               , decode(bitand(l_ash_grouping, power(2, s_p2                            )), 0, chr(0), p2                            ) -- p2
+               , decode(bitand(l_ash_grouping, power(2, s_p3                            )), 0, chr(0), p3                            ) -- p3
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_obj#                 )), 0, chr(0), row_wait_obj#                 ) -- row_wait_obj#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_file#                )), 0, chr(0), row_wait_file#                ) -- row_wait_file#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_block#               )), 0, chr(0), row_wait_block#               ) -- row_wait_block#
+               , decode(bitand(l_ash_grouping, power(2, s_row_wait_row#                 )), 0, chr(0), row_wait_row#                 ) -- row_wait_row#
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_session_status       )), 0, chr(0), blocking_session_status       ) -- blocking_session_status
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_instance             )), 0, chr(0), blocking_instance             ) -- blocking_instance
+               , decode(bitand(l_ash_grouping, power(2, s_blocking_session              )), 0, chr(0), blocking_session              ) -- blocking_session
+               , decode(bitand(l_ash_grouping, power(2, s_sql_hash_value                )), 0, chr(0), sql_hash_value                ) -- sql_hash_value
+               , decode(bitand(l_ash_grouping, power(2, s_sql_id                        )), 0, chr(0), sql_id                        ) -- sql_id
+               , decode(bitand(l_ash_grouping, power(2, s_sql_child_number              )), 0, chr(0), sql_child_number              ) -- sql_child_number
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_object_id         )), 0, chr(0), plsql_entry_object_id         ) -- plsql_entry_object_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_entry_subprogram_id     )), 0, chr(0), plsql_entry_subprogram_id     ) -- plsql_entry_subprogram_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_object_id               )), 0, chr(0), plsql_object_id               ) -- plsql_object_id
+               , decode(bitand(l_ash_grouping, power(2, s_plsql_subprogram_id           )), 0, chr(0), plsql_subprogram_id           ) -- plsql_subprogram_id
+               , decode(bitand(l_ash_grouping, power(2, s_module                        )), 0, chr(0), module                        ) -- module
+               , decode(bitand(l_ash_grouping, power(2, s_action                        )), 0, chr(0), action                        ) -- action
+               , decode(bitand(l_ash_grouping, power(2, s_client_identifier             )), 0, chr(0), client_identifier             ) -- client_identifier
+               , decode(bitand(l_ash_grouping, power(2, s_service_name                  )), 0, chr(0), service_name                  ) -- service_name
+               , decode(bitand(l_ash_grouping, power(2, s_con_id                        )), 0, chr(0), con_id                        ) -- con_id
            order by
               count(*)/g_ash_samples_taken desc
           )
@@ -1825,9 +1820,9 @@ declare
                      , '+'                        AS DELIMITER
                      FROM DUAL
               )
-              CONNECT BY 
-                  INSTR(TOKEN, DELIMITER, 1, LEVEL)>0 
-              ORDER BY 
+              CONNECT BY
+                  INSTR(TOKEN, DELIMITER, 1, LEVEL)>0
+              ORDER BY
                   LEVEL ASC
           ) loop
               l_output_line := l_output_line || ' | ' ||
@@ -1864,7 +1859,7 @@ declare
                       when 'action'                       then rpad(o_action                    , w_action                   , ' ')
                       when 'client_identifier'            then rpad(o_client_identifier         , w_client_identifier        , ' ')
                       when 'service_name'                 then rpad(o_service_name              , w_service_name             , ' ')
-                      -- aliases for convenience (only either real name or alias should be used together at the same time) 
+                      -- aliases for convenience (only either real name or alias should be used together at the same time)
                       when 'user'                         then rpad(o_username                  , w_username                 , ' ')
                       when 'obj'                          then rpad(o_row_wait_obj#             , w_row_wait_obj#            , ' ')
                       when 'file'                         then rpad(o_row_wait_file#            , w_row_wait_file#           , ' ')
@@ -1920,9 +1915,9 @@ begin
         --output('setting stats to all due to option = all');
         gather_stats := 1;
         gather_ash   := 1;
-    else 
+    else
         if (lv_ash is null and lv_stats is null) then
-            gather_stats := 0;  
+            gather_stats := 0;
             gather_ash   := 1;
         end if;
     end if;
@@ -1938,12 +1933,12 @@ begin
 
     g_snap_begin := lower(getopt('&snapper_options', 'begin' ));
     g_snap_end   := lower(getopt('&snapper_options', 'end' ));
-    --output('g_snap_begin = '||g_snap_begin);    
-    --output('g_snap_end = '||g_snap_end);    
- 
+    --output('g_snap_begin = '||g_snap_begin);
+    --output('g_snap_end = '||g_snap_end);
+
     if pagesize > 0 then
         output(' ');
-        output('-- Session Snapper v4.24 - by Tanel Poder ( http://blog.tanelpoder.com/snapper ) - Enjoy the Most Advanced Oracle Troubleshooting Script on the Planet! :)');
+        output('-- Session Snapper v4.29 - by Tanel Poder ( http://blog.tanelpoder.com/snapper ) - Enjoy the Most Advanced Oracle Troubleshooting Script on the Planet! :)');
         output(' ');
     end if;
 
@@ -2094,9 +2089,9 @@ begin
 
 
 
-        -- ASH style sampling 
-&_USE_DBMS_LOCK ash_date1 := sysdate; 
-&_USE_DBMS_LOCK if gather_ash = 1 then 
+        -- ASH style sampling
+&_USE_DBMS_LOCK ash_date1 := sysdate;
+&_USE_DBMS_LOCK if gather_ash = 1 then
 &_USE_DBMS_LOCK     while sysdate < (ash_date1 + (&snapper_sleep/86400)) loop
 &_USE_DBMS_LOCK         -- get active session records from g_sessions
 &_USE_DBMS_LOCK         get_sessions;
@@ -2107,10 +2102,10 @@ begin
 &_USE_DBMS_LOCK         dbms_lock.sleep( greatest(0.1,(least(1,&snapper_sleep*&snapper_count/100))) );
 &_USE_DBMS_LOCK     end loop;
 &_USE_DBMS_LOCK else
-&_USE_DBMS_LOCK     dbms_lock.sleep( ((ash_date1+(&snapper_sleep/86400)) - sysdate)*86400 ); 
+&_USE_DBMS_LOCK     dbms_lock.sleep( ((ash_date1+(&snapper_sleep/86400)) - sysdate)*86400 );
 &_USE_DBMS_LOCK     null;
 &_USE_DBMS_LOCK end if;
-&_USE_DBMS_LOCK ash_date2 := sysdate; 
+&_USE_DBMS_LOCK ash_date2 := sysdate;
 
         -- sesstat new sample and delta calculation
         if gather_stats = 1 then
@@ -2119,21 +2114,21 @@ begin
             snap(d2,s2,l2,g_snap2);
 
             -- manually coded nested loop outer join for calculating deltas:
-            -- why not use a SQL join? this would require creation of PL/SQL 
-            -- collection object types, but Snapper does not require any changes 
-            -- to the database, so any custom object types are out! 
+            -- why not use a SQL join? this would require creation of PL/SQL
+            -- collection object types, but Snapper does not require any changes
+            -- to the database, so any custom object types are out!
             changed_values := 0;
             missing_values_s1 := 0;
             missing_values_s2 := 0;
 
-            -- remember last disappeared SID so we wouldn't need to output a warning 
-            -- message for each statistic row of that disappeared sid 
+            -- remember last disappeared SID so we wouldn't need to output a warning
+            -- message for each statistic row of that disappeared sid
             disappeared_sid := 0;
 
             i :=1; -- iteration counter (for debugging)
             a :=1; -- s1 array index
             b :=1; -- s2 array index
-            
+
             if s2.count > 0 then lv_curr_sid := s2(b).sid; end if;
 
             while ( a <= s1.count and b <= s2.count ) loop
@@ -2202,7 +2197,7 @@ begin
                         if disappeared_sid != s1(a).sid then
                             output('WARN, Session has disappeared since previous snapshot, ignoring SID='||to_char(s1(a).sid)||' debug(a='||to_char(a)||' b='||to_char(b)||' s1.count='||s1.count||' s2.count='||s2.count||' s2.count='||s2.count||')');
                         end if;
-                        disappeared_sid := s1(a).sid;                    
+                        disappeared_sid := s1(a).sid;
                         a := a + 1;
 
                     else
@@ -2220,9 +2215,9 @@ begin
 
             end loop; -- while ( a <= s1.count and b <= s2.count )
 
-            if pagesize > 0 and changed_values > 0 then 
+            if pagesize > 0 and changed_values > 0 then
                 output(' ');
-                output('--  End of Stats snap '||to_char(c)||', end='||to_char(d2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||round(get_seconds(d2-d1), 1)); 
+                output('--  End of Stats snap '||to_char(c)||', end='||to_char(d2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||round(get_seconds(d2-d1), 1));
             end if;
 
             output(' ');
@@ -2253,12 +2248,12 @@ begin
             if g_ash_columns6 is not null then out_ash( g_ash_columns6, 10 ); end if;
 
 
-            if pagesize > 0 then 
-                output(' '); 
-                output('--  End of ASH snap '||to_char(c)||', end='||to_char(ash_date2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||to_char(round((ash_date2-ash_date1) * 86400, 1))||', samples_taken='||g_ash_samples_taken||', AAS='||CASE WHEN g_ash_samples_taken = 0 THEN '(No ASH sampling in begin/end snapshot mode)' ELSE TO_CHAR(ROUND(g_ash.COUNT/NULLIF(g_ash_samples_taken,0),1)) END ); 
-                --output('--  End of ASH snap '||to_char(c)||', end='||to_char(ash_date2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||to_char(round((ash_date2-ash_date1) * 86400, 1))||', samples_taken='||g_ash_samples_taken||', AAS='||TO_CHAR(ROUND(g_ash.COUNT/g_ash_samples_taken,1))||', Active%='||TO_CHAR(ROUND(g_ash.COUNT/g_ash_samples_taken*100,1))||'%' ); 
+            if pagesize > 0 then
+                output(' ');
+                output('--  End of ASH snap '||to_char(c)||', end='||to_char(ash_date2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||to_char(round((ash_date2-ash_date1) * 86400, 1))||', samples_taken='||g_ash_samples_taken||', AAS='||CASE WHEN g_ash_samples_taken = 0 THEN '(No ASH sampling in begin/end snapshot mode)' ELSE TO_CHAR(ROUND(g_ash.COUNT/NULLIF(g_ash_samples_taken,0),1)) END );
+                --output('--  End of ASH snap '||to_char(c)||', end='||to_char(ash_date2, 'YYYY-MM-DD HH24:MI:SS')||', seconds='||to_char(round((ash_date2-ash_date1) * 86400, 1))||', samples_taken='||g_ash_samples_taken||', AAS='||TO_CHAR(ROUND(g_ash.COUNT/g_ash_samples_taken,1))||', Active%='||TO_CHAR(ROUND(g_ash.COUNT/g_ash_samples_taken*100,1))||'%' );
 
-                output(' '); 
+                output(' ');
             end if;
 
             reset_ash();
@@ -2268,7 +2263,7 @@ begin
     end loop; -- for c in 1..snapper_count
 
     exception when others then
-        raise_application_error(-20000, 'Snapper: Probably bad syntax or no execute rights on SYS.DBMS_LOCK'||chr(10)||'Check http://blog.tanelpoder.com/snapper for instructions'||chr(10)||sqlerrm);
+        raise_application_error(-20000, 'Snapper: Probably bad syntax or no execute rights on SYS.DBMS_LOCK'||chr(10)||'Check http://blog.tanelpoder.com/snapper for instructions'||chr(10)||sqlerrm||chr(10)||'Stack Trace:'||chr(10)||dbms_utility.format_error_backtrace);
 
 end;
 /
@@ -2294,16 +2289,15 @@ col snapper_ora12lower     clear
 col snapper_ora11higher    clear
 col snapper_ora11lower     clear
 col dbms_system_accessible clear
-col x_accessible           clear 
-col no_plsql_obj_id        clear 
-col yes_plsql_obj_id       clear 
-col no_blk_inst            clear 
-col yes_blk_inst           clear 
-col manual_snapshot        clear 
-col use_dbms_lock          clear 
-col snapper_sid            clear 
-col sid_filter             clear 
-col inst_filter            clear 
+col x_accessible           clear
+col no_plsql_obj_id        clear
+col yes_plsql_obj_id       clear
+col no_blk_inst            clear
+col yes_blk_inst           clear
+col manual_snapshot        clear
+col use_dbms_lock          clear
+col snapper_sid            clear
+col sid_filter             clear
+col inst_filter            clear
 
 set serveroutput off
-

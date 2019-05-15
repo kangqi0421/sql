@@ -54,7 +54,10 @@ SELECT (
 
 
 /*
+
 --detecting who’s causing excessive redo generation
+@snapper out,gather=s,sinclude=%redo_size% 10 1 all
+
 @snapper "all,gather=s,sinclude=redo size" 10 1 all
 
 -- LGWR
