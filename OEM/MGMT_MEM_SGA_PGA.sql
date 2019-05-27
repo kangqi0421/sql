@@ -46,7 +46,7 @@ SELECT
    round(value/1048576/1024) "GB",
 --   ROUND(sum(value/1048576/1024) over ()) "SUM GB"
    ROUND(sum(value/1048576/1024) over (PARTITION BY host_name)) "SUM GB"
- FROM MGMT$DB_INIT_PARAMS
+ FROM SYSMAN.MGMT$DB_INIT_PARAMS
  where
     name in ('memory_target','sga_target','pga_aggregate_target')
 --    AND target_name in( 'RMDTESTB','RMDTESTC','RMDTESTD')
@@ -61,7 +61,7 @@ order by host_name, target_name, name;
 
 -- MGMT$DB_SGA
 select host_name, target_name, collection_timestamp, sganame, sgasize
-  from   MGMT$DB_SGA
+  from   SYSMAN.MGMT$DB_SGA
  where  target_name like 'MDWZA%';
 
 -- SGA per db on server
@@ -83,7 +83,7 @@ SELECT
    m.target_name,
    round(m.maximum) PGA
 FROM
-  MGMT$METRIC_DAILY m join mgmt$target t on (M.target_GUID = t.TARGET_GUID)
+  SYSMAN.MGMT$METRIC_DAILY m join SYSMAN.mgmt$target t on (M.target_GUID = t.TARGET_GUID)
 WHERE  1 = 1
   AND T.HOST_NAME like '&server%'
 --  and m.target_name like 'CTLP'
