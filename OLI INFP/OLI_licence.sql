@@ -53,32 +53,32 @@ https://linux.vs.csin.cz/server_list/?t=aixmspp
 --
 select lic_env_id, hostname, domain
   from servers
-  where hostname like 'p%r02db%';
+  where hostname like 'p%r06db%';
 
-define LIC_ENV_ID = 6994
-define PP = 4
+define LIC_ENV_ID = 7296
+define PP = 12
 
 -- Enterprise Edition
-Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('38','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Diagnostics Pack
-Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('36','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Partitioning
-Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('46','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Tuning Pack
-Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values ('51','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Real Application Clusters
---Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('48','133','3','&PP','Y','N',&LIC_ENV_ID);
+--insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('48','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Advanced Compression
--- Insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('3','133','3','&PP','Y','N',&LIC_ENV_ID);
+-- insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('3','133','3','&PP','Y','N',&LIC_ENV_ID);
 
 commit;
 
@@ -118,7 +118,7 @@ fetch first 5 rows only
 select a.*
   from OLI_OWNER.LICENSE_ALLOCATIONS a
   join OLI_OWNER.LICENSED_ENVIRONMENTS e on (a.lic_env_id = e.lic_env_id)
-  where lic_env_name like 'pordb06%';
+  where lic_env_name like 'ppr06db01%';
 ;
 
 update OLI_OWNER.LICENSE_ALLOCATIONS
