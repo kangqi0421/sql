@@ -1,3 +1,12 @@
+--
+-- CMDB
+--
+
+
+cadb.csin.cz,1441
+
+use RecoHUB
+
 Description=CA Servicedesk database
 Trace=No
 Server=cadb.csin.cz,1441
