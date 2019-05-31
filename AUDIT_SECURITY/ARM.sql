@@ -1,13 +1,13 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RMDZ
+DEFINE db=RTOP
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
   WHERE 1=1
---    AND ARM_DB_NAME LIKE '%&db%'
+    AND ARM_DB_NAME LIKE '%&db%'
 --    AND ARM_FULLID LIKE 'DWHTA%'
-     AND arm_db_name = 'BOSTA'
+--     AND arm_db_name = 'BOSTA'
 --    and transfer_enabled = 'N'
 order by ARM_DB_NAME;
 
@@ -29,7 +29,7 @@ select *
    WHERE 1=1
      AND arm_db_name LIKE '%&db%'
 --      AND arm_db_name LIKE 'RTOP'
-     AND start_date > sysdate - interval '14' hour
+     AND start_date > sysdate - interval '1' day
 --     AND status <> 'OK'
 ORDER BY start_date DESC
 ;

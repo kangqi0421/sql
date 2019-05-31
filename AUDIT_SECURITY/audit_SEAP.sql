@@ -1,5 +1,5 @@
 
-define db=CPSP
+define db=RTOP
 define user = SYDESK 
 
 --// neuspesne prihlaseni za posledni 2 dny //--
@@ -50,46 +50,47 @@ FETCH FIRST 5 ROWS ONLY
 
 
 -- object schema, name
-select
-     arm_timestamp, arm_action_name, dbusername, return_code, object_schema, object_name, sql_text_varchar2, unified_audit_policies
-  from ARM12.ARM_UNIAUD12
- where 1 = 1
-  AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
-  AND event_timestamp > SYSTIMESTAMP - INTERVAL '1' DAY
-  AND return_code > 0
+SELECT *
+       -- arm_timestamp,       arm_action_name,       dbusername,       return_code,       object_schema,       object_name,       sql_text_varchar2,       unified_audit_policies
+FROM arm12.arm_uniaud12
+WHERE 1 = 1
+      AND arm_fullid =(SELECT arm_fullid  FROM arm_admin.arm_databases 
+        WHERE arm_db_name = '&db' and TRANSFER_ENABLED = 'Y')
+      AND event_timestamp > systimestamp - INTERVAL '1' DAY
+--      AND return_code > 0
 -- AND UNIFIED_AUDIT_POLICIES is NOT null
---   AND UNIFIED_AUDIT_POLICIES = 'CS_ACTIONS_FREQUENT_SYS'
+--   AND UNIFIED_AUDIT_POLICIES = 'CS_PRIVILEGES_GENERAL'
 -- AND object_schema not in ('SYS', 'SYSTEM')
 --group by dbusername ORDER by 2 desc
 --group by return_code ORDER by 2 desc
 --group by action_name, return_code order by 3 desc
 --group by substr(sql_text, 1, 32767)
-order by return_code
+ORDER BY arm_timestamp desc
 -- order by 4 desc
 --FETCH FIRST 5 ROWS ONLY
 --order by event_timestamp desc
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;
 
+
 -- group by HOUR
 select
     trunc(event_timestamp, 'HH24'), count(*)
   from ARM12.ARM_UNIAUD12
- where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='&db')
+ where ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME = '&db')
   AND event_timestamp > SYSTIMESTAMP - INTERVAL '7' DAY
  group by trunc(event_timestamp,'HH24')
 order by   trunc(event_timestamp,'HH24')
 ;
 
--- ARM action name
-select ARM_ACTION_NAME, unified_audit_policies,
-    count(*)
+-- ARM action name unified_audit_policies
+select ARM_ACTION_NAME, unified_audit_policies, return_code, count(*)
 from ARM12.ARM_UNIAUD12
 where 1 = 1
---   AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME='DWHP' and transfer_enabled = 'Y')
-   and ARM_TIMESTAMP > sysdate - interval '4' hour
+   AND ARM_FULLID = (select ARM_FULLID from ARM_ADMIN.ARM_DATABASES where ARM_DB_NAME = '&db' and transfer_enabled = 'Y')
+   and ARM_TIMESTAMP > sysdate - interval '1' day
 --   and return_code = 0
-group by ARM_ACTION_NAME, unified_audit_policies
+group by ARM_ACTION_NAME, unified_audit_policies, return_code
 order by count(*) DESC;
 
 

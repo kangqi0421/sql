@@ -3,14 +3,25 @@
 --
 
 
+-- RecoHUB
 cadb.csin.cz,1441
 
+username: zAPI_Oracle_licence
+password: 7osEqq6N50pbBo0zVriF
+
+
 use RecoHUB
+
+
+-- CA CMDB
 
 Description=CA Servicedesk database
 Trace=No
 Server=cadb.csin.cz,1441
 Database=mdb
+
+
+
 
 -- Test CMDB
 Server=cadb.csint.cz,1441
@@ -18,10 +29,16 @@ Database=mdb
 
 runas /netonly /noprofile /user:XTC\sol60210 "C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\Ssms.exe"
 
+
+isql casd zAPI_Oracle_licence Heslo123.
+
 --
 -- definovaná view pro OLI
 --
 
+[dbo].[zAPI_Oracle_licence_apps]
+[dbo].[zAPI_Oracle_Databases]
+[dbo].[zAPI_Oracle_DBInstances]
 [dbo].[zAPI_OLI_relations]
 [dbo].[zAPI_OLI_servers]
 [dbo].[zAPI_OLI_virtual_platforms]

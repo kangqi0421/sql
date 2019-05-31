@@ -80,6 +80,11 @@ fetch first 10 rows only;
 AUDIT_SYS_OPERATIONS = FALSE
 AUDIT_TRAIL=NONE
 
+
+ssh tbsb7e
+ssh tbsb7i
+ssh tbsb7t
+
 --
 -- kontrola nataveni
 --
