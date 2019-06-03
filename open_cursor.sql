@@ -1,5 +1,5 @@
 --// nastaven� utilizace Open Cursors do OEM //--
-SELECT 
+SELECT
     ROUND (b.curr / a.MAX * 100) "Open Cursors util [%]"
   FROM -- max. pocet kurzoru z open_cursors
       (SELECT a.CURRENT_UTILIZATION * b.VALUE AS MAX
@@ -12,7 +12,7 @@ SELECT
 
 -- max open_cursors
 -- ORA-01000: maximum open cursors exceeded
-select 
+select
       max(a.value) as highest_open_cur,
       p.value as max_open_cur
   from v$sesstat a, v$statname b, v$parameter p
@@ -74,23 +74,13 @@ ORDER BY VALUE DESC;
 
 
 --// top 10 sql id with the most value of opened cursors //--
-SELECT *
-  FROM (  SELECT sql_id,
-                 COUNT (*),
-                 ROW_NUMBER () OVER (ORDER BY COUNT (*) DESC) rn
-            FROM v$open_cursor
-        GROUP BY sql_id)
- WHERE rn < 11;
- 
-select * from v$session where username = 'ADSREPDA_M'; 
-select * from v$sql where sql_id = '33vmcj1yp1hj7'; 
+SELECT sql_id,
+         COUNT (*),
+         ROW_NUMBER () OVER (ORDER BY COUNT (*) DESC) rn
+    FROM gv$open_cursor
+  GROUP BY sql_id
+ fetch first 10 rows only;
 
--- REDIM SQL trace
-BEGIN
-  FOR rec in (select sid, serial# from v$session where username = 'ADSREPDA_M')
-  LOOP
-  DBMS_SYSTEM.set_ev(rec.sid,rec.serial#, 10046, 0, '');
-  END LOOP;
-END;
-/
 
+select * from v$session where username = 'ADSREPDA_M';
+select * from v$sql where sql_id = '33vmcj1yp1hj7';
