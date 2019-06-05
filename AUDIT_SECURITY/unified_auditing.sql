@@ -154,9 +154,21 @@ noaudit policy CS_ACTIONS_FREQUENT_DWH;
 noaudit policy CS_PRIVILEGES_GENERAL;
 noaudit policy CS_ACTIONS_GENERAL;
 noaudit policy CS_ACTIONS_FREQUENT_SYS by SYS;
-SELECT POLICY_NAME FROM AUDIT_UNIFIED_ENABLED_POLICIES where user_name like 'SYS';
+SELECT POLICY_NAME, ENTITY_NAME, ENTITY_TYPE FROM AUDIT_UNIFIED_ENABLED_POLICIES
+  where policy_name = 'CS_ACTIONS_FREQUENT_DBA';
 
--- NOAUDIT all
+-- NOAUDIT 19+
+SELECT 'noaudit policy '|| POLICY_NAME ||';'
+  FROM AUDIT_UNIFIED_ENABLED_POLICIES
+ where policy_name like 'CS_%';
+
+SELECT 'noaudit policy '|| POLICY_NAME ||' BY '||ENTITY_NAME||';'
+  FROM AUDIT_UNIFIED_ENABLED_POLICIES
+ where policy_name like 'CS_%'
+   and ENABLED_OPTION = 'BY USER';
+
+
+-- NOAUDIT all policies
 BEGIN
   FOR rec IN
     (

@@ -80,7 +80,7 @@ select count(*) from  OLI_OWNER.OLIAPI_POSTGRES_CMDB_CI;
 --  - přístup přes roli OLI_CA_INTERFACE
 --
 SyncOLI používá 3 pohledy:
-OLAPI_APPS_DB_SERVERS_FARM_FLG
+OLAPI_APPS_DB_SERVERS_FARM_FLG - nahrazeno za OLIAPI_ORACLE_CMDB_CI
 OLAPI_ACQUIRED_LICENSES
 OLAPI_LICENCE_USAGE_DETAIL
 
@@ -190,6 +190,10 @@ GRANT SELECT ON DASHBOARD.CM$MGMT_DB_SGA_ECM TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.EM_DATABASE TO OLI_OWNER with GRANT option;
 GRANT SELECT ON DASHBOARD.EM_INSTANCE TO OLI_OWNER with GRANT option;
 
+-- postgres view
+GRANT SELECT ON postgres.pg_DATABASE    TO OLI_OWNER with GRANT option;
+GRANT SELECT ON POSTGRES.PG_APPLICATION TO OLI_OWNER with GRANT option;
+
 -- grant na OLIAPI view to OLI_CA_INTERFACE - role pro pristup z CA, RecoHUB atd.
 BEGIN
 for rec in (
@@ -199,7 +203,7 @@ for rec in (
   LOOP
     execute immediate 'GRANT SELECT ON '
       || rec.owner ||'.'||rec.view_name
-      || ' TO OLI_CA_INTERFACE';
+      || ' TO OLI_CA_INTERFACE, OLI_QG0_INTERFACE, PUBLIC';
   END LOOP;
 END;
 /

@@ -256,23 +256,23 @@ CREATE MATERIALIZED VIEW DASHBOARD.API_DB_MV
   START WITH (SYSDATE) NEXT SYSDATE + 6/24
 WITH PRIMARY KEY
   AS
-SELECT
-       e.dbname,
-       e.dbversion,
-       e.rac is_rac,
-       e.log_mode is_archivelog,
-       o.app_name,
-       e.env_status,
-       e.availability,
-       e.host_name,
-       e.platform,
-       e.server_name, e.port, e.connect_descriptor,
-       round(e.db_size_mb / 1024) as db_size_gb,
-       e.asm_diskgroup
+SELECT distinct
+    e.dbname,
+    e.dbversion,
+    e.rac is_rac,
+    e.log_mode is_archivelog,
+    o.app_name,
+    e.env_status,
+    e.availability,
+    e.host_name,
+    e.platform,
+    e.server_name, e.port, e.connect_descriptor,
+    round(e.db_size_mb / 1024) as db_size_gb,
+    e.asm_diskgroup
 FROM
              OLI_DATABASE o
   inner join EM_DATABASE e
-     on  (e.dbname = o.dbname and e.env_status = o.env_status)
+     on  (e.dbname = o.dbname)
 ;
 
 CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
@@ -280,6 +280,14 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."API_DB"
 SELECT * from DASHBOARD.API_DB_MV
 ;
 
+
+-- duplicity
+DBNAME  COUNT(*)
+RETAD 2
+BRJ   2
+ISS   2
+
+-- vzniklo diky vyrazeni env_status jako vazebni podminky v JOIN
 
 --
 -- server
