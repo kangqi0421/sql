@@ -20,9 +20,12 @@ define owner_role=PAD_OWNER
 -- APP user
 --
 
-create tablespace FINCASETBL datafile size 512M autoextend on next 512M maxsize 32767M;
+define tablespace_name = RKF_SPACE
+
+-- NORMAL datafile
+create tablespace &tablespace_name datafile size 512M autoextend on next 512M maxsize UNLIMITED;
 -- BIGFILE
-create  bigfile tablespace FINCASETBL datafile size 512M autoextend on next 512M maxsize UNLIMITED;
+create  bigfile tablespace &tablespace_name datafile size 512M autoextend on next 512M maxsize UNLIMITED;
 
 BEGIN EXECUTE IMMEDIATE 'CREATE ROLE &owner_role';
 EXCEPTION WHEN OTHERS THEN IF sqlcode != -1921 THEN RAISE; END IF; END;

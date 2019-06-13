@@ -12,6 +12,16 @@ password: 7osEqq6N50pbBo0zVriF
 
 use RecoHUB
 
+[dbo].[tblSN_cmdb_ci_server] <- servery
+[dbo].[tblSN_cmdb_ci_service] <- aplikace ?
+
+HSL_oem.vs.csin.cz
+
+select [hostname],
+       [fqdn]
+   from [dbo].[tblSN_cmdb_ci_server]  WITH (NOLOCK)
+  WHERE host_name like 'oem%'
+
 
 -- CA CMDB
 
