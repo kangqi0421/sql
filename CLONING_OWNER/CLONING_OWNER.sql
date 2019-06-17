@@ -10,35 +10,25 @@ sqlplus -s / as sysdba @/dba/clone/sql/INFP_clone_params.sql RTOZA
 
 connect CLONING_OWNER/abcd1234
 
--- INFTA sequence - posun pro KLON id za 100k
-ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 100000;
-SELECT CLONING_TASK_TASK_ID_SEQ.NEXTVAL FROM dual;
-ALTER SEQUENCE CLONING_TASK_TASK_ID_SEQ INCREMENT BY 1;
-
 -- source target info
 select *
   from oli_owner.databases
   where 1= 1
-    and CLONING_METHOD_ID = 3  -- SNAPVX_CLONE
---    AND dbname like 'CRM%'
-    and env_status = 'Pre-production'
+    -- and CLONING_METHOD_ID = 3  -- SNAPVX_CLONE
+    AND dbname like 'BOSON'
+--    and env_status = 'Pre-production'
 ;
 
-
+-- pouzit method_group_name namistomethod_name !
 select * FROM CLONING_OWNER.CLONING_TARGET_DATABASE
-  where target_dbname like 'DWHTA%';
+  where method_group_name like '%SNAP%'
+    and method_name like 'RMAN%';
 
 -- DWHT update na alias 1
 UPDATE oli_owner.databases d
   set d.clone_source_licdb_id = NULL,
       d.clone_source_alias_id = 1
  where d.dbname like 'DWHT%';
-
--- update produkce pro umozneni klonu na SNAPVX_SNAPSHOT
-UPDATE oli_owner.databases
-  set CLONING_METHOD_ID = 16,
-    CLONE_SOURCE_LICDB_ID = 317   -- DUMMY DB
- where dbname like 'SMARTP';
 
 
 -- source alias
@@ -49,13 +39,19 @@ SELECT * FROM source_alias_db;
 -- zmenit method_id
 -- zmenit template_id
 update OLI_OWNER.DATABASES
-  set CLONING_METHOD_ID = 6,   -- set to G800 method
-      CLONING_TEMPLATE_ID = 3,
+  set CLONING_METHOD_ID = NULL,   -- set to G800 method
       CLONE_SOURCE_LICDB_ID = (
       -- source db
       select licdb_id from OLI_OWNER.DATABASES where dbname = 'RDBPKA')
   -- target db
   where dbname like 'RDBTA%';
+
+-- reset cloning_method_id
+update OLI_OWNER.DATABASES
+  set CLONING_METHOD_ID = NULL
+  where dbname in ('CPSZA','SMARTZ','RECONZ','PWCZ')
+  ;
+
 
 
 -- clone source alias
@@ -67,17 +63,6 @@ update OLI_OWNER.DATABASES
           select source_alias_id from source_alias where alias_name = 'DWHSRC' )
   -- target db
   where dbname like 'DWHT%';
-
-
-
--- EXPORT/IMPORT
-```
-SCHEMA=CLONING_OWNER,CLONING_PY
-OPTIONS=" directory=DATA_PUMP_DIR COMPRESSION=ALL EXCLUDE=STATISTICS METRICS=YES LOGTIME=ALL FLASHBACK_TIME=SYSTIMESTAMP "
-expdp \'/ as sysdba\' schemas=$SCHEMA $OPTIONS dumpfile=cloning.dmp logfile=cloning_exp.log
---
-impdp \'/ as sysdba\' DIRECTORY=DATA_PUMP_DIR dumpfile=cloning.dmp logfile=cloning_imp.log
-```
 
 
 -- CLONING_METHOD
