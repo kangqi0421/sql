@@ -1,5 +1,5 @@
 --
--- Orchestrace klonování
+-- Orchestrace klonování - clone app
 --
 
 - přidat REST API pro GET a PUT metodu
@@ -66,19 +66,30 @@ update OLI_OWNER.DATABASES
 
 
 -- CLONING_METHOD
+-- METHOD_GROUP
 
 select * FROM CLONING_METHOD
-  where allow_disk_snapshot = 'Y'
+  where 1 = 1
+    --and allow_disk_snapshot = 'Y'
+    -- and method_name like '%GI%'
+    and method_type in ('C')   -- C / B / R / D
  order by method_name
 ;
 
-insert into CLONING_METHOD values ('17','G800_SNAPSHOT',
-    'G800: Create disk snapshot'  ,'G800: Create disk snapshot',
-    'Y', 'N', NULL, 'B', 'N', 'N', 'N');
+GI_CREATE_ANSIBLE | GI:Create Golden Image to TSM using ansible
+
+-- CLONING_METHOD_STEP
+
+select * from CLONING_METHOD_STEP
+  where cloning_method_id = 3
+   order by position
+;
+
+--
+insert into CLONING_METHOD_STEP values (3,'STEP330_dbms_stats.sh',330,'Purge and change dbms_stats retention','Y','N');
 
 
-insert into CLONING_METHOD_STEP values (16,'STEP100_create_snapshot.sh',100,'SnapVX create disk snapshot','N','Y');
-
+-- posun pozice
 update CLONING_METHOD_STEP
   set step_name = 'STEP070_drop_db.sh',
       step_description ='Drop database',
@@ -86,20 +97,9 @@ update CLONING_METHOD_STEP
  where position = 15;
 
 
--- INSERTING into CLONING_METHOD_STEP - common / local (oem)
+-- INSERTING into CLONING_METHOD_STEP - common - local
 
-insert into CLONING_METHOD_STEP values (9,'STEP100_ansible_G800_disk_snapshot.sh',100,'Create disk SnapVX snapshot','N','Y');
-
-insert into CLONING_METHOD_STEP values
-  (2,'STEP102_shutdown_cascade_snapshot.sh',102,'Shutdown HUS VM thin databases','N','Y');
-insert into CLONING_METHOD_STEP values
-  (2,'STEP105_create_hitachi_clone.sh',105,'Create HUS VM thin snapshot','N','N');
-insert into CLONING_METHOD_STEP values
-  (2,'STEP106_split_cascade_snapshot.sh',106,'Pairsplit HUS VM thin snapshot','N','Y');
-insert into CLONING_METHOD_STEP values
-  (2,'STEP107_change_asm_diskstring.sh',107,'Change asm disktring localne pro vice Thin db snapshot','N','N');
-
-Insert into CLONING_METHOD_STEP values (7,'STEP305_restore_appl_passwords.sh',305,'Restore původních aplikačních hesel označených rolí CS_APPL_ACOUNTS','Y','N');
+insert into CLONING_METHOD_STEP values (9,'clone_create_golden_image.yml',100,'Create Golden Image','N','Y');
 
 -- CLONING_PARAMETER
 
@@ -190,34 +190,9 @@ ORDER BY p . parameter_type ,  p . parameter_name
 -- CONFIG_DATA
 -- CLONING_REST_URL
 -- ENV_NAME: PRODUCTION
+
 select * FROM CONFIG_DATA;
 
-
-
-
-REM INSERTING into CLONING_TEMPLATE
-Insert into CLONING_TEMPLATE values ('1','MALA_DB');
-Insert into CLONING_TEMPLATE values ('2','RTODS');
-Insert into CLONING_TEMPLATE values ('3','RDBT');
-
-REM INSERTING into TEMPLATE_PARAM_VALUE
-SET DEFINE OFF;
-Insert into TEMPLATE_PARAM_VALUE values ('1','I','memory_target',null,'Y');
-Insert into TEMPLATE_PARAM_VALUE values ('1','I','cpu_count','4','N');
-Insert into TEMPLATE_PARAM_VALUE values ('1','I','pga_aggregate_target','8G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('1','I','sga_target','16G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('3','I','memory_target',null,'Y');
-Insert into TEMPLATE_PARAM_VALUE values ('3','I','cpu_count','4','N');
-Insert into TEMPLATE_PARAM_VALUE values ('3','I','pga_aggregate_target','8G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('3','I','sga_target','16G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('3','C','app_supp_email','jsrba@csas.cz,zelis@csas.cz','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','I','sga_target','50G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','I','memory_target',null,'Y');
-Insert into TEMPLATE_PARAM_VALUE values ('2','I','pga_aggregate_target','24G','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','I','cpu_count','8','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','C','pre_sql_scripts','${CLONE_DIR}/sql/uloz_app_hesla.sql','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','C','post_sql_scripts','${TODAY_FMT}/${target_db}_nastav_hesla.sql','N');
-Insert into TEMPLATE_PARAM_VALUE values ('2','C','app_supp_email','jsrba@csas.cz,rtods@csas.cz,fas-alfa@csas.cz','N');
 
 -- SnapVX Restore
 REM INSERTING into CLONING_METHOD_STEP
