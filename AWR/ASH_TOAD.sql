@@ -26,16 +26,16 @@ select
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
 --    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  p2, count(*)
---    FROM GV$ACTIVE_SESSION_HISTORY a
-    FROM dba_hist_active_sess_history a
+    FROM GV$ACTIVE_SESSION_HISTORY a
+--    FROM dba_hist_active_sess_history a
   WHERE
   1=1
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-01-24 13:00:00'
-                           AND TIMESTAMP'2019-01-24 14:00:00'
---                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
+--       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-01-24 13:00:00'
+--                           AND TIMESTAMP'2019-01-24 14:00:00'
+                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
 --                           and sample_id IN (276540, 275627)
 --                        and xid = '1C000D00BB9B6000'
-                         and SQL_ID in ('8s6a8wh7vtvnx','6nn5rv7n469cq','d4dj07j54ram2','24hw1hptpxmqg')
+                         and SQL_ID in ('6wsa1jwbsmx5f')
 --                         and event = 'row cache lock'
 --                           and event like 'gc%'
 --                         and event not in ('enq: MC - Securefile log')
