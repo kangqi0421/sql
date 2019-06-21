@@ -35,7 +35,7 @@ select
                          and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
 --                           and sample_id IN (276540, 275627)
 --                        and xid = '1C000D00BB9B6000'
-                         and SQL_ID in ('6wsa1jwbsmx5f')
+                         and SQL_ID in ('djc26zm8gfs46')
 --                         and event = 'row cache lock'
 --                           and event like 'gc%'
 --                         and event not in ('enq: MC - Securefile log')
