@@ -1,5 +1,4 @@
-WHENEVER OSERROR  EXIT FAILURE
-WHENEVER SQLERROR EXIT SQL.SQLCODE
+WHENEVER SQLERROR EXIT 1
 
 col comp_id for a15
 col comp_name for a35
@@ -16,7 +15,7 @@ DECLARE
   v_cnt integer;
 BEGIN
 select COUNT(*) into v_cnt
-  from DBA_REGISTRY where STATUS <> 'VALID';
+  from DBA_REGISTRY where STATUS not in ('VALID', 'OPTION OFF');
   IF v_cnt > 0 THEN
      RAISE_APPLICATION_ERROR (-20001, 'Invalid Registry Components found.');
   END IF;
@@ -25,7 +24,13 @@ END;
 
 prompt
 prompt Invalid Components:
-prompt
+prompt ===================
 select COMP_ID, COMP_NAME, STATUS, VERSION
   from DBA_REGISTRY
-where STATUS <> 'VALID';
+where STATUS not in ('VALID', 'OPTION OFF');
+
+prompt
+prompt Errors:
+prompt =======
+set pagesize 50000
+select * from sys.registry$error order by identifier;
