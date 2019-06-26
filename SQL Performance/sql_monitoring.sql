@@ -1,8 +1,15 @@
+--
+-- SQL monitoring
+--
+
+-- A user without SELECT_CATALOG_ROLE cannot see SQL execution statistics and details for other users.
+-- Fixed in 19+
+
 --// sql id zachycene v danem casovem useku //--
 
   SELECT sql_id,
          round(elapsed_time / 1000000 / 60, 1) "elapsed time [min]",
-         round(cpu_time/ 1000000 / 60,1) "cpu time [min]",		 
+         round(cpu_time/ 1000000 / 60,1) "cpu time [min]",
          first_refresh_time,
          status
     FROM v$sql_monitor
@@ -17,3 +24,11 @@ alter session set events='emx_control compress_xml=none';
 set pagesize 0 echo off timing off linesize 1000 trimspool on trim on long 2000000 longchunksize 2000000 feedback off
 
 select dbms_sqltune.report_sql_monitor(type=>'EM', sql_id=>'&SQL_ID') as report from dual;
+
+
+-- 19+
+  V$ALL_SQL_MONITOR
+  V$ALL_SQL_PLAN_MONITOR
+  V$ALL_ACTIVE_SESSION_HISTORY
+  V$ALL_SQL_PLAN
+

@@ -49,11 +49,10 @@ select 'call OLI_API.delete_database('|| DBMS_ASSERT.enquote_literal(d.dbname) |
 call OLI_API.delete_database('TS2O');
 
 --
--- delete server - vlastní procedura api_delete_server
+-- delete server - vlastní procedura api_delete_server - nahradi za OLI_API pckg
 --
-tbsb2o.vs.csin.cz
-call oli_owner.api_delete_server('tbsb2o.vs.csin.cz');
-call oli_owner.api_delete_server('tbsb2i.vs.csin.cz');
+call oli_owner.api_delete_server('zodwmdb1.cc.csin.cz');
+call oli_owner.api_delete_server('zodwhdb1.cc.csin.cz');
 
 
 -- ERROR
