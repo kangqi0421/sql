@@ -9,8 +9,17 @@ cadb.csin.cz,1441
 username: zAPI_Oracle_licence
 password: 7osEqq6N50pbBo0zVriF
 
+cadb.csint.cz,5441
+
+
 
 use RecoHUB
+
+-- view od Šavel
+
+[RecoHUB].[dbo].[viwSN_BS_for_OracleOLI]
+[RecoHUB].[dbo].[viwSN_serverCI_for_OracleOLI]
+[RecoHUB].[dbo].[viwSN_DBCI_for_OracleOLI]
 
 [dbo].[tblSN_cmdb_ci_server] <- servery
 [dbo].[tblSN_cmdb_ci_service] <- aplikace ?
