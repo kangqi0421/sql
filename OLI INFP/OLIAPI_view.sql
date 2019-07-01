@@ -95,24 +95,16 @@ OLI_OWNER.SYNCHRO_CA.RELOAD_ALL > OLI_OWNER.SYNCHRO_CA.RELOAD_ALL
 
 [casd]
 Driver=ODBC Driver 13 for SQL Server
-Description=CA Servicedesk database
+Description=RecoHUB
 Trace=No
 Server=cadb.csint.cz,5441
-Database=mdb
+Database=RecoHUB
 
 -- CA CMDB casdgw DB link
-isql casd zAPI_Oracle_licence Heslo123.
+isql casd zAPI_Oracle_licence 7osEqq6N50pbBo0zVriF
 
 
--- přes synonym jsou zpřístupněna data ze CMDB
-SYNONYM "OLI_OWNER"."CA_SRC_APPLICATIONS" FOR "zAPI_Oracle_licence_apps"@"CASDGW";
-SYNONYM "OLI_OWNER"."CA_SRC_DATABASES" FOR "zAPI_Oracle_Databases"@"CASDGW";
-SYNONYM "OLI_OWNER"."CA_SRC_DBINSTANCES" FOR "zAPI_Oracle_DBInstances"@"CASDGW";
-SYNONYM "OLI_OWNER"."CA_SRC_RELATIONS" FOR "zAPI_OLI_relations"@"CASDGW";
-SYNONYM "OLI_OWNER"."CA_SRC_SERVERS" FOR "zAPI_OLI_servers"@"CASDGW";
-SYNONYM "OLI_OWNER"."CA_SRC_VIRT_PLATFORMS" FOR "zAPI_OLI_virtual_platforms"@"CASDGW";
-
-select count(*) from dbo.zAPI_Oracle_licence_apps;
+select count(*) from [RecoHUB].[dbo].[viwSN_BS_for_OracleOLI];
 
 --
 -- CA servers
@@ -125,7 +117,7 @@ select hostname, virt_platform_display_name
  WHERE hostname in ('todwsrc1', 'tbneldb01');
 
 
--- CMDB
+-- CA CMDB - zrušeno, je read only
 CMDB generuje synchronizační log (ve kterém jsou vidět chyby)
 http://caservicedesk/reportextracts/SyncLogs/SyncOLI_END.csv
 

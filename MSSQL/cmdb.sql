@@ -6,23 +6,40 @@
 -- RecoHUB
 cadb.csin.cz,1441
 
+TEST:
+cadb.csint.cz,5441
+
 username: zAPI_Oracle_licence
 password: 7osEqq6N50pbBo0zVriF
 
-cadb.csint.cz,5441
-
-
+ALTER LOGIN zAPI_Oracle_licence WITH DEFAULT_DATABASE=RecoHUB
+GO
 
 use RecoHUB
 
 -- view od Šavel
 
-[RecoHUB].[dbo].[viwSN_BS_for_OracleOLI]
-[RecoHUB].[dbo].[viwSN_serverCI_for_OracleOLI]
+[RecoHUB].[dbo].[viwSN_BS_for_OracleOLI] - application -
+[RecoHUB].[dbo].[viwSN_serverCI_for_OracleOLI] - duplicity v cluster_name
 [RecoHUB].[dbo].[viwSN_DBCI_for_OracleOLI]
 
 [dbo].[tblSN_cmdb_ci_server] <- servery
 [dbo].[tblSN_cmdb_ci_service] <- aplikace ?
+
+SELECT TOP (1000)
+       [sys_id]
+      ,[u_system_name]
+      ,[serial_number]
+      ,[u_app_short_name]
+      ,[name]
+      ,[short_description]
+      ,[service_classification]
+      ,[busines_criticality]
+      ,[schedule]
+      ,[u_application_analyst]
+      ,[used_for]
+  FROM [viwSN_BS_for_OracleOLI]  WITH (NOLOCK)
+  ;
 
 HSL_oem.vs.csin.cz
 
