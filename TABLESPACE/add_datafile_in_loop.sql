@@ -35,6 +35,15 @@ begin
 end;
 /
 
+-- SMALL FILE - pridani dalsich datafiles pres v_df_maxsize_mb
+for i in 1..floor(p_maxsize_gb * 1024 / v_df_maxsize_mb)
+LOOP
+  v_sql := 'alter tablespace ' || DBMS_ASSERT.ENQUOTE_NAME(p_tablespace_name)
+    || ' add ' || v_datafile_params || ' ' || v_df_maxsize_mb ||'M';
+  run_sql(v_sql);
+END LOOP;
+
+
 -- RAC undo datafiles
 alter database datafile 3 resize 65535M;
 alter database datafile 3 autoextend off;

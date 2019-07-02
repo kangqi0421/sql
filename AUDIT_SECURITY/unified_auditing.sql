@@ -94,12 +94,14 @@ select value from v$option where parameter = 'Unified Auditing';
 -- enabled policies
 set lines 2000 pages 2000
 col USER_NAME for A10
+col ENTITY_NAME for A10
 col POLICY_NAME for A30
 col AUDIT_CONDITION for a5
 col ENABLED_OPT for a4
+col ENABLED_OPTION for a10
 select * from AUDIT_UNIFIED_ENABLED_POLICIES
 --WHERE USER_NAME = 'SYS'
-order by POLICY_NAME, USER_NAME, ENABLED_OPT, SUCCESS, FAILURE
+order by POLICY_NAME, SUCCESS, FAILURE
 ;
 
 --
@@ -125,11 +127,13 @@ SELECT * FROM auditable_system_actions
   ;
 
 -- MINIMAL LOGON LOGOFF policy
-4 Standard  100 LOGON
-4 Standard  101 LOGOFF
 
-create audit policy CS_ACTIONS_LOGON actions LOGON, LOGOFF;
-audit policy CS_ACTIONS_LOGON;
+LOGON - nešla by nahradit za default policy ORA_LOGON_FAILURES ?
+
+audit policy ORA_LOGON_FAILURES WHENEVER NOT SUCCESSFUL;
+
+-- create audit policy CS_ACTIONS_LOGON actions LOGON, LOGOFF;
+-- audit policy CS_ACTIONS_LOGON;
 
 -- system_privilege_map
 SELECT * FROM system_privilege_map;
@@ -150,6 +154,10 @@ audit policy CS_INFO_POLICY by INFO;
 
 
 -- NOAUDIT
+noaudit policy CS_ACTIONS_FREQUENT_SYS BY SYS;
+
+noaudit policy ORA_SECURECONFIG;
+
 noaudit policy CS_ACTIONS_FREQUENT_DWH;
 noaudit policy CS_PRIVILEGES_GENERAL;
 noaudit policy CS_ACTIONS_GENERAL;
@@ -167,6 +175,8 @@ SELECT 'noaudit policy '|| POLICY_NAME ||' BY '||ENTITY_NAME||';'
  where policy_name like 'CS_%'
    and ENABLED_OPTION = 'BY USER';
 
+--
+--
 
 -- NOAUDIT all policies
 BEGIN
@@ -296,3 +306,7 @@ LOGOFF  CS_ACTIONS_GENERAL                      137982
 -- ESPPA
 SYS                                                                                        EXECUTE              CS_ACTIONS_FREQUENT_SYS             0        675
 SYS                                                                                        SELECT               CS_ACTIONS_FREQUENT_SYS             0         63
+
+-- default audit
+ALL USERS ORA_LOGON_FAILURES  BY  NO  YES
+ALL USERS ORA_SECURECONFIG    BY  YES YES

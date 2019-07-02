@@ -1,6 +1,15 @@
 --// zjisteni z logu informace o stavu prenosu //--
 
-DEFINE db=RTOP
+DEFINE db=OMST
+
+-- ARM status ERROR
+SELECT * FROM arm_admin.arm_status
+  WHERE 1=1
+--    AND ARM_DB_NAME LIKE '%&db%'
+    --AND status = 'ERROR'
+      AND status not in ('OK', 'DISABLED')
+--    AND status not like 'DISABLED'
+ORDER by ARM_DB_NAME;
 
 
 SELECT *  FROM ARM_ADMIN.ARM_DATABASES
@@ -14,15 +23,6 @@ order by ARM_DB_NAME;
 -- parametry přenosu
 select *
   from ARM_ADMIN.ARM_MOVE_DEFINITIONS ;
-
--- ARM status ERROR
-SELECT * FROM arm_admin.arm_status
-  WHERE 1=1
---    AND ARM_DB_NAME LIKE '%&db%'
-    --AND status = 'ERROR'
-      AND status not in ('OK', 'DISABLED')
---    AND status not like 'DISABLED'
-ORDER by ARM_DB_NAME;
 
 select *
   from ARM_ADMIN.ARM_OPERATION_LOG

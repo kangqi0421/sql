@@ -49,17 +49,23 @@ INSERT into OLI_OWNER.SERVERS (HOSTNAME, DOMAIN, DR_HW, SPARE, LIC_ENV_ID)
 --
 select * from OLI_OWNER.OMS_HOSTS;
 
+define aix_box = "PA811%"
+define server = "dasb%"
+
 select lic_env_id, lic_env_name
   from LICENSED_ENVIRONMENTS
- WHERE lic_env_name like '%PA802%';
+ WHERE lic_env_name like '&aix_box';
 
+
+select * from OLI_OWNER.SERVERS
+  where hostname like '&server';
 
 -- update lic env ID pro Starbank
 UPDATE OLI_OWNER.SERVERS
     set lic_env_id = (select lic_env_id
   from LICENSED_ENVIRONMENTS
- WHERE lic_env_name like 'PA802_Oracle')
-  where hostname like 'tasb%';
+ WHERE lic_env_name like '&aix_box')
+  where hostname like '&server';
 
 --
 -- API delete server, vcetne lic env

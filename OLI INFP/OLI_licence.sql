@@ -49,36 +49,42 @@ https://linux.vs.csin.cz/server_list/?t=aixmspp
 --> INSERT do LICENSE_ALLOCATIONS
 
 --
+-- pridani licencí
+--
+ select * from OLI_OWNER.LICENSED_ENVIRONMENTS
+  where lic_env_name like 'p%r05db%';
+
+--
 -- fyzický server
 --
 select lic_env_id, hostname, domain
   from servers
-  where hostname like 'p%r06db%';
+  where hostname like 'p%r05db%';
 
-define LIC_ENV_ID = 7296
+define LIC_ENV_ID = 9732
 define PP = 12
 
 -- Enterprise Edition
 insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
-  values ('38','133','3','&PP','Y','N',&LIC_ENV_ID);
+  values (38,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Diagnostics Pack
 insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
-  values ('36','133','3','&PP','Y','N',&LIC_ENV_ID);
+  values (36,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Partitioning
 insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
-  values ('46','133','3','&PP','Y','N',&LIC_ENV_ID);
+  values (46,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Tuning Pack
 insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
-  values ('51','133','3','&PP','Y','N',&LIC_ENV_ID);
+  values (51,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Real Application Clusters
---insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('48','133','3','&PP','Y','N',&LIC_ENV_ID);
+--insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (48,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 -- Advanced Compression
--- insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values ('3','133','3','&PP','Y','N',&LIC_ENV_ID);
+-- insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (3,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 commit;
 
@@ -129,9 +135,3 @@ update OLI_OWNER.LICENSE_ALLOCATIONS
 where lic_env_id in (1187,1188) ;
 
 
---
--- pridani licencí
---
-select * from OLI_OWNER.LICENSED_ENVIRONMENTS
-  where lic_env_name like 'pordb06%'
-;
