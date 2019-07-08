@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = tordb0
+define server = ppr02db%
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery
@@ -16,7 +16,7 @@ select
    ROUND(sum((mem - (m.maximum * mem/100))/1024)
      over (PARTITION BY m.rollup_timestamp)) "MEM free all [GB]"
  FROM
-   mgmt$metric_daily m join MGMT$OS_HW_SUMMARY h  -- dotahuje velikost RAM
+   sysman.mgmt$metric_daily m join sysman.MGMT$OS_HW_SUMMARY h  -- dotahuje velikost RAM
     on (m.target_name = h.host_name)
  where
 --       metric_name = 'Load' AND metric_column = 'memUsedPct'
