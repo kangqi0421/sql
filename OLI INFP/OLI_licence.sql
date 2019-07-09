@@ -52,7 +52,9 @@ https://linux.vs.csin.cz/server_list/?t=aixmspp
 -- pridani licencí
 --
  select * from OLI_OWNER.LICENSED_ENVIRONMENTS
-  where lic_env_name like 'p%r05db%';
+    -- where lic_env_name like 'p%r05db%'
+    where lic_env_name like 'PA81%'
+  ;
 
 --
 -- fyzický server
@@ -96,7 +98,14 @@ ORACLE-01-BUD
 -- update CSI
 update OLI_OWNER.LICENSE_ALLOCATIONS
   set csi_id = 133
-  where lic_env_id in (509, 510, 350, 363);
+  where lic_env_id in (7394);
+
+-- update LIC PP
+update OLI_OWNER.LICENSE_ALLOCATIONS
+  set lic_cnt_used = 18
+  where lic_env_id in (
+    select lic_env_id from OLI_OWNER.LICENSED_ENVIRONMENTS
+      where lic_env_name like 'PB901');
 
 -- Licence summary
 -- LICENSE_COSTS_FULL

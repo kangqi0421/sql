@@ -21,12 +21,15 @@ use RecoHUB
 
 [RecoHUB].[dbo].[viwSN_BS_for_OracleOLI] - application -
 [RecoHUB].[dbo].[viwSN_serverCI_for_OracleOLI] - duplicity v cluster_name
+  --> [RecoHUB].[dbo].[tblSN_server_extract]
 [RecoHUB].[dbo].[viwSN_DBCI_for_OracleOLI]
+  [sys_id],
+  [name]
 
 [dbo].[tblSN_cmdb_ci_server] <- servery
 [dbo].[tblSN_cmdb_ci_service] <- aplikace ?
 
-SELECT TOP (1000)
+SELECT
        [sys_id]
       ,[u_system_name]
       ,[serial_number]
@@ -43,11 +46,64 @@ SELECT TOP (1000)
 
 HSL_oem.vs.csin.cz
 
-select [hostname],
-       [fqdn]
-   from [dbo].[tblSN_cmdb_ci_server]  WITH (NOLOCK)
-  WHERE host_name like 'oem%'
+select [sys_id]
+      ,[sys_class_name]
+      ,[name]
+      ,[serial_number]
+      ,[u_hostname]
+      ,[fqdn]
+      ,[cpu_core_count]
+      -- ,[cpu_core_thread]
+      ,[cpu_count]
+      ,[cpu_speed]
+      ,[cpu_type]
+      ,[os]
+      ,[ram]
+      ,[used_for]
+      ,[virtual]
+   from [dbo].[tblSN_server_extract]  WITH (NOLOCK)
+  WHERE [u_hostname] like 'oem'
 
+
+-- viwSN_DBCI_for_OracleOLI
+create view [dbo].[viwSN_DBCI_for_OracleOLI] as
+SELECT [correlation_id]
+      ,[sys_id]
+      ,[u_ci_legacy_id]
+      ,[name]
+      ,[sys_class_name]
+      ,[install_status]
+ FROM [RecoHUB].[dbo].[tblSN_endpoint]
+ where name like 'DBO%'
+UNION ALL
+SELECT [correlation_id]
+      ,[sys_id]
+      ,[u_ci_legacy_id]
+      ,[name]
+      ,[sys_class_name]
+      ,[install_status]
+ FROM [RecoHUB].[dbo].[tblSN_DBOI_extract]
+
+
+-- viwSN_serverCI_for_OracleOLI
+create view [dbo].[viwSN_serverCI_for_OracleOLI] as
+SELECT clu.name as cluster_name
+..
+  FROM [RecoHUB].[dbo].[tblSN_server_extract] srv
+  left join [RecoHUB].[dbo].[tblSN_rel] rel on srv.sys_id = rel.parent
+  left join [RecoHUB].[dbo].[tblSN_vcenter_cluster_extract] clu on rel.child = clu.sys_id
+
+SELECT TOP (1000)
+      [sys_id]
+      ,[name]
+  FROM [RecoHUB].[dbo].[tblSN_vcenter_cluster_extract]
+
+-- vazba mezi clustery
+SELECT
+       [child]
+      ,[parent]
+      ,[sys_id]
+  FROM [RecoHUB].[dbo].[tblSN_rel]
 
 -- CA CMDB
 
@@ -69,7 +125,7 @@ runas /netonly /noprofile /user:XTC\sol60210 "C:\Program Files (x86)\Microsoft S
 isql casd zAPI_Oracle_licence Heslo123.
 
 --
--- definovaná view pro OLI
+-- CA definovaná view pro OLI
 --
 
 [dbo].[zAPI_Oracle_licence_apps]
@@ -100,9 +156,3 @@ WHERE  (STATUS = 'Alive')
 ORDER BY RESOURCE_NAME
 
 GO
-
--- SQL Developer
-
-select * FROM "dbo"."zAPI_Oracle_licence_servers"@"CASDGW";
-
-

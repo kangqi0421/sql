@@ -145,9 +145,11 @@ select * from CA_SERVERS
   where resource_name = 'HSLV_tpraddb01.vs.vsin.cz'
 ;
 
-select * from   OLI_OWNER.CA_SRC_SERVERS
- where hostname like 'dpddmdb01%'
-;
+
+select * from CA_SRC_SERVERS
+  where "u_hostname" like 'ovo%'
+  ;
+
 
 
 CA_VIRT_PLATFORMS
