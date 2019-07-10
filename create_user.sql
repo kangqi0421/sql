@@ -204,3 +204,17 @@ create user &user identified by "abcd1234" password expire profile PROF_USER
   default tablespace SIEBELS_USERS;
 GRANT CSCONNECT,CSRESOURCE,SSE_LOADY TO &user ;
 
+-- tohle doresit
+echo '@@fix_redim.sql INT_OWNER   '>  ODIEA .sql
+
+
+-- REDIM fix UNLOCK zamčených účtů
+
+for db in APSTG
+do
+   /dba/local/bin/oracle-ci-deploy.py --db=$db ${db}.sql
+done
+
+
+echo '@@fix_redim.sql BEZP   CSCONNECT,MCI_CONNECT,BEZP_SYSTEM_PRIV,CS_APPL_ACCOUNTS' > MCIP.sql
+echo '@@fix_redim.sql DATALAKE   CSCONNECT,ROLE_DATALAKE  '>  DMSLAPTS.sql

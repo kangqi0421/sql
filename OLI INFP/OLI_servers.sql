@@ -151,10 +151,13 @@ select * from CA_SRC_SERVERS
   ;
 
 
+-- relation to CLUSTER
 
 CA_VIRT_PLATFORMS
-b7057aa91dd1bc408e8c0658b24f68dc  ORACLE-01-BUD
-c25ac707519bfb4b881b655799852bcb  ORACLE-01-ANT
+sys_id  name
+2b915576dbee5780f127fbc61d961947  HVP_ORACLE-01-ANT
+a7915576dbee5780f127fbc61d961945  HVP_ORACLE-01-BUD
+
 
 select * from ca_relations;
 
@@ -170,5 +173,3 @@ Hosted on -VMware vCenter Clusters
 [L1]HVP_ORACLE-01-ANTStatus: Active
 
 VMware Virtual Platform
-
-zAPI_OLI_relations"@"CASDGW"

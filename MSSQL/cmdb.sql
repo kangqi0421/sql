@@ -17,18 +17,6 @@ GO
 
 use RecoHUB
 
--- view od Šavel
-
-[RecoHUB].[dbo].[viwSN_BS_for_OracleOLI] - application -
-[RecoHUB].[dbo].[viwSN_serverCI_for_OracleOLI] - duplicity v cluster_name
-  --> [RecoHUB].[dbo].[tblSN_server_extract]
-[RecoHUB].[dbo].[viwSN_DBCI_for_OracleOLI]
-  [sys_id],
-  [name]
-
-[dbo].[tblSN_cmdb_ci_server] <- servery
-[dbo].[tblSN_cmdb_ci_service] <- aplikace ?
-
 SELECT
        [sys_id]
       ,[u_system_name]
@@ -97,13 +85,27 @@ SELECT TOP (1000)
       [sys_id]
       ,[name]
   FROM [RecoHUB].[dbo].[tblSN_vcenter_cluster_extract]
+     where name like 'HVP_ORACLE%';
+
+sys_id                            name
+2b915576dbee5780f127fbc61d961947  HVP_ORACLE-01-ANT
+a7915576dbee5780f127fbc61d961945  HVP_ORACLE-01-BUD
+
 
 -- vazba mezi clustery
+- child = VMW cluster
+- parent = server ?
+
 SELECT
        [child]
       ,[parent]
       ,[sys_id]
   FROM [RecoHUB].[dbo].[tblSN_rel]
+    where child = '2b915576dbee5780f127fbc61d961947';
+
+
+type  child parent  sys_id
+d93304fb0a0a0b78006081a72ef08444  2b915576dbee5780f127fbc61d961947  c3d1997adbee5780f127fbc61d96194c  d591a353db7e93c0f127fbc61d96198f
 
 -- CA CMDB
 
