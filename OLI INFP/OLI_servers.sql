@@ -129,6 +129,7 @@ SELECT
 ;
 
 -- OLI check: server bez SERVERu v CMDB
+
 -- servery v OLI, ktere neexistuji v CMDB
 select lower(OLIFQDN(hostname, domain)) host_name from OLI_OWNER.SERVERS s
   where not exists (select 1 from LICENSE_ALLOCATIONS l where l.lic_env_id = s.lic_env_id)
@@ -137,21 +138,31 @@ select lower(OLIFQDN(hostname, domain)) host_name from OLI_OWNER.CA_SERVERS
 ;
 
 
-select * from   OLI_OWNER.CA_SERVERS
-  where lower(hostname) like 'dpddmdb01%'
+select * from SERVERS
+  where lower(hostname) like 'dporadb01%'
 ;
 
 select * from CA_SERVERS
-  where resource_name = 'HSLV_tpraddb01.vs.vsin.cz'
+  where lower(hostname) like 'dporadb01%'
 ;
 
-
 select * from CA_SRC_SERVERS
-  where "u_hostname" like 'ovo%'
+  where "u_hostname" like 'dporadb01%'
+  ;
+
+-- server včetně cluster name
+select s.hostname, v.resource_name
+    from CA_SERVERS cs
+    left join ca_relations cr on (cs.cmdb_ci_id = cr.parent_cmdb_ci_id)
+    left join ca_virt_platforms cv on (cr.child_cmdb_ci_id = cv.cmdb_ci_id)
+  where s.hostname = 'dporadb01'
   ;
 
 
 -- relation to CLUSTER
+
+select * from ca_virt_platforms
+  where resource_name like 'HVP_ORACLE%';
 
 CA_VIRT_PLATFORMS
 sys_id  name
@@ -159,11 +170,16 @@ sys_id  name
 a7915576dbee5780f127fbc61d961945  HVP_ORACLE-01-BUD
 
 
-select * from ca_relations;
-
 -- vazba na VMWare cluster
+
+- child = VMWare cluster
+- parent = server
+
 select * from ca_relations
   where p_name like 'HVP_ORACLE%';
+
+select * from ca_relations;
+
 
 
 HSLV_dpdetdb01.vs.csin.cz
