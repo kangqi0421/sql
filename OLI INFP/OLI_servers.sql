@@ -151,13 +151,14 @@ select * from CA_SRC_SERVERS
   ;
 
 -- server včetně cluster name
-select s.hostname, v.resource_name
+select cs.hostname, cv.resource_name, cr.rel_type
     from CA_SERVERS cs
     left join ca_relations cr on (cs.cmdb_ci_id = cr.parent_cmdb_ci_id)
     left join ca_virt_platforms cv on (cr.child_cmdb_ci_id = cv.cmdb_ci_id)
-  where s.hostname = 'dporadb01'
-  ;
-
+  where 1 = 1
+    and cs.hostname like 'pp1vmw%'
+    and cv.display_name like 'ORACLE-01-ANT'
+ order by 1;
 
 -- relation to CLUSTER
 
@@ -165,10 +166,13 @@ select * from ca_virt_platforms
   where resource_name like 'HVP_ORACLE%';
 
 CA_VIRT_PLATFORMS
-sys_id  name
-2b915576dbee5780f127fbc61d961947  HVP_ORACLE-01-ANT
-a7915576dbee5780f127fbc61d961945  HVP_ORACLE-01-BUD
+sys_id  name cpu
+a7915576dbee5780f127fbc61d961945  ORACLE-01-BUD 72
+2b915576dbee5780f127fbc61d961947  ORACLE-01-ANT 448
 
+relation type:
+a99d39118f10310091769012cbbe4429 - cluster
+5f985e0ec0a8010e00a9714f2a172815 - server
 
 -- vazba na VMWare cluster
 

@@ -75,10 +75,11 @@ BEGIN
 END;
 /
 
--- reset default params: [sessions]
+-- reset default params: [sessions, db_domain]
 BEGIN
-FOR REC in (select name FROM v$parameter where isdefault = 'FALSE'
-             AND name in ('sessions'))
+FOR REC in (
+    select name FROM v$parameter where isdefault = 'FALSE'
+      AND name in ('sessions', 'db_domain'))
   LOOP
     execute immediate 'alter system reset '||rec.name;
   END LOOP;

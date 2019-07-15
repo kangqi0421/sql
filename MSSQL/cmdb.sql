@@ -4,6 +4,7 @@
 
 
 -- RecoHUB
+PROD:
 cadb.csin.cz,1441
 
 TEST:
