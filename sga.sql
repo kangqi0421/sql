@@ -1,3 +1,7 @@
+--
+-- SGA
+--
+
 -- SGAINFO
 col name for a35
 select name, round(bytes/1048576) "MB", RESIZEABLE
@@ -5,12 +9,26 @@ select name, round(bytes/1048576) "MB", RESIZEABLE
  --where name like 'Large%'
 ;
 
+-- SGASTAT
+-- detailnÃ­ vypis zaplnÄ›nÃ­ 'shared pool'
+select
+      inst_id, pool,
+      name,
+      round(bytes/power(1024,3))
+    from gv$sgastat
+  where 1 = 1
+--    AND name like lower('%&1%')
+    AND pool like 'shared pool'
+  order by bytes desc
+;
+
+
 -- historie = DBA_HIST_SGASTAT
 --select * from v$sga_dynamic_components;
 
 -- SGA resize operations V$SGA_RESIZE_OPS
--- pokud je hodnì èastý, pak je tøeba upravit
---  * "_memory_broker_stat_interval=999" - starší verze do 11.2.0.2
+-- pokud je hodnÃ¬ Ã¨astÃ½, pak je tÃ¸eba upravit
+--  * "_memory_broker_stat_interval=999" - starÅ¡Ã­ verze do 11.2.0.2
 --  * shared_pool_size na minimal hodnotu, pod kterou neklesne automatika
 SELECT COMPONENT ,OPER_TYPE,FINAL_SIZE/1048576 Final,start_time
   FROM GV$SGA_RESIZE_OPS
@@ -27,6 +45,10 @@ select
  where component = 'shared pool'
  and start_time > sysdate - 7
 order by start_time;
+
+-- This view displays database objects that are cached in the library cache
+-- Objects include tables, indexes, clusters, synonym definitions, PL/SQL procedures and packages, and triggers.
+V$DB_OBJECT_CACHE
 
 -- BUFFER CACHE
 /*

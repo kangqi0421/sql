@@ -126,15 +126,6 @@ SELECT * FROM auditable_system_actions
    AND name like 'ALTER SES%'
   ;
 
--- MINIMAL LOGON LOGOFF policy
-
-LOGON - nešla by nahradit za default policy ORA_LOGON_FAILURES ?
-
-audit policy ORA_LOGON_FAILURES WHENEVER NOT SUCCESSFUL;
-
--- create audit policy CS_ACTIONS_LOGON actions LOGON, LOGOFF;
--- audit policy CS_ACTIONS_LOGON;
-
 -- system_privilege_map
 SELECT * FROM system_privilege_map;
 
@@ -176,6 +167,8 @@ SELECT 'noaudit policy '|| POLICY_NAME ||' BY '||ENTITY_NAME||';'
    and ENABLED_OPTION = 'BY USER';
 
 --
+-- drop ALL CS% policy
+-- enable ORA_LOGON_FAILURES  WHENEVER NOT SUCCESSFUL
 --
 
 -- NOAUDIT all policies
@@ -204,6 +197,15 @@ BEGIN
 end LOOP;
 END;
 /
+
+-- MINIMAL LOGON LOGOFF policy
+
+LOGON - nešla by nahradit za default policy ORA_LOGON_FAILURES ?
+
+audit policy ORA_LOGON_FAILURES WHENEVER NOT SUCCESSFUL;
+
+-- create audit policy CS_ACTIONS_LOGON actions LOGON, LOGOFF;
+-- audit policy CS_ACTIONS_LOGON;
 
 -- generování seznamu k auditu
 

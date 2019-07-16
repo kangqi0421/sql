@@ -1,4 +1,8 @@
-col name for a30
+--
+-- Oracle MEMory
+--
+
+col name for a35
 col value for 999999
 
 -- vypis memory parametru

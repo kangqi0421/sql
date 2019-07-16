@@ -225,8 +225,19 @@ FETCH FIRST 2 ROWS ONLY;
 -- kdy doslo k narustu auditnich dat
 select * from ARM_CLIENT.ARM_AUDIT_HISTOGRAM order by log_id desc, bucket_id;
 
+select owner, job_name, state, last_start_date
+   from dba_scheduler_jobs
+  where owner = 'ARM_CLSYS'
+--  WHERE job_name like '%&db%'
+  ;
+
 -- rerun do meziskladištì
-exec SYS.ARM_MOVE_C.MOVE_TO_STAGE;
+begin
+  dbms_scheduler.run_job('ARM_CLSYS.ARM_CLIENT_JOB', false);
+end;
+/
+
+exec ARM_CLSYS.ARM_MOVE_C.MOVE_TO_STAGE;
 
 -- cleanup a remove spustenych zaseknutych jobu
 
@@ -335,4 +346,9 @@ grant select on ARM12.ARM_UNIAUD_DWHP to CEN31776;
 select dbname from em_database
 minus
 select arm_db_name from ARM_ADMIN.ARM_DATABASES;
+
+
+-- CPSZA
+Warning: Log incomplete - ORA-20052 Parameter todate has to be set to value in the past
+
 
