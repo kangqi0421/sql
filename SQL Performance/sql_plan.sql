@@ -30,15 +30,15 @@ order by sample_time desc;
 @sqlid &SQLID %
 
 -- pocty sql id dle RAC instance
-select inst_id, count(*) 
+select inst_id, count(*)
   from gv$sql where sql_id = '&SQLID'
   group by inst_id
   order by inst_id;
 
 -- adaptive plan ?
-select inst_id, sql_id, child_number, plan_hash_value, 
+select inst_id, sql_id, child_number, plan_hash_value,
        optimizer_cost, sql_profile, sql_patch, FIRST_LOAD_TIME, users_executing
-  from gv$sql 
+  from gv$sql
  where sql_id = '&SQLID'
   order by sql_id, first_load_time desc;
 
@@ -76,16 +76,26 @@ SELECT * FROM TABLE(version_rpt('&SQLID'));
 
 
 -- optimizer_adaptive_features = TRUE/FALSE
-select sql_id,
-  PLAN_HASH_VALUE,
-	round(elapsed_time/1000/NULLIF(executions,0),0) AVG_ETIME_MS,
-	round(cpu_time/1000/NULLIF(executions,0),0) AVG_CPUTIME_MS,
-  executions
+select
+    ora_database_name,
+    sql_id,
+    plan_hash_value,
+    cpu_time,
+    elapsed_time,
+    round(elapsed_time/1000/NULLIF(executions,0),0) AVG_ETIME_MS,
+    round(cpu_time/1000/NULLIF(executions,0),0) AVG_CPUTIME_MS,
+    executions,
+    fetches,
+    parse_calls,
+    disk_reads,
+    buffer_gets,
+    rows_processed,
+    sql_text
 -- kontrola na bind peeking
 --  Is_Bind_Aware, Is_Bind_Sensitive
---  ,is_resolved_adaptive_plan
---  from v$sql where sql_id='&SQLID'
-  from gv$sqlstats where sql_id='&SQLID'
+  ,is_resolved_adaptive_plan
+  from gv$sqlstats
+ where sql_id='&SQLID'
 order by sql_id ;
 
 -- SQL duration z ASH
@@ -146,7 +156,7 @@ SELECT   a.SQL_ID, a.sql_plan_hash_value,
 --        AND SAMPLE_TIME BETWEEN TIMESTAMP'2015-02-15 23:30:00'
 --                            AND TIMESTAMP'2015-02-16 09:00:00'
           --        AND SQL_PLAN_OPERATION = 'HASH JOIN'
-        and a.sql_plan_hash_value = 384336403  
+        and a.sql_plan_hash_value = 384336403
         AND a.SQL_EXEC_START IS NOT NULL
   GROUP BY a.SQL_ID, a.sql_plan_hash_value, a.sql_plan_line_id, p.object_name,SQL_PLAN_OPERATION
     --a.SQL_EXEC_START,

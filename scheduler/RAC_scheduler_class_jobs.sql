@@ -2,7 +2,7 @@
 -- RAC class
 --
 
--- DR test
+- DR test : restart_on_recovery
 
 restart_on_recovery            BOOLEAN;
 
@@ -10,6 +10,25 @@ Při abortu jedné db instance joby defaultně popadají.
 Pokud mají nastavený příznak restart_on_recovery, pak se automaticky nastartují na běžící instanci.
 Návrat na původní instanci pak musí proběhnout řízeným restatem jobu.
 
+- cloning: reset service
+select * from  DBA_SCHEDULER_JOB_CLASSES where service is not null
+
+-- reset default service u job class pro non-existing service
+-- NOTE: podminku na not in gv$services vyhodit ?
+begin
+  for i in (
+    select owner, job_class_name, service
+      from dba_scheduler_job_classes
+      where service is not null
+        and service not in (
+        select name from gv$services
+        )
+  )
+  loop
+    DBMS_SCHEDULER.SET_ATTRIBUTE_NULL(i.owner||'.'||i.job_class_name, 'service');
+  end loop;
+end;
+/
 
 -- load balance accross nodes
 col job_name for a15
@@ -30,7 +49,7 @@ select owner, job_name name, state, job_class, INSTANCE_STICKINESS, INSTANCE_ID
 				   --('IPX')
  ;
 
-
+--
 -- RTOP
 --
 - create job class
@@ -38,6 +57,7 @@ BEGIN
 DBMS_SCHEDULER.CREATE_JOB_CLASS (job_class_name =>  'ETL_L1_L1_CLASS');
 END;
 /
+
 - set attr na tuto CLASS
 DBMS_SCHEDULER.SET_ATTRIBUTE('SYS.ETL_L1_L1_CLASS', 'service', 'RTOZA_ETL');
 
