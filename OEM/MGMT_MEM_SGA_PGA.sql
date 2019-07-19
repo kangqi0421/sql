@@ -2,7 +2,7 @@
 -- Memory
 --
 
-define server = ppr02db%
+define server = tordb01%
 
 -- Server MEM utilization
 -- MEM util, MEM free a MEM total free pres vsechny servery

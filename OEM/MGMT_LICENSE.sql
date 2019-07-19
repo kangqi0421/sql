@@ -10,7 +10,7 @@ Enterprise Manager 12c For Oracle Database: How to Enable the Metric "Feature Us
 Database > Monitoring > Metric and Collections Settings
 Feature Usage: change to Enable
 
-select count(*) from dasahboard.MGMT$DB_FEATUREUSAGE;
+select count(*) from dashboard.MGMT$DB_FEATUREUSAGE;
 
   COUNT(*)
 ----------

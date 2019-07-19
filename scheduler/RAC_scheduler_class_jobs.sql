@@ -109,6 +109,7 @@ exec dbms_scheduler.run_job('DBEIM.PREPAREEXPORT_JOB');
 --
 -- instance stickiness
 --
+
 -- pouze konkrétní job
 -- nepoužívat !!! když neběží instance, neběží i přepočet stats
 define JOB_NAME=IPX.IPX_MONITORING

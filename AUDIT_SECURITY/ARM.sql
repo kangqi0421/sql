@@ -231,6 +231,27 @@ select owner, job_name, state, last_start_date
 --  WHERE job_name like '%&db%'
   ;
 
+-- enable a reset ARM_CLSYS INSTANCE_STICKINESS
+-- stejne to pro ARM jobe nezabere
+BEGIN
+  FOR rec IN (
+    SELECT owner, job_name, enabled
+      FROM dba_scheduler_jobs
+      WHERE owner = 'ARM_CLSYS')
+  LOOP
+    dbms_scheduler.set_attribute(
+        NAME => rec.owner||'.'||rec.job_name,
+        attribute => 'INSTANCE_STICKINESS',
+        value => FALSE);
+    if rec.enabled = 'FALSE' THEN
+      DBMS_SCHEDULER.ENABLE(NAME =>rec.owner||'.'||rec.job_name);
+    END IF;
+  END LOOP;
+END;
+/
+
+commit;
+
 -- rerun do meziskladištì
 begin
   dbms_scheduler.run_job('ARM_CLSYS.ARM_CLIENT_JOB', false);

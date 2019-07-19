@@ -18,10 +18,10 @@ BEGIN
 END;
 /
 
--- DROP JOB
+-- drop ARM jobs
 begin
-  dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_JOB', force=>True);
-  dbms_scheduler.drop_job(job_name=>'SYS.ARM_CLIENT_CLEANUP_JOB', force=>True);
+  dbms_scheduler.drop_job(job_name=>'ARM_CLSYS.ARM_CLIENT_JOB', force=>True);
+  dbms_scheduler.drop_job(job_name=>'ARM_CLSYS.ARM_CLIENT_CLEANUP_JOB', force=>True);
 end;
 /
 
