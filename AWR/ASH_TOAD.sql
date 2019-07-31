@@ -1,7 +1,9 @@
 /* ASH */
 
 select
- *
+-- *
+ --  p2, count(*)
+  sql_id, event, a.blocking_session_status, a.blocking_session
 -- * cnt
 --sample_time, count(*)
 --  SQL_ID, COUNT(*) cnt
@@ -25,17 +27,16 @@ select
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
 --    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
---  p2, count(*)
     FROM GV$ACTIVE_SESSION_HISTORY a
 --    FROM dba_hist_active_sess_history a
   WHERE
   1=1
---       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-01-24 13:00:00'
---                           AND TIMESTAMP'2019-01-24 14:00:00'
-                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-07-22 09:34:00'
+                           AND TIMESTAMP'2019-07-22 09:36:00'
+--                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
 --                           and sample_id IN (276540, 275627)
 --                        and xid = '1C000D00BB9B6000'
-                         and SQL_ID in ('djc26zm8gfs46')
+--                         and SQL_ID in ('djc26zm8gfs46')
 --                         and event = 'row cache lock'
 --                           and event like 'gc%'
 --                         and event not in ('enq: MC - Securefile log')
@@ -43,8 +44,8 @@ select
 --                       AND IN_HARD_PARSE = 'Y' AND in_parse = 'Y' -- sql id na hard parsingu
 --                          and a.BLOCKING_SESSION_STATUS = 'VALID'
 --                         and blocking_session in (3963)
---                         and wait_class = 'User I/O'
---                         and SESSION_ID in (34)  --and SESSION_SERIAL# in (17855)
+--                         and wait_class = 'Concurrency'  -- 'User I/O'
+--                         and SESSION_ID in (15403)  and SESSION_SERIAL# in (56556)
 --                         and SESSION_TYPE = 'FOREGROUND'
 --                         and module like 'SQL*Plus'
 --                         and machine in ('rasft1','rasft2')
@@ -53,7 +54,7 @@ select
 --                         and SQL_PLAN_OPERATION = 'HASH JOIN'
 --                           and sql_opname = 'UPDATE'
 --                         and sql_opcode in (7,1,6,9,2)
---                         and current_obj# =  108030
+--                         and current_obj# =  9771790
 --                         and session_state <> 'WAITING'
 --                         and a.instance_number = 2
 --                         and a.inst_id = 2
@@ -89,7 +90,7 @@ select min(sample_time) from dba_hist_active_sess_history;
 select systimestamp - min(sample_time) from GV$ACTIVE_SESSION_HISTORY;
 
 -- dba_objects
-select * from dba_objects where object_id in (627157269);
+select * from dba_objects where object_id in (9771790);
 
 select * from gv$sqlstats where sql_id in ('90rd3rb489wp6','0mt9bj1u0uh4h','f3v75nfzwu1t0','2qbjb44zusrky');
 

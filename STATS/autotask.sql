@@ -2,6 +2,11 @@
 -- autotask
 --
 
+select Client_Name, status, Service_Name
+  from DBA_AUTOTASK_CLIENT
+  where client_name = 'auto optimizer stats collection'
+;
+
 -- advisor
 V$STATS_ADVISOR_RULES
 
@@ -19,17 +24,15 @@ ORDER BY job_start_time desc;
 
 
 -- zrušení automatického přepočtu statistik
-
 BEGIN
-dbms_auto_task_admin.disable('auto optimizer stats collection',NULL,NULL);
+  dbms_auto_task_admin.disable('auto optimizer stats collection',NULL,NULL);
 END;
 /
 
 
 -- povolení sběru automatický statistik
-
 BEGIN
-dbms_auto_task_admin.enable('auto optimizer stats collection',NULL,NULL);
+  dbms_auto_task_admin.enable('auto optimizer stats collection',NULL,NULL);
 END;
 /
 
@@ -71,7 +74,3 @@ BEGIN
 END;
 /
 
-select Client_Name, status, Service_Name
-  from DBA_AUTOTASK_CLIENT
-  where client_name = 'auto optimizer stats collection'
-;

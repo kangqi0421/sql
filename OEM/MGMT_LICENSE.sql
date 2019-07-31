@@ -8,7 +8,14 @@
 Enterprise Manager 12c For Oracle Database: How to Enable the Metric "Feature Usage" to Get Data from the Repository View SYSMAN.MGMT$DB_FEATUREUSAGE (Doc ID 1970236.1)
 
 Database > Monitoring > Metric and Collections Settings
-Feature Usage: change to Enable
+
+The 4 following metrics are retrieved (They are all disabled by default).
+
+Database Feature Usage
+Database Usage Tracking DBA Feature Usage Statistics
+Database Usage Tracking DBA Feature Usage Statistics Feature Info
+Feature Usage
+
 
 select count(*) from dashboard.MGMT$DB_FEATUREUSAGE;
 

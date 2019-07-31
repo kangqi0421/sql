@@ -1,4 +1,8 @@
---/* ovÏ¯enÌ, nad kter˝mi sloupci se histogram spoËÌtal */--
+--
+-- DBMS_STATS
+--
+
+--/* ov√¨√∏en√≠, nad kter√Ωmi sloupci se histogram spo√®√≠tal */--
 
 SELECT table_name,
        column_name,
@@ -7,10 +11,22 @@ SELECT table_name,
        num_buckets,
        histogram
   FROM dba_tab_columns
- WHERE table_name = '&table_name'
-   AND histogram <> 'NONE';
+ WHERE 1 = 1
+    AND owner = 'DOCBASE_EBOX'
+--    AND table_name = '&table_name'
+    AND histogram <> 'NONE';
 
---/* zjiötÏnÌ nastavenÌ default hodnot instance */--
+--/* zji≈°t√¨n√≠ nastaven√≠ default hodnot instance */--
 
 col spare4 for a40
 select sname, sval1, spare4 from sys.optstat_hist_control$;
+
+-- Glob√°ln√≠ vypnut√≠ p≈ôepoƒçtu histogramu
+
+dbms_stats.set_global_prefs('method_opt', 'FOR ALL COLUMNS SIZE 1')
+
+-- schema DOCBASE_EBOX
+DBMS_STATS.SET_SCHEMA_PREFS('DOCBASE_EBOX', 'METHOD_OPT', 'FOR ALL COLUMNS SIZE 1');
+
+-- nastaven√≠ p≈ôepoƒçtu nad tabulkou
+DBMS_STATS.SET_TABLE_PREFS('RDB', 'CSX_OWNER_LOAD','METHOD_OPT', 'FOR ALL COLUMNS SIZE REPEAT');
