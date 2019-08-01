@@ -32,4 +32,5 @@ select d.licdb_id target_licdb_id,d.dbname target_dbname, st.hostnames target_ho
         and D.CLONE_SOURCE_LICDB_ID=src.licdb_id(+)
         and d.licdb_id=st.licdb_id(+)
         and D.CLONE_SOURCE_LICDB_ID=ssrc.licdb_id(+)
-    and nvl(upper(trim(d.env_status)),'X')!='PRODUCTION';
+    and nvl(upper(trim(d.env_status)),'X')!='PRODUCTION'
+;
