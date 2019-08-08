@@ -24,22 +24,3 @@ WHERE
     'JAVASYSPRIV', 'JAVADEBUGPRIV', 'EJBCLIENT', 'JMXSERVER', 'JAVA_ADMIN',
     'JAVA_DEPLOY' )
 ORDER BY role;
-
-/*
---
--- SYS
--- prevent ORA-28031: maximum of 148 enabled roles exceeded
---
-BEGIN
-FOR rec IN (
-    select granted_role from dba_role_privs
-      where grantee = 'SYS'
-        and granted_role not in ('DBA')
-           )
-LOOP
-  execute immediate 'REVOKE '||rec.granted_role||' FROM SYS';
-END LOOP;
-END;
-/
-
-*/
