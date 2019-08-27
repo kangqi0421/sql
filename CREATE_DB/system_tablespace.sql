@@ -20,16 +20,17 @@ BEGIN
    -- datafile SYSTEM, SYSAUX, UNDOTBS1, USERS
    FOR rec IN c_datafile
    LOOP
-      EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  autoextend on next 256M maxsize &system_size';
-	  --EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id|| '  autoextend off';
+    EXECUTE IMMEDIATE 'alter database datafile '|| rec.file_id
+      || '  autoextend on next 256M maxsize &system_size';
    END LOOP;
    FOR rec IN c_tempfile
    LOOP
-      EXECUTE IMMEDIATE 'alter database tempfile '|| rec.file_id|| '  autoextend on next 256M maxsize &system_size';
-	  --EXECUTE IMMEDIATE 'alter database tempfile '|| rec.file_id|| '  autoextend off';
+     EXECUTE IMMEDIATE 'alter database tempfile '|| rec.file_id
+      || '  autoextend on next 256M maxsize &temp_size';
    END LOOP;
 END;
 /
+
 
 -- UNDO
 DECLARE
@@ -54,8 +55,6 @@ END;
 BEGIN EXECUTE IMMEDIATE 'create tablespace ARM_DATA datafile size 256M autoextend on next 256M maxsize 16G'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 
--- TEMP
-alter database tempfile 1 autoextend on next 256M maxsize &temp_size;
 
 -- RAC TEMP: pridani tempfile pro kazdou RAC instanci
 DECLARE
