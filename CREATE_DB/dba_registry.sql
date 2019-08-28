@@ -1,13 +1,21 @@
 WHENEVER SQLERROR EXIT 1
 
-col comp_id for a15
-col comp_name for a35
+set lines 120 pages 999
+
+col CON_ID format 99
+col comp_id for a10
+col comp_name for a40
+col SCHEMA format a12
 col version for a15
 col status for a10
 
-select substr(comp_id,1,15) comp_id,substr(comp_name,1,30) comp_name,
-       substr(version,1,10) version, status
-  from dba_registry
+select CON_ID,
+       comp_id,
+       substr(comp_name,1,40) comp_name,
+       schema,
+       version,
+       status
+  from CDB_REGISTRY  -- DBA_REGISTRY
  order by 1;
 
 -- PL/SQL to raise error
