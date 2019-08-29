@@ -1,1 +1,0 @@
-execute DBMS_SCHEDULER.PURGE_LOG(); 
