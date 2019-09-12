@@ -15,7 +15,7 @@ alter profile PROF_APPL_UNLIMITED limit IDLE_TIME UNLIMITED;
 alter profile PROF_APPL limit IDLE_TIME UNLIMITED;
 
 alter profile PROF_APPL limit
-  PASSWORD_GRACE_TIME 7 PASSWORD_LIFE_TIME 413;
+  PASSWORD_GRACE_TIME 7 PASSWORD_LIFE_TIME 420;
 
 -- vypnutí uzamčení účtu při změně hesla
 alter profile PROF_APPL limit FAILED_LOGIN_ATTEMPTS UNLIMITED;

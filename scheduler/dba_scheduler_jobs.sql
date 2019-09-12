@@ -95,3 +95,26 @@ ORDER BY log_date DESC;
 
 -- 18.4
 dbms_scheduler enabled false
+
+-- stop job
+sys.dbms_scheduler.STOP_JOB(job_name=>'SYS.ORA$AT_OS_OPT_SY_12856', force=>true);
+
+BEGIN
+  FOR rec IN
+  (
+    SELECT   owner,
+        job_name,
+        enabled,
+        failure_count
+      FROM dba_scheduler_jobs
+        where job_name in (
+        'IMPORT_RTODS_HISTORY_JOB',
+        'IMPKAFKAPRODUCTS_JOB',
+        'IMPKAFKARIGHTSRELS_JOB',
+        'IMPKAFKAUSERS_JOB')
+        and owner = 'ASBLUES')
+  LOOP
+    DBMS_SCHEDULER.STOP_JOB(job_name =>rec.owner||'.'||rec.job_name, force=>true);
+  END LOOP;
+END;
+/
