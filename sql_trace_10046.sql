@@ -2,6 +2,10 @@
 -- SQL trace
 --
 
+-- identifikace trace
+alter session set tracefile_identifier='TO_JE_ONA';
+
+
 -- REDIM SQL trace
 BEGIN
   FOR rec in (select sid, serial# from v$session where username = 'REDIM_USER')

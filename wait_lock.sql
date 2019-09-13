@@ -8,7 +8,7 @@ alter session set ddl_lock_timeout=60;
 
 
 -- Get the final blocker sessions in Oracle
-select distinct FINAL_BLOCKING_SESSION from v$session where  FINAL_BLOCKING_SESSION_STATUS='VALID';
+select distinct inst_id, FINAL_BLOCKING_SESSION from gv$session where  FINAL_BLOCKING_SESSION_STATUS='VALID';
 
 
 -- detailed info
