@@ -21,13 +21,22 @@ where GB > &min_size_gb;
 
 /*
 
-// segments in CSV
+-- segments in CSV
 
 select sys_context('USERENV', 'DB_NAME')||';'|| owner ||';'||
-       round(sum(bytes/power(1024, 3)))
+       round(sum(bytes/power(1024, 3))) as GB
     from dba_segments
   where
     owner in ('CONSOLE','JOB','LOG')
+  group by owner
+;
+
+-- seg per schema
+select owner,
+       round(sum(bytes/power(1024, 3)))
+    from dba_segments
+  where
+    owner like 'SIEBEL%'
   group by owner
 ;
 

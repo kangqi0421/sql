@@ -26,6 +26,12 @@ select count(*) from dashboard.MGMT$DB_FEATUREUSAGE;
     199343
     199708
 
+19.09.2019 76453
+
+- kontrola na urovni EM agenta na serveru
+
+${AGENT_INST}/bin/emctl status agent scheduler | grep feature
+
 
 -- OEM rozdíl proti OLI
 select distinct
