@@ -4,6 +4,35 @@ set lines 32767
 set lines 32767 pages 0 trims on
 col cmd for a99999
 
+
+-- RAC UNDO - 4x32GB
+alter database datafile 3 resize 32767M;
+alter database datafile 3 autoextend off;
+alter database datafile 4 resize 32767M;
+alter database datafile 4 autoextend off;
+
+begin
+  for i in 1..7
+  loop
+    execute immediate 'alter tablespace UNDOTBS1 add datafile size 32767M';
+    execute immediate 'alter tablespace UNDOTBS2 add datafile size 32767M';
+  end loop;
+end;
+/
+
+
+-- TEMP - 4x32GB
+alter database tempfile 1 autoextend on next 256M maxsize 32767M;
+
+begin
+  for i in 1..14
+  loop
+    execute immediate 'alter tablespace TEMP add tempfile size 256M autoextend on next 256M maxsize 32767M';
+  end loop;
+end;
+/
+
+
 -- 6x datafile
 select
  'alter tablespace CDM_MADB add datafile  size 512m autoextend on next 512m maxsize 32767m;'
@@ -25,16 +54,6 @@ connect by
 /
 
 
-begin
-  for i in 1..ceil(8)  -- poèet v GB / maxsize per datafile 64G
-  loop
-    --dbms_output.put_line(i);
-    dbms_output.put_line ('alter tablespace UNDOTBS1 add datafile size 512M autoextend on next 512M maxsize 32767M;');
-    dbms_output.put_line ('alter tablespace UNDOTBS2 add datafile size 512M autoextend on next 512M maxsize 32767M;');
-  end loop;
-end;
-/
-
 -- SMALL FILE - pridani dalsich datafiles pres v_df_maxsize_mb
 for i in 1..floor(p_maxsize_gb * 1024 / v_df_maxsize_mb)
 LOOP
@@ -44,11 +63,8 @@ LOOP
 END LOOP;
 
 
+-- UNDOTBS
 -- RAC undo datafiles
-alter database datafile 3 resize 65535M;
-alter database datafile 3 autoextend off;
-alter database datafile 4 resize 65535M;
-alter database datafile 4 autoextend off;
 
 -- add UNDOTBS datafiles
 BEGIN

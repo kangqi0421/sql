@@ -87,20 +87,25 @@ prompt redo size
 select THREAD#, count(*), max(bytes)/1048576 "MB" from v$log group by THREAD#;
 
 prompt UNDO:
-SELECT t.tablespace_name, d.file_name, d.bytes/1048576 MB,
-       autoextensible EXT,decode(autoextensible, 'YES', round(maxbytes/1048576), null) MAXSIZE
+SELECT t.tablespace_name,
+       count(*) cnt,
+       round(sum(d.bytes)/power(1024,3)) GB,
+       round(sum(d.maxbytes)/power(1024,3)) MAXSIZE
   FROM    dba_tablespaces t
        INNER JOIN
           dba_data_files d
        ON (t.tablespace_name = d.tablespace_name)
  WHERE t.contents = 'UNDO'
-ORDER by t.tablespace_name
+group by t.tablespace_name
 ;
 
 prompt tempfiles:
-SELECT d.file_name, d.bytes/1048576 MB, d.autoextensible EXT,
-       decode(d.autoextensible, 'YES', round(d.maxbytes/1048576), null) MAXSIZE
- from dba_temp_files d;
+SELECT tablespace_name,
+       count(*) cnt,
+       round(sum(d.bytes)/power(1024,3)) GB,
+       round(sum(d.maxbytes)/power(1024,3)) MAXSIZE
+ from dba_temp_files d
+ group by tablespace_name;
 
 prompt DBA directories
 col directory for a180
