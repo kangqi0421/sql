@@ -111,7 +111,7 @@ insert into CLONING_OWNER.CLONING_PARAMETER  values ('C','ansible_playbook','N',
 -- kde všude máme parametry
 --
 
-define parameter = cpu_count
+define parameter = SEC_CASE_SENSITIVE_LOGON
 
 select * FROM  cloning_parameter
   where lower(parameter_name) = '&parameter'
