@@ -11,9 +11,11 @@ Changed "AUDIT_TRAIL_WRITE_MODE" to "AUDIT_TRAIL_QUEUED_WRITE"
 SELECT PARAMETER_VALUE FROM DBA_AUDIT_MGMT_CONFIG_PARAMS WHERE PARAMETER_NAME='AUDIT WRITE MODE';
 
 
--- TODO
+## backlog
+
 - vyřadit plošně ALTER SESSION, kvuli
 Severity 3SR 3-19375638801 : ORA-07445: exception encountered: core dump [kgscFreeCachedCursor()+600]
+- Audit Only Top-Level SQL Statements
 
 -- records count
 select COUNT(*) from UNIFIED_AUDIT_TRAIL;
@@ -81,10 +83,6 @@ AUDIT_SYS_OPERATIONS = FALSE
 AUDIT_TRAIL=NONE
 
 
-ssh tbsb7e
-ssh tbsb7i
-ssh tbsb7t
-
 --
 -- kontrola nataveni
 --
@@ -117,6 +115,7 @@ select * from AUDIT_UNIFIED_POLICIES
   and policy_name like 'CS%'
   and policy_name in ('CS_ACTIONS_GENERAL')
   and AUDIT_OPTION like 'ALTER SESSION%'
+  and audit_only_toplevel = 'YES'
 order by policy_name, audit_option
  ;
 
@@ -312,3 +311,16 @@ SYS                                                                             
 -- default audit
 ALL USERS ORA_LOGON_FAILURES  BY  NO  YES
 ALL USERS ORA_SECURECONFIG    BY  YES YES
+
+--
+--Configuring a Unified Audit Policy to Capture Only Top-Level Statements
+
+--
+https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-audit-policies.html#GUID-D9A133FD-728C-4231-8870-A91280563D28
+
+CREATE AUDIT POLICY policy_name
+all_existing_options
+only toplevel;
+
+ALTER AUDIT POLICY hr_audit_policy ADD ONLY TOPLEVEL
+
