@@ -151,6 +151,11 @@ select * from CA_SRC_SERVERS
   ;
 
 -- server včetně cluster name
+
+-- vazba mezi clustery
+- parent = server
+- child = VMW cluster
+
 select cs.hostname, cv.resource_name, cr.rel_type
     from CA_SERVERS cs
     left join ca_relations cr on (cs.cmdb_ci_id = cr.parent_cmdb_ci_id)
@@ -163,16 +168,28 @@ select cs.hostname, cv.resource_name, cr.rel_type
 -- relation to CLUSTER
 
 select * from ca_virt_platforms
-  where resource_name like 'HVP_ORACLE%';
+  where resource_name like 'HVP_ORACLE%'
+  -- where resource_name like 'HVP_PB805-oracle'
+;
+
 
 CA_VIRT_PLATFORMS
 sys_id  name cpu
 a7915576dbee5780f127fbc61d961945  ORACLE-01-BUD 72
 2b915576dbee5780f127fbc61d961947  ORACLE-01-ANT 448
 
+c8a19576dbee5780f127fbc61d9619e1  PB805-oracle  16      HVP_PB805-oracle
+
 relation type:
 a99d39118f10310091769012cbbe4429 - cluster
 5f985e0ec0a8010e00a9714f2a172815 - server
+
+    SELECT
+        "type",
+        "child",
+        "parent"
+    FROM CA_SRC_RELATIONS
+     where "child" = 'c8a19576dbee5780f127fbc61d9619e1';
 
 -- vazba na VMWare cluster
 
@@ -185,7 +202,6 @@ select * from ca_relations
 select * from ca_relations;
 
 
-
 HSLV_dpdetdb01.vs.csin.cz
 HSLV_dprtodb01.vs.csin.cz
 
@@ -193,3 +209,4 @@ Hosted on -VMware vCenter Clusters
 [L1]HVP_ORACLE-01-ANTStatus: Active
 
 VMware Virtual Platform
+

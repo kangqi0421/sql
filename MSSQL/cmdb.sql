@@ -94,8 +94,9 @@ a7915576dbee5780f127fbc61d961945  HVP_ORACLE-01-BUD
 
 
 -- vazba mezi clustery
+- parent = server
 - child = VMW cluster
-- parent = server ?
+
 
 SELECT
        [child]
