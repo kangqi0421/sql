@@ -1,5 +1,5 @@
 
-connect CSBREP
+connect CSBREP@ARKCP
 
 -- CTR_TAB FULL
 begin dbms_scheduler.drop_job(job_name=>'REPPKG_CTR_TAB_JOB', force=>true); end;
