@@ -11,7 +11,7 @@ select * from dba_objects
 DB target:
   - MGMT$DB_DBNINSTANCEINFO
   - SYSMAN.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
-12.2 - filtr upraven na
+- 12.2 - filtr upraven na
 where TARGET_TYPE in ('rac_database', 'oracle_database')
   and TYPE_QUALIFIER3 != 'RACINST'
 
@@ -36,7 +36,7 @@ SELECT
 --  ,t.category_prop_1
   ,T.Host_Name
 FROM
-  MGMT$TARGET t
+  sysman.MGMT$TARGET t
  WHERE
    t.target_type IN ('oracle_database','rac_database')
    -- t.TYPE_QUALIFIER3 = 'DB'
@@ -57,8 +57,8 @@ ORDER BY t.target_name;
 select
 --   *
     database_name, dbversion
-  FROM MGMT$DB_DBNINSTANCEINFO d
-    JOIN MGMT$TARGET t ON d.target_guid = t.target_guid
+  FROM sysman.MGMT$DB_DBNINSTANCEINFO d
+    JOIN sysman.MGMT$TARGET t ON d.target_guid = t.target_guid
   WHERE t.TYPE_QUALIFIER3 = 'DB'
     and (
            database_name like 'TS0O%'
