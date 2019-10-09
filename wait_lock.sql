@@ -4,7 +4,7 @@
 
 -- Chyba: ​ORA-00054: resource busy and acquire with NOWAIT specified or timeout expired
 
-alter session set ddl_lock_timeout=60;
+alter session set ddl_lock_timeout=600;
 
 
 -- Get the final blocker sessions in Oracle
