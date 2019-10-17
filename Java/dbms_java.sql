@@ -8,7 +8,7 @@ select dbms_java.get_jdk_version() from dual;
 -- JAVAVM in dba registry
 select substr(comp_id,1,15) comp_id,substr(comp_name,1,30) comp_name,
        substr(version,1,10) version, status
-  from dba_registry 
+  from dba_registry
  where    comp_id = 'JAVAVM';
 
 /*
@@ -30,17 +30,22 @@ $ORACLE_HOME/OPatch/datapatch -verbose
 --
 -- List existing privs
 --
-select * from sys.DBA_JAVA_POLICY
+set lines 180
+col GRANTEE for a20
+col NAME for a50
+col ACTION for a40
+select GRANTEE, NAME, ACTION
+  from sys.DBA_JAVA_POLICY
 where 1=1
---   and grantee = 'INT_OWNER'
+  and grantee = 'EXTRACT_ETL_OWNER'
   -- and type_name = 'java.io.FilePermission'
 --   and name like '/srv/data/pred/ccd/cont/remote/fint/import/ctlp/int_owner'
-  AND grantee in (
-    select username from dba_users where oracle_maintained = 'N'
-    )
+  -- AND grantee in (select username from dba_users where oracle_maintained = 'N')
+  -- and action = '/bin/sh'
   and ENABLED = 'ENABLED'
 order by grantee, name, action desc
 ;
+
 
 -- recreate JAVA permission
 select 'exec '||stmt

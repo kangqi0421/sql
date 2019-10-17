@@ -16,6 +16,20 @@ select distinct inst_id, FINAL_BLOCKING_SESSION from gv$session where  FINAL_BLO
      chain_id, num_waiters, in_wait_secs, osid, blocker_osid, wait_event_text
    FROM v$wait_chains;
 
+
+-- ITL entry
+Troubleshooting waits for 'enq: TX - allocate ITL entry' (Doc ID 1472175.1)
+
+- ASH.
+ASWBL.IDX_BD_STORAGE_CREATED_TM
+
+a. Increase INITRANS
+alter index <index_name> rebuild INITRANS 70;
+b. Increase PCTFREE
+
+
+
+
 -- TOP 100
 SELECT *
 FROM (SELECT 'Current Process: '||osid W_PROC, 'SID '||i.instance_name INSTANCE,
