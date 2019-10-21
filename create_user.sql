@@ -218,3 +218,18 @@ done
 
 echo '@@fix_redim.sql BEZP   CSCONNECT,MCI_CONNECT,BEZP_SYSTEM_PRIV,CS_APPL_ACCOUNTS' > MCIP.sql
 echo '@@fix_redim.sql DATALAKE   CSCONNECT,ROLE_DATALAKE  '>  DMSLAPTS.sql
+
+-- CLOUDA - connect resource
+create user OCP_SAMPLE_JAVA identified by "abcd1234" profile PROF_APPL
+  default tablespace USERS quota UNLIMITED on USERS;
+grant CSCONNECT,RESOURCE to OCP_SAMPLE_JAVA;
+
+create user OCP_SAMPLE_DOTNET identified by "abcd1234" profile PROF_APPL
+  default tablespace USERS quota UNLIMITED on USERS;
+grant CSCONNECT,RESOURCE to OCP_SAMPLE_DOTNET;
+
+create user OCP_SAMPLE_NODEJS identified by "abcd1234" profile PROF_APPL
+  default tablespace USERS quota UNLIMITED on USERS;
+grant CSCONNECT,RESOURCE to OCP_SAMPLE_NODEJS;
+
+
