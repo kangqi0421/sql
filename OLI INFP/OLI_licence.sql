@@ -61,9 +61,11 @@ https://linux.vs.csin.cz/server_list/?t=aixmspp
 --
 select lic_env_id, hostname, domain
   from servers
-  where hostname like 'p%r05db%';
+  where hostname like 'tpr02db%';
 
-define LIC_ENV_ID = 9732
+
+
+define LIC_ENV_ID = 7894
 define PP = 12
 
 -- Enterprise Edition
@@ -82,11 +84,14 @@ insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_US
 insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID)
   values (51,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
+--
+--
 -- Real Application Clusters
---insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (48,133,'3','&PP','Y','N',&LIC_ENV_ID);
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (48,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
+--
 -- Advanced Compression
--- insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (3,133,'3','&PP','Y','N',&LIC_ENV_ID);
+insert into OLI_OWNER.LICENSE_ALLOCATIONS (PROD_ID,CSI_ID,LIC_TYPE_ID,LIC_CNT_USED,ACTIVE,HIDDEN,LIC_ENV_ID) values (3,133,'3','&PP','Y','N',&LIC_ENV_ID);
 
 commit;
 

@@ -143,11 +143,11 @@ select * from SERVERS
 ;
 
 select * from CA_SERVERS
-  where lower(hostname) like 'dporadb01%'
+  where lower(hostname) like 'tpr02db0%'
 ;
 
 select * from CA_SRC_SERVERS
-  where "u_hostname" like 'dporadb01%'
+  where "u_hostname" like 'tpr02db0%'
   ;
 
 -- server včetně cluster name
