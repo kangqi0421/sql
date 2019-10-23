@@ -288,8 +288,8 @@ SELECT
 --   round(m.average,1) average_value
    --round(m.maximum)/1024  maximum_value_gb
 FROM
---  MGMT$METRIC_DAILY m
-  MGMT$METRIC_DETAILS m
+--  SYSMAN.MGMT$METRIC_DAILY m
+  SYSMAN.MGMT$METRIC_DETAILS m
     -- JOIN pro databázové targety
     -- JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE  1 = 1
@@ -336,6 +336,37 @@ ORDER BY  m.rollup_timestamp
 --
 )
 ;
+
+
+-- CPU, MEM avg util
+with cpu as (
+  SELECT
+      target_guid,
+      round(avg(average)/100,2) AS cpu_usage
+   FROM
+      sysman.MGMT$METRIC_DAILY
+   WHERE 
+          rollup_timestamp > sysdate - interval '1' month
+      AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
+   group by target_guid
+),
+mem as (
+  SELECT
+      target_guid,
+      round(avg(average)/1024) AS mem_usage
+   FROM
+      sysman.MGMT$METRIC_DAILY
+   WHERE 
+          rollup_timestamp > sysdate - interval '1' month
+      AND metric_name = 'memory_usage' AND metric_column = 'total_memory'
+   group by target_guid 
+)
+select d.host_name, d.database_name, d.instance_name,
+       cpu_usage, mem_usage
+  from  cpu c 
+    JOIN mem m ON c.target_guid = m.target_guid
+    JOIN sysman.MGMT$DB_DBNINSTANCEINFO d ON c.target_guid = d.target_guid
+ order by 1, 2, 3;
 
 --// pouze AIX servery s MEM < 10GB+1 //--
 SELECT
