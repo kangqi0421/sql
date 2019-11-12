@@ -64,14 +64,23 @@ asmca -silent -createDiskGroup -diskGroupName DWHDD18Z_DATA -diskList '/dev/mapp
 compatible.asm
 compatible.rdbms
 
-for each in WBLZ_D01 WBLZ_FRA
+vypis lsdg:
+`asmcmd lsdg`
+
+dg=JIRKA_DATA
+
+for dg in JIRKA_DATA
 do
-  asmcmd lsattr -l -G $each
-  asmcmd setattr -G $each compatible.asm 12.2
-  asmcmd setattr -G $each compatible.rdbms 12.1
-  asmcmd lsattr -l -G $each
-  # asmcmd mount $each
+  asmcmd lsattr -l -G $dg
+  asmcmd setattr -G $dg compatible.asm 19.0
+  asmcmd setattr -G $dg compatible.rdbms 12.1
+  asmcmd lsattr -l -G $dg
+  # asmcmd mount $dg
 done
+
+
+select name from v$asm_diskgroup;
+
 
 ## upgrade na 12.2, pokud je compatible men�� nez 10.0
 for each in ECRST_FRA ESPE_D01 ECRSTB_FRA ECRSTB_D01 ECRSTC_D01 ESPT_FRA ECRSTC_FRA ESPE_FRA ECRST_D01
