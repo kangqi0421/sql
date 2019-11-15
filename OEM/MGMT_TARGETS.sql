@@ -134,13 +134,16 @@ WHERE 1=1
 --t.TYPE_QUALIFIER3 = 'DB'
         and dbversion = '12.1.0.2.0'
         and oracle_home <> '/oracle/product/db/12.1.0.2'
+;
 
 --
 -- OS info/HW info short AIX/Linux/Win ..
 --
 
-select * from MGMT$OS_HW_SUMMARY;
-select * from sysman.MGMT_ECM_HW;
+select * from SYSMAN.MGMT$OS_HW_SUMMARY;
+
+select * from SYSMAN.MGMT_ECM_HW;
+
 select * from CM$MGMT_ECM_HW_VIRTUAL;
 
 -- VMWare DEV/TEST
