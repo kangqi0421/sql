@@ -2,7 +2,7 @@
 -- ASM storage
 --
 
-define db = CTL
+define db = MEPP
 
 select 
        NVL(d.db_name, 'UNKNOWN') dbname,
@@ -35,7 +35,7 @@ order by db_name, disk_group
 
 
 select * from SYSMAN.MGMT_ASM_DISKGROUP_ECM
-  where disk_group like 'CMTT%';
+  where disk_group like 'MEPP%';
 
 select * from SYSMAN.cm$mgmt_asm_disk_ecm;
 
@@ -54,7 +54,7 @@ select
     member_disk_count
   from SYSMAN.MGMT_ASM_DISKGROUP_ECM
   where
-       disk_group like 'ODIP_%'
+       disk_group like 'MEPP_%'
 order by disk_group;
 
 select disk_group,
@@ -64,7 +64,7 @@ select disk_group,
        round(total_size)/8 "disk size po 8-mi",
        redundancy
   from SYSMAN.MGMT_ASM_DISKGROUP_ECM
-  where disk_group like 'INEP_%'
+  where disk_group like 'MEPP%'
 order by disk_group;
 
 -- ASM disky

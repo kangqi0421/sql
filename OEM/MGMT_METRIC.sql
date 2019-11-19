@@ -293,11 +293,11 @@ FROM
     -- JOIN pro databázové targety
     -- JOIN mgmt$db_dbninstanceinfo d ON (m.target_guid = d.target_guid)
 WHERE  1 = 1
-  AND m.target_name like 'IPCTA%'
+  AND m.target_name like 'MEPP_D01%'
   -- AND m.target_name like 'pasbo%'
  -- and m.target_name not like '%.cc.%'  -- nechci Viden
-   AND metric_name = 'Filesystems' AND metric_column = 'available'
-     and key_value = '/u021'
+--   AND metric_name = 'Filesystems' AND metric_column = 'available'
+--     and key_value = '/u021'
 --AND m.rollup_timestamp > sysdate - interval '3' month
 --  order by m.rollup_timestamp asc
  ;
@@ -337,6 +337,25 @@ ORDER BY  m.rollup_timestamp
 )
 ;
 
+
+-- ASM metriky
+SELECT
+   collection_timestamp,
+   target_guid,
+   key_value as ASM_GROUP_NAME,
+   METRIC_COLUMN,
+   ROUND(VALUE) VALUE
+FROM
+    SYSMAN.MGMT$METRIC_DETAILS
+WHERE
+  target_type like 'osm%'
+  AND key_value like 'MEPP_D01'
+  AND METRIC_NAME = 'DiskGroup_Usage'
+  AND METRIC_COLUMN in ('usable_file_mb',  -- Disk Group Usable (MB)
+                          'total_mb',        -- Size (MB)
+                          'percent_used'     -- Percent Used
+                       )
+ORDER by 1;
 
 -- CPU, MEM avg util
 with cpu as (

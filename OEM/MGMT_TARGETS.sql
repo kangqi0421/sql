@@ -5,6 +5,7 @@
 -- SYSMAN views
 select * from dba_objects
   where object_name like '%NET%'
+--  where object_name like 'MGMT%CLUSTER%'
  and owner = 'SYSMAN'
 ;
 
@@ -70,9 +71,28 @@ select
 ORDER by d.target_name;
 
 -- RAC targets
+-- RACOneNode - pozor, ukazuje pouze jeden node, nikoliv vsechny uzly v clusteru
 select * from MGMT$RAC_TOPOLOGY t
   where cluster_name = 'ordb02-cluster'
     and db_instance_name like 'DLKP%';
+
+-- RAC clusters and nodes
+select * FROM MGMT_CLUSTER_CONFIG;
+
+-- MGMT_CLUSTER_CONFIG - join na poslední dostupný snapshot
+select s.*
+  from sysman.MGMT_CLUSTER_CONFIG c
+    join MGMT$ECM_VISIBLE_SNAPSHOTS s on (c.ECM_SNAPSHOT_ID = s.ECM_SNAPSHOT_ID)
+ where
+    cluster_name like 'zr01db%'
+  order by s.saved_timestamp
+ FETCH  first 1 rows only;
+
+
+select * FROM MGMT_CLUSTER_CSS_NODES_ECM;
+
+ECM_SNAPSHOT_ID
+
 
 -- Database Info
 select t.target_guid, t.target_name,
