@@ -2,7 +2,7 @@
 --  DDL for View EM_DATABASE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE" ("EM_GUID", "TARGET_NAME", "DBNAME", "AVAILABILITY", "LOG_MODE", "CHARACTERSET", "SL_MIN", "DBVERSION", "ENV_STATUS", "RAC", "SLA", "CONNECT_DESCRIPTOR", "SERVER_NAME", "PORT", "HOST_NAME", "PLATFORM", "DB_SIZE_MB", "DB_LOG_SIZE_MB", "ASM_DISKGROUP") AS
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE" ("EM_GUID", "TARGET_NAME", "DBNAME", "AVAILABILITY", "LOG_MODE", "CHARACTERSET", "SL_MIN", "DBVERSION", "ENV_STATUS", "RAC", "SLA", "CONNECT_DESCRIPTOR", "SERVER_NAME", "PORT", "HOST_NAME", "PLATFORM", "DB_SIZE_GB", "DB_LOG_SIZE_GB", "ASM_DISKGROUP") AS
   select
        t.target_guid em_guid,
        t.target_name,
@@ -34,8 +34,8 @@
        port,
        d.host_name,
        p.platform,
-       db_size_mb,
-       db_log_size_mb,
+       db_size_gb,
+       db_log_size_gb,
        dg.diskgroup AS ASM_DISKGROUP
   FROM
     MGMT$DB_DBNINSTANCEINFO d
@@ -61,8 +61,8 @@
   LEFT JOIN (
     SELECT
         s.target_guid,
-        round(s.value*1024) as db_size_mb,
-        round(f.value/power(1024,2)) as db_log_size_mb
+        round(s.value) as db_size_gb,
+        round(f.value/power(1024,3)) as db_log_size_gb
     FROM
         mgmt$metric_current s
         JOIN mgmt$metric_current f ON (s.target_guid = f.target_guid)

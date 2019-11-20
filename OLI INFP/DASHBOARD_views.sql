@@ -165,7 +165,7 @@ SELECT distinct
     e.host_name,
     e.platform,
     e.server_name, e.port, e.connect_descriptor,
-    round(e.db_size_mb / 1024) as db_size_gb,
+    e.db_size_gb,
     e.asm_diskgroup
 FROM
              OLI_DATABASE o

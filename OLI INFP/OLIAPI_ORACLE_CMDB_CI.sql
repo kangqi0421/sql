@@ -2,7 +2,7 @@
 --  DDL for View OLIAPI_ORACLE_CMDB_CI
 --------------------------------------------------------
 
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "OLI_OWNER"."OLIAPI_ORACLE_CMDB_CI" ("APP_NAME", "APP_CA_ID", "DBINSTANCES_CK", "DB_EM_GUID", "INST_EM_GUID", "DATABASE_NAME", "INSTANCE_NAME", "INSTANCEROLE", "CALC_PERCENT_ON_SERVER", "DBINST_ID", "DBINST_CMDB_CI_ID", "DB_CMDB_CI_ID", "OLI_ID", "SERVER_ID", "CMDB_CI_SERVER", "HOSTNAME", "DOMAIN", "FARM", "VERSION", "ENVIRONMENT", "TCP_PORT", "CONNECT_DESCRIPTOR", "IS_CLUSTERED", "BACKUP", "DB_SIZE_MB", "DB_LOG_SIZE_MB", "CPU", "SGA_SIZE_MB") AS
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "OLI_OWNER"."OLIAPI_ORACLE_CMDB_CI" ("APP_NAME", "APP_CA_ID", "DBINSTANCES_CK", "DB_EM_GUID", "INST_EM_GUID", "DATABASE_NAME", "INSTANCE_NAME", "INSTANCEROLE", "CALC_PERCENT_ON_SERVER", "DBINST_ID", "DBINST_CMDB_CI_ID", "DB_CMDB_CI_ID", "OLI_ID", "SERVER_ID", "CMDB_CI_SERVER", "HOSTNAME", "DOMAIN", "FARM", "VERSION", "ENVIRONMENT", "TCP_PORT", "CONNECT_DESCRIPTOR", "IS_CLUSTERED", "BACKUP", "DB_SIZE_GB", "DB_LOG_SIZE_GB", "CPU", "SGA_SIZE_GB") AS
   SELECT DISTINCT
                    a.app_name,
                    A.CA_ID app_ca_id,
@@ -27,10 +27,10 @@
                    em.connect_descriptor,
                    decode(d.rac, 'Y', 'true', 'false') is_clustered,
                    decode(em.log_mode, 'ARCHIVELOG', 'true', 'false') backup,
-                   em.db_size_mb,
-                   em.db_log_size_mb,
+                   em.db_size_gb,
+                   em.db_log_size_gb,
                    emi.cpu,
-                   emi.sga_size_mb sga_size_mb
+                   emi.sga_size_gb
      FROM OLI_OWNER.APPLICATIONS A,
           OLI_OWNER.APP_DB AD,
           OLI_OWNER.databases d,
