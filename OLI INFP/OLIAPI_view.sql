@@ -71,9 +71,10 @@ where view_name like 'OLAPI%';
 -- RECOhub
 -- základní data do CMDB
 connect OLI_RECO_SYNUSR/abcd1234abcd1234
-select count(*) from OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 select count(*) from  OLI_OWNER.OLIAPI_ORACLE_CMDB_CI;
 select count(*) from  OLI_OWNER.OLIAPI_POSTGRES_CMDB_CI;
+
+-- zrušit OLI_OWNER.OLAPI_APPS_DB_SERVERS_FARM_FLG;
 
 --
 -- SyncOLI
@@ -81,7 +82,7 @@ select count(*) from  OLI_OWNER.OLIAPI_POSTGRES_CMDB_CI;
 --  - přístup přes roli OLI_CA_INTERFACE
 --
 SyncOLI používá 3 pohledy:
-OLAPI_APPS_DB_SERVERS_FARM_FLG - nahrazeno za OLIAPI_ORACLE_CMDB_CI
+OLIAPI_ORACLE_CMDB_CI  <- nahrada za OLAPI_APPS_DB_SERVERS_FARM_FLG
 OLAPI_ACQUIRED_LICENSES
 OLAPI_LICENCE_USAGE_DETAIL
 
@@ -233,98 +234,3 @@ ORA-01427: single-row subquery returns more than one row
 ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
 ORA-06512: at line 1
 ```
-
-
--- RecoHUB
-
-- OLIAPI_ORACLE_CMDB_CI
-- OLIAPI_POSTGRES_CMDB_CI
-
--- OLAPI_APPS_DB_SERVERS_FARM_FLG
-
-CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_ORACLE_CMDB_CI"
-AS
-SELECT DISTINCT
-                   a.app_name,
-                   A.CA_ID app_ca_id,
-                   d.licdb_id || '-' || s.server_id AS DBINSTANCES_CK,
-                   d.em_guid db_em_guid,
-                   i.em_guid inst_em_guid,
-                   D.DBNAME database_name,
-                   i.inst_name instance_name,
-                   i.inst_role instancerole,
-                   ci.calc_percent as calc_percent_on_server,
-                   i.dbinst_id,
-                   i.ca_id as dbinst_cmdb_ci_id,
-                   d.ca_id as db_cmdb_ci_id,
-                   i.licdb_id oli_id,
-                   i.server_id,
-                   s.ca_id cmdb_ci_server,
-                   s.hostname, s.domain,
-                   decode(le.farm, 'Y', 'true', 'false') farm,
-                   d.dbversion AS version,
-                   d.env_status environment,
-                   em.port tcp_port,
-                   em.connect_descriptor,
-                   decode(d.rac, 'Y', 'true', 'false') is_clustered,
-                   decode(em.log_mode, 'ARCHIVELOG', 'true', 'false') backup,
-                   em.db_size_mb,
-                   em.db_log_size_mb,
-                   emi.cpu,
-                   emi.sga_size_mb sga_size_mb
-     FROM OLI_OWNER.APPLICATIONS A,
-          OLI_OWNER.APP_DB AD,
-          OLI_OWNER.databases d,
-          OLI_OWNER.DBINSTANCES i,
-          OLI_OWNER.COST_CALC_DBINSTANCES ci,
-          OLI_OWNER.servers s,
-          OLI_OWNER.licensed_environments le,
-          DASHBOARD.EM_DATABASE em,
-          DASHBOARD.EM_INSTANCE emi
-    WHERE     A.APP_ID = AD.APP_ID
-          AND AD.LICDB_ID = D.LICDB_ID
-          AND D.LICDB_ID = I.LICDB_ID
-          AND i.server_id = s.server_id
-          AND le.lic_env_id = s.lic_env_id
-          and i.dbinst_id=ci.dbinst_id
-          AND d.em_guid = em.em_guid(+)
-          AND i.em_guid = emi.em_guid(+)
-          ;
-
-
-CREATE OR REPLACE VIEW "OLI_OWNER"."OLIAPI_POSTGRES_CMDB_CI"
-AS
-SELECT distinct
-           application  app_name,
-           vip,
-           CASE
-               WHEN vip like '%-prod-%'  THEN 'pppgsdb01,pbpgsdb01'
-               WHEN vip like '%-pred-%'  THEN 'zppgsdb01,zbpgsdb01'
-               WHEN vip like '%-tst-%'  THEN 'tppgsdb01'
-               WHEN vip like '%-dev-%'  THEN 'dppgsdb01'
-               ELSE ''
-           END
-               hostname,
-           'vs.csin.cz'
-               domain,
-           CASE
-               WHEN vip like '%-prod-%'  THEN 'Production'
-               WHEN vip like '%-pred-%'  THEN 'Pre-production'
-               WHEN vip like '%-tst-%'  THEN 'Test'
-               WHEN vip like '%-dev-%'  THEN 'Development'
-               else ''
-           END
-               environment,
-           '5432'
-               tcp_port,
-           CASE
-               WHEN vip like '%-prod-%'  THEN 'true'
-               WHEN vip like '%-pred-%'  THEN 'true'
-               WHEN vip like '%-tst-%'  THEN 'false'
-               WHEN vip like '%-dev-%'  THEN 'false'
-           END
-               is_clustered,
-           database
-     FROM postgres.pg_DATABASE d, POSTGRES.PG_APPLICATION a
-where regexp_replace(vip, 'vip-.*-','') = a.vip3(+)
-/
