@@ -20,7 +20,7 @@ USING (
         from OLI_OWNER.OMS_DATABASES_MATCHING
        WHERE match_status in ('NX')
          -- zname duplicity Bohouše
-         and db_name NOT in ('BRJ','ISS')
+         -- and db_name NOT in ('BRJ','ISS')
       ) em
 ON (oli.dbname = em.db_name)
 when matched then

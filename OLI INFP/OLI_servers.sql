@@ -152,9 +152,14 @@ select * from CA_SRC_SERVERS
 
 -- server včetně cluster name
 
--- vazba mezi clustery
+-- vazba na clustery
 - parent = server
 - child = VMW cluster
+
+AIX: pool (child) - lpar (parent)
+
+- Parent - The entity on the "one" (/1) side of a relation with another table
+- Child - The entity on the "many" (/N/) side of a relation with another table
 
 select cs.hostname, cv.resource_name, cr.rel_type
     from CA_SERVERS cs
@@ -163,6 +168,25 @@ select cs.hostname, cv.resource_name, cr.rel_type
   where 1 = 1
     and cs.hostname like 'pp1vmw%'
     and cv.display_name like 'ORACLE-01-ANT'
+    -- and cv.display_name like 'PB901-PowerHA-ORA'
+ order by 1;
+
+-- otočené vazby, tj. HW server (child) - AIX Pool / VMWare server (parent)
+
+AIX:  rel_type: d93304fb0a0a0b78006081a72ef08444
+VMWAre: a99d39118f10310091769012cbbe4429
+
+  RELATION_SERVER_CLUSTER VARCHAR2(40) := 'a99d39118f10310091769012cbbe4429';
+  RELATION_CLUSTER_AIX VARCHAR2(40) := 'd93304fb0a0a0b78006081a72ef08444';
+
+select cs.hostname, cv.resource_name, cr.rel_type
+    from CA_SERVERS cs
+    left join CA_RELATIONS cr on (cs.cmdb_ci_id = cr.child_cmdb_ci_id)
+    left join CA_VIRT_PLATFORMS cv on (cr.parent_cmdb_ci_id = cv.cmdb_ci_id)
+  where 1 = 1
+    -- and cs.hostname like 'pp1vmw%'
+    and cv.display_name like 'ORACLE-01-ANT'
+    -- and cv.display_name like 'PB901-PowerHA-ORA'
  order by 1;
 
 -- relation to CLUSTER
@@ -170,19 +194,27 @@ select cs.hostname, cv.resource_name, cr.rel_type
 select * from ca_virt_platforms
   where resource_name like 'HVP_ORACLE%'
   -- where resource_name like 'HVP_PB805-oracle'
+--  where resource_name like 'HVP_PB9%'
 ;
-
 
 CA_VIRT_PLATFORMS
 sys_id  name cpu
 a7915576dbee5780f127fbc61d961945  ORACLE-01-BUD 72
 2b915576dbee5780f127fbc61d961947  ORACLE-01-ANT 448
+fb919576dbee5780f127fbc61d96199d  ORACLE-02-ANT 96
 
-c8a19576dbee5780f127fbc61d9619e1  PB805-oracle  16      HVP_PB805-oracle
+585eee1adbc504102070f5b31d9619cb  PB901-PowerHA-ORA
 
 relation type:
 a99d39118f10310091769012cbbe4429 - cluster
 5f985e0ec0a8010e00a9714f2a172815 - server
+
+ca_servers:
+f8141a18dbb237c49a56fc7c0c96191d  pb901
+
+Vaclavíková:
+Tj HW server (child) - Pool (parent)
+Pool (child) - lpar (parent)
 
     SELECT
         "type",
@@ -201,7 +233,6 @@ select * from ca_relations
 
 select * from ca_relations;
 
-
 HSLV_dpdetdb01.vs.csin.cz
 HSLV_dprtodb01.vs.csin.cz
 
@@ -210,3 +241,5 @@ Hosted on -VMware vCenter Clusters
 
 VMware Virtual Platform
 
+-- procedure sync_farm_hosts is
+select * FROM farm_hosts;

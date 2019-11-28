@@ -110,7 +110,7 @@ isql casd zAPI_Oracle_licence 7osEqq6N50pbBo0zVriF
 select count(*) from [RecoHUB].[dbo].[viwSN_BS_for_OracleOLI];
 
 --
--- CA servers
+-- CA Snow servers
 --
 ca_servers
 ca_relation - VMWare clustery

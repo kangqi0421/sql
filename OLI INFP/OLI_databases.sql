@@ -17,6 +17,12 @@ FROM
 --  licdb_id = 6367
 ;
 
+select *
+    from OLI_OWNER.DBINSTANCES i
+      join SERVERS s on i.server_id = s.server_id
+    where s.hostname like 'zpr01db%'  
+;
+  
 
 -- update ENV status
 define lifecycle = 'Education'
@@ -134,7 +140,8 @@ exec  dbms_scheduler.run_job('OLI_OWNER.OEM_RESYNC_TO_OLI', use_current_session 
 
 -- INSERT do DBINSTANCES
 select * from OLI_OWNER.OMS_DBINSTANCES_MATCHING
-  where db_name like '&dbname';
+  where db_name like '&dbname'
+;
 
 INSERT INTO OLI_OWNER.DBINSTANCES (LICDB_ID, SERVER_ID, INST_NAME, EM_GUID)
 SELECT
@@ -145,6 +152,7 @@ SELECT
   from OLI_OWNER.OMS_DBINSTANCES_MATCHING
   where match_status in ('U')
     AND db_name = '&dbname'
+    and machine_name like 'zpr01%'
 ;
 
 --
