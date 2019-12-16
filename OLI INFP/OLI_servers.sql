@@ -243,3 +243,7 @@ VMware Virtual Platform
 
 -- procedure sync_farm_hosts is
 select * FROM farm_hosts;
+
+-- T5
+select * FROM farm_hosts
+  where cpu_type like 'SPARC%';

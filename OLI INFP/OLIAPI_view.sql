@@ -53,7 +53,7 @@ call OLI_API.delete_database('TS2O');
 --
 -- delete server - vlastní procedura api_delete_server - nahradi za OLI_API pckg
 --
-call oli_owner.api_delete_server('zodwmdb1.cc.csin.cz');
+call oli_owner.api_delete_server('amtapp-live2.vs.csin.cz');
 call oli_owner.api_delete_server('zodwhdb1.cc.csin.cz');
 
 
