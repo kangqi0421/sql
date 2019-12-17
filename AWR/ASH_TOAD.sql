@@ -1,9 +1,9 @@
 /* ASH */
 
 select
--- *
+ *
  --  p2, count(*)
-  sql_id, event, a.blocking_session_status, a.blocking_session
+--  sql_id, event, a.blocking_session_status, a.blocking_session
 -- * cnt
 --sample_time, count(*)
 --  SQL_ID, COUNT(*) cnt
@@ -27,12 +27,12 @@ select
 --   sample_time, sql_id, sql_plan_hash_value, sql_plan_line_id, sql_plan_operation, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
 --  sample_time, sum(pga_allocated)/1048576, sum(temp_space_allocated)/1048576
 --    sample_time, sql_id, inst_id, round(pga_allocated/1048576), round(temp_space_allocated/1048576)
-    FROM GV$ACTIVE_SESSION_HISTORY a
---    FROM dba_hist_active_sess_history a
+--    FROM GV$ACTIVE_SESSION_HISTORY a
+    FROM dba_hist_active_sess_history a
   WHERE
   1=1
-       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-07-22 09:34:00'
-                           AND TIMESTAMP'2019-07-22 09:36:00'
+       AND SAMPLE_TIME BETWEEN TIMESTAMP'2019-10-06 14:52:00'
+                           AND TIMESTAMP'2019-10-06 14:53:00'
 --                         and sample_time > sysdate - interval '1' hour    -- poslednich NN minut
 --                           and sample_id IN (276540, 275627)
 --                        and xid = '1C000D00BB9B6000'

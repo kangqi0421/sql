@@ -10,7 +10,7 @@ select * from dba_objects
 ;
 
 DB target:
-  - MGMT$DB_DBNINSTANCEINFO
+  - SYSMAN.MGMT$DB_DBNINSTANCEINFO
   - SYSMAN.EM_MANAGEABLE_ENTITIES WHERE d.category_prop_3 = 'DB'
 - 12.2 - filtr upraven na
 where TARGET_TYPE in ('rac_database', 'oracle_database')

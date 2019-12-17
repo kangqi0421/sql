@@ -156,6 +156,7 @@ AND m.metric_name = 'memory_usage' AND m.metric_column = 'total_memory'
 
 -- SGA
 AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'sga_total'
+
 AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'shared_pool'
 AND m.metric_name = 'memory_usage_sga_pga' AND m.metric_column = 'buffer_cache'
 
@@ -226,8 +227,8 @@ AND m.metric_column = 'avg_active_sessions'
 AND column_label like 'Average Active Sessions'
 
 -- Database Size
-AND m.metric_name ='DATABASE_SIZE' AND (m.metric_column ='ALLOCATED_GB' OR m.metric_column ='USED_GB')
 AND m.metric_name ='DATABASE_SIZE' AND m.metric_column ='ALLOCATED_GB'
+AND m.metric_name ='DATABASE_SIZE' AND (m.metric_column ='ALLOCATED_GB' OR m.metric_column ='USED_GB')
 
 
 -- Tablespace Allocated Space (MB)
@@ -364,7 +365,7 @@ with cpu as (
       round(avg(average)/100,2) AS cpu_usage
    FROM
       sysman.MGMT$METRIC_DAILY
-   WHERE 
+   WHERE
           rollup_timestamp > sysdate - interval '1' month
       AND metric_name = 'instance_efficiency' AND metric_column = 'cpuusage_ps'
    group by target_guid
@@ -375,14 +376,14 @@ mem as (
       round(avg(average)/1024) AS mem_usage
    FROM
       sysman.MGMT$METRIC_DAILY
-   WHERE 
+   WHERE
           rollup_timestamp > sysdate - interval '1' month
       AND metric_name = 'memory_usage' AND metric_column = 'total_memory'
-   group by target_guid 
+   group by target_guid
 )
 select d.host_name, d.database_name, d.instance_name,
        cpu_usage, mem_usage
-  from  cpu c 
+  from  cpu c
     JOIN mem m ON c.target_guid = m.target_guid
     JOIN sysman.MGMT$DB_DBNINSTANCEINFO d ON c.target_guid = d.target_guid
  order by 1, 2, 3;
