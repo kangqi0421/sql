@@ -1,5 +1,5 @@
 --
--- OLIAPI CA CMDB view
+-- OLIAPI CMDB view
 --
 
 -- TODO: založit ownera OLI_API ? -> zneužijeme účet DASHBOARD
@@ -17,20 +17,23 @@ CREATE OR REPLACE SYNONYM DASHBOARD.OLI_API for OLI_OWNER.OLI_API;
 
 connect dashboard/abcd1234
 
--- HSL_tpr02db01.vs.csin.cz
-
 -- add server
+
+define server = "eporadb01.vs.csin.cz"
+
 set serveroutput on
 DECLARE
    server_id PLS_INTEGER;
 BEGIN
-   server_id := OLI_OWNER.OLI_API.ADD_SERVER('tpr02db01.vs.csin.cz');
+   server_id := OLI_OWNER.OLI_API.ADD_SERVER('&server');
    dbms_output.put_line('server_id: ' || server_id);
 END;
 /
 commit;
 
+
 -- add db
+
 set serveroutput on
 DECLARE
    licdb_id INTEGER;
@@ -216,7 +219,6 @@ select count(*) FROM "OLI_OWNER"."OLAPI_APPS_DB_SERVERS_FARM_FLG";
 -- SYNCHRO_CA
 --// OLI_OWNER.SYNCHRO_CA.reload_servers //--
 
-```
   procedure reload_all AS
   BEGIN
     reload_applications;
@@ -233,4 +235,3 @@ ERROR at line 1:
 ORA-01427: single-row subquery returns more than one row
 ORA-06512: at "OLI_OWNER.SYNCHRO_CA", line 151
 ORA-06512: at line 1
-```

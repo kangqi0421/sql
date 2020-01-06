@@ -14,7 +14,7 @@ select * from   OLI_OWNER.SERVERS
 ;
 
 -- počet CPU
-select hostname, domain, cpu_cores, hyperthreading
+select hostname, domain, status, cpu_cores, hyperthreading
    from   OLI_OWNER.CA_SERVERS
   where 1 = 1
     AND hostname like '&server%'
@@ -142,12 +142,18 @@ select * from SERVERS
   where lower(hostname) like 'dporadb01%'
 ;
 
-select * from CA_SERVERS
-  where lower(hostname) like 'tpr02db0%'
+select
+  -- *
+  s.CMDB_CI_ID,s.hw_model,s.logical_cpu,s.os, s.virt_platform_ci_id,
+  s.virt_platform_display_name, s.status
+   from CA_SERVERS s
+  where lower(hostname) like 'eporadb01%'
 ;
 
-select * from CA_SRC_SERVERS
-  where "u_hostname" like 'tpr02db0%'
+select
+  -- *
+    from CA_SRC_SERVERS
+  where "u_hostname" like 'eporadb01%'
   ;
 
 -- server včetně cluster name
