@@ -1,6 +1,9 @@
+
 # status
 
 GET /_cat/health?v
+
+GET _cluster/health?pretty
 
 GET /_cat/nodes?v
 
@@ -9,12 +12,6 @@ GET /_cat/nodes?v&h=name,ip,v,m,cpu
 GET _cat/allocation?v
 
 GET _cat/shards?v
-
-# status
-
-GET /_cluster/status
-GET /cluster/node
-GET /agents
 
 
 # index
@@ -50,7 +47,7 @@ PUT /*/_settings
 
 GET /_nodes/hot_threads
 
-GET /_nodes/instance-0000000039/hot_threads?pretty
+GET /_nodes/instance-0000000007/hot_threads?pretty
 
 GET _nodes/hot_threads?ignore_idle_threads=false&threads=999999
 
