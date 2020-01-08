@@ -1,0 +1,74 @@
+{
+  "persistent" : {
+    "action" : {
+      "auto_create_index" : "true"
+    },
+    "cluster" : {
+      "routing" : {
+        "allocation" : {
+          "disk" : {
+            "threshold_enabled" : "true"
+          }
+        }
+      },
+      "indices" : {
+        "close" : {
+          "enable" : "false"
+        }
+      },
+      "metadata" : {
+        "display_name" : "deva-inet"
+      }
+    },
+    "xpack" : {
+      "monitoring" : {
+        "collection" : {
+          "enabled" : "true",
+          "interval" : "10s"
+        },
+        "exporters" : {
+          "__no-default-local__" : {
+            "type" : "local",
+            "enabled" : "false"
+          },
+          "found-user-defined" : {
+            "host" : [
+              "http://containerhost:9244"
+            ],
+            "headers" : {
+              "x-found-cluster" : "1d9fe5f4f56d4f1890640b126ebcc0b8"
+            },
+            "type" : "http",
+            "enabled" : "true"
+          }
+        }
+      }
+    }
+  },
+  "transient" : {
+    "action" : {
+      "auto_create_index" : "true"
+    },
+    "cluster" : {
+      "routing" : {
+        "allocation" : {
+          "disk" : {
+            "threshold_enabled" : "true"
+          },
+          "exclude" : {
+            "_name" : "no_instances_excluded"
+          },
+          "awareness" : {
+            "attributes" : "region,availability_zone,logical_availability_zone"
+          },
+          "enable" : "all"
+        }
+      },
+      "indices" : {
+        "close" : {
+          "enable" : "false"
+        }
+      }
+    }
+  }
+}

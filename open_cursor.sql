@@ -1,3 +1,12 @@
+--
+-- Open Cursors
+--
+
+
+SYS -> Wnnn procesy -> Bug 30098251
+Bug 30098251 - WNNN PROCCESSES CREATE AN EXCESSIVE NUMBER OF OPEN CURSORS
+
+
 --// nastaven� utilizace Open Cursors do OEM //--
 SELECT
     ROUND (b.curr / a.MAX * 100) "Open Cursors util [%]"

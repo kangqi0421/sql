@@ -1,0 +1,82 @@
+# status
+
+GET /_cat/health?v
+
+GET /_cat/nodes?v
+
+GET /_cat/nodes?v&h=name,ip,v,m,cpu
+
+GET _cat/allocation?v
+
+GET _cat/shards?v
+
+# status
+
+GET /_cluster/status
+GET /cluster/node
+GET /agents
+
+
+# index
+
+GET _cat/indices?v&s=index
+
+
+GET /_cat/indices/p*?v&s=index
+
+
+# settings 
+
+GET /posts/_settings
+
+GET /*/_settings/
+
+PUT /*/_settings
+{
+  "index" : {
+      "refresh_interval" : null
+    }
+}
+
+PUT /*/_settings
+{
+  "index" : {
+      "search.idle.after" : "10000d"
+    }
+}
+
+
+# hot threads
+
+GET /_nodes/hot_threads
+
+GET /_nodes/instance-0000000039/hot_threads?pretty
+
+GET _nodes/hot_threads?ignore_idle_threads=false&threads=999999
+
+
+GET /_nodes/stats/indices/fielddata?fields=*&human&pretty
+
+GET /_cluster/settings
+
+PUT /_cluster/settings
+{
+  "persistent": {
+    "transport.tracer.include": null,
+    "logger.org.elasticsearch.search": null,
+    "logger.org.elasticsearch.tasks.TaskManager": null,
+    "logger.org.elasticsearch.transport.TransportService.tracer": null
+  }
+}
+
+PUT /_cluster/settings
+{
+  "persistent": {
+    "transport.tracer.include": "indices:data/read/search*",
+    "logger.org.elasticsearch.search": "TRACE",
+    "logger.org.elasticsearch.tasks.TaskManager": "TRACE",
+    "logger.org.elasticsearch.transport.TransportService.tracer": "TRACE"
+  }
+}
+
+
