@@ -1,3 +1,21 @@
+
+
+-- "Metrics Global Cache Blocks Lost" -> disabled
+    SELECT TARGET_NAME,
+         TARGET_TYPE,
+         METRIC_NAME,
+         METRIC_COLUMN,
+         KEY_VALUE,
+         WARNING_OPERATOR,
+         WARNING_THRESHOLD,
+         CRITICAL_OPERATOR,
+         CRITICAL_THRESHOLD,
+         COLUMN_LABEL
+    FROM sysman.MGMT$TARGET_METRIC_SETTINGS
+    where 1=1
+--    and target_name like '%DRDMP_DRDMP1'
+    and column_label='Global Cache Blocks Lost'
+;
 --
 -- 12g
 --
