@@ -61,11 +61,11 @@ https://linux.vs.csin.cz/server_list/?t=aixmspp
 --
 select lic_env_id, hostname, domain
   from servers
-  where hostname like 'tpr02db%';
+  where hostname like 'p%r06db%';
 
 
 
-define LIC_ENV_ID = 7894
+define LIC_ENV_ID = 8294
 define PP = 12
 
 -- Enterprise Edition

@@ -20,9 +20,9 @@ FROM
 select *
     from OLI_OWNER.DBINSTANCES i
       join SERVERS s on i.server_id = s.server_id
-    where s.hostname like 'zpr01db%'  
+    where s.hostname like 'zpr01db%'
 ;
-  
+
 
 -- update ENV status
 define lifecycle = 'Education'
@@ -165,7 +165,6 @@ MERGE
 USING
    (select cmdb_ci_id, APP_NAME, APP_LONG_NAME from OLI_OWNER.CA_APPLICATIONS
       where APP_NAME = 'SAS_ORDBF'
-        and status = 'Alive'
     ) s
 ON (s.app_name = d.app_name)
   WHEN NOT MATCHED THEN
