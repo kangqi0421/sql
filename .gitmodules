@@ -1,0 +1,3 @@
+[submodule "dwh-import"]
+	path = dwh-import
+	url = git@gitlab.vs.csin.cz:oracle/dwh-import.git

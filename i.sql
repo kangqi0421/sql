@@ -54,18 +54,16 @@ and
 	sid = (select sid from v$mystat where rownum = 1);
 
 -- Windows CMD.exe specific stuff
-host title &_i_user@&_i_inst [sid=&mysid ser#=&_i_serial spid=&_i_spid inst=&_i_inst host=&_i_host cpid=&_i_cpid opid=&_i_opid]
-host doskey /exename=sqlplus.exe desc=set lines 80 sqlprompt ""$Tdescribe $*$Tset lines 299 sqlprompt "SQL> "
+-- host title &_i_user@&_i_inst [sid=&mysid ser#=&_i_serial spid=&_i_spid inst=&_i_inst host=&_i_host cpid=&_i_cpid opid=&_i_opid]
+-- host doskey /exename=sqlplus.exe desc=set lines 80 sqlprompt ""$Tdescribe $*$Tset lines 299 sqlprompt "SQL> "
 
 -- short xterm title
 -- host echo -ne "\033]0;&_i_user@&_i_inst &mysid[&_i_spid]\007"
 -- long xterm title
 --host echo -ne "\033]0;host=&_i_host inst=&_i_inst sid=&mysid ser#=&_i_serial spid=&_i_spid cpid=&_i_cpid opid=&_i_opid\007"
 
-
 def myopid=&_i_opid
 def myspid=&_i_spid
 def mycpid=&_i_cpid
 
 -- undef _i_spid _i_inst _i_host _i_user _i_conn _i_cpid
-

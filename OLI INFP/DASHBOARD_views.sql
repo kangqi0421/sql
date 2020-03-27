@@ -287,12 +287,11 @@ GRANT SELECT on SYSMAN.MGMT_ASM_CLIENT_ECM to DASHBOARD WITH GRANT OPTION;
 "
 
 -- OMSP OMST zkracena verze EM_DATABASE
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "DASHBOARD"."EM_DATABASE"
+CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE"
   AS
   select
        database_name dbname,
-       -- availability short na UP a DOWN
-       decode(a.availability_status_code, 0, 'DOWN', 1, 'UP', 'UNKNOWN') availability,
+       a.availability_status_code,
        dbversion,
        env_status,
        decode(substr(rac, 1, 1), 'Y', 'true', 'false') rac,

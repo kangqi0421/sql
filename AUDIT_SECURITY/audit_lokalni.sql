@@ -1,5 +1,5 @@
 
-define user = FEWCRAS
+define user = PMWDT1
 
 --// neuspesne prihlaseni za posledni 2 dny //--
 select to_char(LOCK_DATE,'YYYY.MM.DD HH24:MI:SS') from dba_users where username='&user';
@@ -20,9 +20,10 @@ from (
 
 -- Audit 12c UNIFIED_AUDIT_TRAIL
 select
-   *
+   -- *
    --dbusername, count(*)
---   event_timestamp, action_name, return_code
+  event_timestamp, action_name, return_code,
+  OS_USERNAME, USERHOST
   from UNIFIED_AUDIT_TRAIL
  where 1=1
 --    AND event_timestamp between timestamp'2015-07-08 22:00:00'
@@ -31,11 +32,12 @@ select
 -- AND UNIFIED_AUDIT_POLICIES is null
   and ACTION_NAME='LOGON'
 --    and upper(sql_text_varchar2) like '%ALTER USER%IDENTIFIED BY%'
-   and dbusername like 'PSP%'
+   and dbusername like '&user'
    and return_code > 0
+   and return_code = 1017
 -- group by dbusername
 ORDER by event_timestamp desc
---FETCH FIRST 5 ROWS ONLY
+FETCH FIRST 5 ROWS ONLY
 --FETCH FIRST 5 PERCENT ROWS ONLY
 ;
 
