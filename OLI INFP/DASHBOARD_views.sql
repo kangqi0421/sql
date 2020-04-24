@@ -317,7 +317,7 @@ CREATE OR REPLACE FORCE VIEW "DASHBOARD"."EM_DATABASE"
      select target_guid,
             max(availability_status_code) availability_status_code
      from SYSMAN.MGMT$AVAILABILITY_CURRENT
-      group by target_guid) a on (d.target_guid = a.target_guid)
+      group by target_guid) a on (d.target_guid = a.targe t_guid)
   LEFT JOIN (select target_name, property_value scanName
          from SYSMAN.MGMT$TARGET_PROPERTIES
         where property_name = 'scanName') s
