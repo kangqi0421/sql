@@ -12,8 +12,8 @@ pošlete prosím přesně, jaké schema chcete vytvořit a jaké parametry:
 - quoty na nějaké další tablespaces ?
 - create role ?
 
-define user=ACSSLSPAXX
-define default_tablespace=ACS
+define user=LAF_PIM_TEST
+define default_tablespace=USERS
 define owner_role=PAD_OWNER
 
 --
@@ -231,5 +231,3 @@ grant CSCONNECT,RESOURCE to OCP_SAMPLE_DOTNET;
 create user OCP_SAMPLE_NODEJS identified by "abcd1234" profile PROF_APPL
   default tablespace USERS quota UNLIMITED on USERS;
 grant CSCONNECT,RESOURCE to OCP_SAMPLE_NODEJS;
-
-
