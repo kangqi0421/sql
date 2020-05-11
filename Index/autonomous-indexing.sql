@@ -3,7 +3,8 @@
 --
 https://static.rainfocus.com/oracle/oow18/sess/1523250557343001OBEw/PF/TRN3980_Test_Drive_Auto_Index_Creation_in_ADB_1541192406753001UYd0.pdf
 
-alter system set “_exadata_feature_on”=true scope=spfile;
+alter system set "_exadata_feature_on" = true scope=spfile;
+  alter system set "_exadata_feature_on" = false scope=spfile;
 
 
 begin
@@ -15,6 +16,10 @@ end;
 DBMS_AUTO_INDEX.CONFIGURE(‘AUTO_INDEX_REPORT_RETENTION’, ‘60’);
 
 DBMS_AUTO_INDEX.CONFIGURE ('AUTO_INDEX_RETENTION_FOR_AUTO', '100')
+
+-- OFF
+EXEC DBMS_AUTO_INDEX.CONFIGURE('AUTO_INDEX_MODE','OFF');
+
 
 
 -- report
@@ -64,4 +69,3 @@ select *
 where owner='SYS'
   and task_name like '%AI%'
 order by task_id;
-
